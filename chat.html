@@ -5,43 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>Chat · Choicho</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- ===== MAIN.CSS IMPORT ===== -->
+  <link rel="stylesheet" href="CSS/main.css">
   <style>
-    /* ===== BASE / RESET ===== */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #000;
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .page {
-      width: 100%;
-      max-width: 500px;
-      height: 100vh;
-      max-height: 900px;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-      border-radius: 0;
-      box-shadow: 0 0 40px rgba(0,0,0,0.8);
-    }
-    @media (min-width: 600px) {
-      .page { border-radius: 28px; height: 95vh; }
-    }
-    .scrollable-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* ===== TOP HEADER (main chat list) ===== */
+    /* ===== ADDITIONAL CHAT PAGE STYLES (main.css handles the rest) ===== */
     .top-icons-chat {
       display: flex;
       align-items: center;
@@ -114,10 +81,7 @@
     .corner-btn-right:active { transform: scale(0.94); background: #2a2a2a; }
     .plus-icon { color: #FFFC00; font-weight: 700; }
 
-    /* ==============================================================
-       CHAT HEADER (when inside a chat) 
-       Back button left | Partner name center | Call icons right
-       ============================================================== */
+    /* ===== CHAT HEADER (when inside a chat) ===== */
     .chat-header {
       display: none;
       align-items: center;
@@ -443,7 +407,7 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ==============================================================
-       NEW CHAT MODAL — 100% PURE GLASSMORPHISM
+       NEW CHAT MODAL — GLASSMORPHISM (using main.css styles)
        ============================================================== */
     .new-chat-overlay {
       position: fixed;
@@ -731,7 +695,7 @@
 <div class="page">
   <div class="scrollable-content">
 
-    <!-- ===== TOP HEADER (main chat list) ===== -->
+    <!-- ===== TOP HEADER ===== -->
     <div class="top-icons-chat" id="topIconsChat">
       <a href="hart.html" class="corner-btn-left" title="Activity">
         <i class="fas fa-heart heart-icon"></i>
@@ -747,15 +711,11 @@
       </div>
     </div>
 
-    <!-- ==============================================================
-         CHAT HEADER (inside a chat) 
-         Back button left | Partner name center | Call icons right
-         ============================================================== -->
+    <!-- ===== CHAT HEADER ===== -->
     <div class="chat-header" id="chatHeader">
       <button class="chat-back" onclick="goBack()" title="Go back">
         <i class="fas fa-arrow-left"></i>
       </button>
-      
       <div class="chat-partner-info" onclick="goToPartnerProfile()" title="Tap to view profile">
         <div class="chat-partner-name" id="partnerName">
           <span id="partnerNameText">User</span>
@@ -765,7 +725,6 @@
           <span class="dot"></span> online
         </div>
       </div>
-      
       <div class="call-btns">
         <button class="call-btn" onclick="startCall('audio')" title="Audio call">
           <i class="fas fa-phone-alt"></i>
@@ -967,14 +926,12 @@
     currentPartner = partner;
     currentChatId = [currentUserId, partner.replace('@','')].sort().join('_');
     
-    // Mark messages as read
     try {
       await updateDoc(doc(db, 'chats', currentChatId), { 
         [`unread_${currentUserId}`]: 0 
       });
     } catch (e) {}
     
-    // Hide main chat list, show chat view
     document.getElementById('topIconsChat').classList.add('hidden');
     document.getElementById('chatHeader').classList.add('show');
     document.getElementById('chatListFull').classList.add('hidden');
@@ -985,10 +942,8 @@
     
     document.getElementById('partnerNameText').textContent = cleanUsername(partner);
     
-    // Unsubscribe from previous messages
     if (unsubMessages) unsubMessages();
     
-    // Listen for messages in real-time
     const q = query(
       collection(db, 'chats', currentChatId, 'messages'), 
       orderBy('createdAt', 'asc')
@@ -1000,7 +955,6 @@
         return;
       }
       
-      // Clear and render messages
       messagesContainer.innerHTML = '';
       snapshot.forEach(doc => {
         const msg = doc.data();
@@ -1074,18 +1028,15 @@
       return;
     }
     
-    // Clear input immediately
     input.value = '';
     
     try {
-      // Update chat document with last message
       const chatRef = doc(db, 'chats', currentChatId);
       const partnerId = currentPartner?.replace('@','');
       
       await runTransaction(db, async (transaction) => {
         const chatDoc = await transaction.get(chatRef);
         
-        // Create or update chat
         const updateData = {
           lastMessage: text,
           lastTime: serverTimestamp(),
@@ -1102,7 +1053,6 @@
         }
       });
       
-      // Add message to subcollection
       await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
         text: text,
         sender: currentUserId,
@@ -1159,7 +1109,7 @@
     e.target.value = '';
   };
 
-  // ===== VOICE =====
+  // ===== VOICE & CALL =====
   window.toggleVoice = function() { 
     showToast('Voice message coming soon! 🎤'); 
   };
@@ -1218,7 +1168,7 @@
   });
 
   // ============================================================
-  // NEW CHAT MODAL — LOAD REAL USERS
+  // NEW CHAT MODAL
   // ============================================================
   async function loadAllUsers() {
     try {
