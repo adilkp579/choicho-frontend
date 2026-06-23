@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Upload · Choicho</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    /* ===== UPLOAD PAGE STYLES ===== */
+    .upload-page {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+      overflow: hidden;
+    }
+    
+    .upload-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      gap: 1.5rem;
+    }
+    
+    /* ===== UPLOAD OPTIONS ===== */
+    .upload-options {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      max-width: 320px;
+    }
+    
+    .upload-card {
+      background: rgba(255,255,255,0.04);
+      border: 2px dashed rgba(255,255,255,0.15);
+      border-radius: 1.5rem;
+      padding: 2rem 1.5rem;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    
+    .upload-card:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: #3897f0;
+      transform: translateY(-2px);
+    }
+    
+    .upload-card:active {
+      transform: scale(0.97);
+    }
+    
+    .upload-card i {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .upload-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.2rem;
+    }
+    
+    .upload-card p {
+      font-size: 0.65rem;
+      color: #666;
+    }
+    
+    .upload-card.post i { 
+      color: #3897f0; 
+    }
+    
+    .upload-card.reel i { 
+      color: #e91e63; 
+    }
+    
+    .upload-card .card-icon-bg {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.5rem;
+    }
+    
+    .upload-card.post .card-icon-bg {
+      background: rgba(56,151,240,0.15);
+    }
+    
+    .upload-card.reel .card-icon-bg {
+      background: rgba(233,30,99,0.15);
+    }
+    
+    /* ===== PREVIEW ===== */
+    .preview-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      max-width: 400px;
+      padding: 0.5rem;
+    }
+    
+    .preview-container.show {
+      display: flex;
+      animation: fadeInUp 0.3s ease;
+    }
+    
+    .preview-box {
+      width: 100%;
+      max-height: 400px;
+      border-radius: 1rem;
+      background: #0a0a0a;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    
+    .preview-box img,
+    .preview-box video {
+      width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+    }
+    
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+      color: #666;
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .file-info i {
+      color: #4ade80;
+    }
+    
+    .caption-input {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0.8rem;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+    
+    .caption-input:focus {
+      border-color: #3897f0;
+      background: rgba(255,255,255,0.08);
+    }
+    
+    .caption-input::placeholder {
+      color: #555;
+    }
+    
+    .upload-progress {
+      width: 100%;
+      height: 4px;
+      background: #222;
+      border-radius: 2px;
+      overflow: hidden;
+      display: none;
+    }
+    
+    .upload-progress.show {
+      display: block;
+    }
+    
+    .upload-progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #4ade80, #22c55e);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      border-radius: 0.8rem;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    
+    .btn:active {
+      transform: scale(0.97);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #3897f0, #2670c9);
+      color: #fff;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 4px 20px rgba(56,151,240,0.3);
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: #aaa;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    
+    .upload-status {
+      font-size: 0.7rem;
+      color: #888;
+      text-align: center;
+      min-height: 1.2rem;
+    }
+    
+    .upload-status.success {
+      color: #4ade80;
+    }
+    
+    .upload-status.error {
+      color: #ef4444;
+    }
+    
+    /* ===== FILE SIZE BADGE ===== */
+    .file-size-badge {
+      font-size: 0.6rem;
+      color: #555;
+      background: rgba(255,255,255,0.04);
+      padding: 0.2rem 0.6rem;
+      border-radius: 1rem;
+    }
+    
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      .upload-content { padding: 1rem; }
+      .upload-card { padding: 1.5rem 1rem; }
+      .upload-card i { font-size: 2rem; }
+      .upload-card .card-icon-bg { width: 50px; height: 50px; }
+      .preview-container { max-width: 100%; }
+      .btn { font-size: 0.75rem; padding: 0.6rem 0.8rem; }
+    }
+    
+    @media (min-width: 1024px) {
+      .scrollable-content { padding-left: 5.5rem; }
+      .upload-content { max-width: 500px; margin: 0 auto; }
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="scrollable-content">
+      <!-- ===== TOP HEADER ===== -->
+      <div class="top-icons">
+        <a href="index.html" class="corner-btn" title="Back">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <span class="top-brand">Create</span>
+        <div style="width:2.4rem;"></div>
+      </div>
+      
+      <!-- ===== UPLOAD CONTENT ===== -->
+      <div class="upload-content">
+        <!-- Upload Options -->
+        <div class="upload-options" id="uploadOptions">
+          <div class="upload-card post" onclick="selectType('post')">
+            <div class="card-icon-bg">
+              <i class="fas fa-image"></i>
+            </div>
+            <h3>Post</h3>
+            <p>Upload a photo</p>
+          </div>
+          <div class="upload-card reel" onclick="selectType('reel')">
+            <div class="card-icon-bg">
+              <i class="fas fa-video"></i>
+            </div>
+            <h3>Reel</h3>
+            <p>Upload a video (max 10MB)</p>
+          </div>
+        </div>
+        
+        <!-- Preview Container -->
+        <div class="preview-container" id="previewContainer">
+          <div class="preview-box" id="previewBox">
+            <div id="previewContent"></div>
+          </div>
+          
+          <div class="file-info">
+            <i class="fas fa-check-circle"></i>
+            <span id="fileName">File selected</span>
+            <span class="file-size-badge" id="fileSize">0 KB</span>
+          </div>
+          
+          <input type="text" class="caption-input" id="captionInput" placeholder="Add a caption...">
+          
+          <div class="upload-progress" id="uploadProgress">
+            <div class="upload-progress-bar" id="uploadProgressBar"></div>
+          </div>
+          
+          <div class="upload-status" id="uploadStatus"></div>
+          
+          <div class="btn-group">
+            <button class="btn btn-primary" id="uploadBtn" onclick="uploadToS3()">
+              <i class="fas fa-cloud-upload-alt"></i> Upload
+            </button>
+            <button class="btn btn-secondary" onclick="resetUpload()">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <input type="file" id="fileInput" accept="image/*,video/*" style="display:none">
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script type="module">
+    // ================================================================
+    // UPLOAD PAGE - Complete
+    // ================================================================
+    
+    import { db, auth, BACKEND_URL, getAuthToken } from './js/firebase-config.js';
+    import { showToast, requireAuth } from './js/common.js';
+    import { getCurrentUser } from './js/auth.js';
+    import { collection, addDoc, serverTimestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    
+    if (!requireAuth()) {
+      window.location.replace('login.html');
+    }
+    
+    const currentUser = getCurrentUser();
+    const currentUserId = currentUser.uid;
+    let selectedType = null;
+    let selectedFile = null;
+    let fileDataUrl = null;
+    let isUploading = false;
+    
+    // ===== SELECT FILE TYPE =====
+    window.selectType = function(type) {
+      if (isUploading) return;
+      selectedType = type;
+      const input = document.getElementById('fileInput');
+      input.accept = type === 'post' ? 'image/*' : 'video/*';
+      input.click();
+    };
+    
+    // ===== HANDLE FILE SELECTION =====
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      // Validate file size
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        showToast('File too large! Max 10MB');
+        document.getElementById('fileInput').value = '';
+        return;
+      }
+      
+      // Validate file type
+      if (selectedType === 'post' && !file.type.startsWith('image/')) {
+        showToast('Please select an image file');
+        document.getElementById('fileInput').value = '';
+        return;
+      }
+      
+      if (selectedType === 'reel' && !file.type.startsWith('video/')) {
+        showToast('Please select a video file');
+        document.getElementById('fileInput').value = '';
+        return;
+      }
+      
+      selectedFile = file;
+      
+      // Show file info
+      const fileSizeKB = (file.size / 1024).toFixed(1);
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileSize').textContent = fileSizeKB + ' KB';
+      
+      // Preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        fileDataUrl = event.target.result;
+        const previewContent = document.getElementById('previewContent');
+        
+        if (selectedType === 'post') {
+          previewContent.innerHTML = `<img src="${fileDataUrl}" alt="preview">`;
+        } else {
+          previewContent.innerHTML = `
+            <video src="${fileDataUrl}" controls style="max-height:400px; width:100%;">
+              Your browser does not support the video tag.
+            </video>
+          `;
+        }
+        
+        // Show preview, hide options
+        document.getElementById('uploadOptions').style.display = 'none';
+        document.getElementById('previewContainer').classList.add('show');
+        document.getElementById('uploadStatus').textContent = '';
+        document.getElementById('uploadStatus').className = 'upload-status';
+      };
+      
+      reader.readAsDataURL(file);
+    });
+    
+    // ===== UPLOAD TO S3 =====
+    window.uploadToS3 = async function() {
+      if (isUploading) return;
+      
+      if (!selectedFile) {
+        showToast('No file selected');
+        return;
+      }
+      
+      const uploadBtn = document.getElementById('uploadBtn');
+      const progressBar = document.getElementById('uploadProgressBar');
+      const progressContainer = document.getElementById('uploadProgress');
+      const statusDiv = document.getElementById('uploadStatus');
+      const caption = document.getElementById('captionInput').value.trim();
+      
+      isUploading = true;
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+      progressContainer.classList.add('show');
+      progressBar.style.width = '0%';
+      statusDiv.textContent = 'Uploading to cloud...';
+      statusDiv.className = 'upload-status';
+      
+      try {
+        const token = await getAuthToken();
+        
+        if (!token) {
+          throw new Error('Authentication failed. Please login again.');
+        }
+        
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('type', selectedType === 'post' ? 'image' : 'video');
+        
+        // Progress simulation
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress = Math.min(progress + 8, 85);
+          progressBar.style.width = `${progress}%`;
+        }, 250);
+        
+        const response = await fetch(`${BACKEND_URL}/api/upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+        
+        clearInterval(progressInterval);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Upload failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        progressBar.style.width = '100%';
+        statusDiv.textContent = 'Saving to database...';
+        
+        // Save to Firestore
+        const postData = {
+          userId: currentUserId,
+          username: currentUser.username,
+          type: selectedType === 'post' ? 'image' : 'reel',
+          data: data.url,
+          s3Key: data.key,
+          caption: caption,
+          likes: 0,
+          comments: 0,
+          createdAt: serverTimestamp()
+        };
+        
+        const docRef = await addDoc(collection(db, 'posts'), postData);
+        
+        // Update user profile
+        const userRef = doc(db, 'users', currentUserId);
+        const userSnap = await getDoc(userRef);
+        
+        let userProfile = userSnap.exists() 
+          ? userSnap.data() 
+          : JSON.parse(localStorage.getItem('userProfile') || '{}');
+        
+        if (!userProfile.posts) userProfile.posts = [];
+        userProfile.posts.unshift({
+          id: docRef.id,
+          type: selectedType === 'post' ? 'image' : 'reel',
+          src: data.url,
+          s3Key: data.key,
+          caption: caption,
+          createdAt: new Date().toISOString(),
+          likes: 0
+        });
+        
+        await setDoc(userRef, { posts: userProfile.posts }, { merge: true });
+        
+        // Update localStorage
+        const localProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+        if (!localProfile.posts) localProfile.posts = [];
+        localProfile.posts.unshift({
+          id: docRef.id,
+          type: selectedType === 'post' ? 'image' : 'reel',
+          src: data.url,
+          caption: caption,
+          createdAt: new Date().toISOString()
+        });
+        localStorage.setItem('userProfile', JSON.stringify(localProfile));
+        
+        statusDiv.textContent = '✅ Upload complete!';
+        statusDiv.className = 'upload-status success';
+        showToast('Post uploaded successfully! 🎉');
+        
+        // Reset after delay
+        setTimeout(() => {
+          window.location.href = 'profile.html';
+        }, 1500);
+        
+      } catch (error) {
+        console.error('Upload error:', error);
+        statusDiv.textContent = '❌ ' + (error.message || 'Upload failed');
+        statusDiv.className = 'upload-status error';
+        showToast('Upload failed: ' + error.message);
+        
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Retry';
+        isUploading = false;
+        progressContainer.classList.remove('show');
+      }
+    };
+    
+    // ===== RESET UPLOAD =====
+    window.resetUpload = function() {
+      if (isUploading) return;
+      
+      selectedFile = null;
+      fileDataUrl = null;
+      document.getElementById('fileInput').value = '';
+      document.getElementById('captionInput').value = '';
+      document.getElementById('previewContent').innerHTML = '';
+      document.getElementById('uploadProgress').classList.remove('show');
+      document.getElementById('uploadProgressBar').style.width = '0%';
+      document.getElementById('uploadStatus').textContent = '';
+      document.getElementById('uploadStatus').className = 'upload-status';
+      
+      document.getElementById('uploadOptions').style.display = 'flex';
+      document.getElementById('previewContainer').classList.remove('show');
+      
+      const uploadBtn = document.getElementById('uploadBtn');
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload';
+      isUploading = false;
+    };
+    
+    // ===== KEYBOARD SHORTCUTS =====
+    document.getElementById('captionInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        uploadToS3();
+      }
+    });
+    
+    // ===== DRAG AND DROP SUPPORT =====
+    const uploadContent = document.querySelector('.upload-content');
+    
+    uploadContent.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadContent.style.borderColor = '#3897f0';
+    });
+    
+    uploadContent.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadContent.style.borderColor = 'transparent';
+    });
+    
+    uploadContent.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadContent.style.borderColor = 'transparent';
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const file = files[0];
+        // Determine type from file
+        if (file.type.startsWith('image/')) {
+          selectedType = 'post';
+        } else if (file.type.startsWith('video/')) {
+          selectedType = 'reel';
+        } else {
+          showToast('Unsupported file type');
+          return;
+        }
+        
+        // Trigger file selection
+        const input = document.getElementById('fileInput');
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+      }
+    });
+  </script>
+</body>
+</html>

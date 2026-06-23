@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Choicho · Home</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    /* Page-specific styles */
+    .share-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8); z-index: 900;
+      display: none; align-items: flex-end; justify-content: center;
+    }
+    .share-overlay.show { display: flex; }
+    .share-sheet {
+      background: #1a1a1a; border-radius: 1.2rem 1.2rem 0 0;
+      width: 100%; max-width: 500px; max-height: 80vh;
+      display: flex; flex-direction: column; animation: slideUp 0.3s ease;
+    }
+    .share-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; margin: 0.6rem auto; }
+    .share-title { font-size: 0.85rem; color: #fff; text-align: center; padding: 0 1rem 0.8rem; font-weight: 600; }
+    .share-quick-row { display: flex; gap: 0.8rem; padding: 0 1rem 1rem; overflow-x: auto; }
+    .share-quick-row::-webkit-scrollbar { height: 0; }
+    .share-quick-item { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; flex-shrink: 0; min-width: 60px; }
+    .share-quick-avatar { width: 56px; height: 56px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid transparent; position: relative; }
+    .share-quick-item.selected .share-quick-avatar { border-color: #FFFC00; }
+    .share-quick-check { position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; border-radius: 50%; background: #FFFC00; display: none; align-items: center; justify-content: center; font-size: 0.5rem; color: #000; }
+    .share-quick-item.selected .share-quick-check { display: flex; }
+    .share-quick-name { font-size: 0.55rem; color: #aaa; max-width: 60px; text-align: center; overflow: hidden; text-overflow: ellipsis; }
+    .share-divider { display: flex; align-items: center; gap: 0.5rem; padding: 0 1rem; margin-bottom: 0.5rem; }
+    .share-divider span { font-size: 0.6rem; color: #666; }
+    .share-divider::before, .share-divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+    .share-search { margin: 0 1rem; padding: 0.55rem 0.8rem; border-radius: 0.8rem; border: 1px solid #333; background: #111; color: #fff; font-size: 0.72rem; outline: none; margin-bottom: 0.5rem; }
+    .share-user-list { flex: 1; overflow-y: auto; min-height: 0; padding: 0 1rem; }
+    .share-user-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 0.7rem; cursor: pointer; border: 1px solid transparent; }
+    .share-user-item.selected { background: rgba(255,252,0,0.05); border-color: rgba(255,252,0,0.15); }
+    .share-checkbox { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .share-user-item.selected .share-checkbox { background: #FFFC00; border-color: #FFFC00; color: #000; }
+    .share-user-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .share-user-info { flex: 1; }
+    .share-user-name { font-size: 0.78rem; color: #fff; }
+    .share-user-username { font-size: 0.6rem; color: #666; }
+    .share-bottom-bar { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1rem; border-top: 1px solid rgba(255,255,255,0.06); }
+    .share-selected-count { font-size: 0.7rem; color: #FFFC00; }
+    .share-send-btn { padding: 0.55rem 1.5rem; border-radius: 1.5rem; background: #FFFC00; color: #000; border: none; font-size: 0.75rem; font-weight: 600; cursor: pointer; display: none; }
+    .share-send-btn.show { display: block; }
+    .share-cancel-btn { padding: 0.55rem 1.5rem; border-radius: 1.5rem; background: rgba(255,255,255,0.08); border: none; color: #fff; font-size: 0.75rem; cursor: pointer; }
+
+    .comments-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.95); z-index: 700;
+      display: none; flex-direction: column;
+    }
+    .comments-overlay.show { display: flex; }
+    .comments-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .comments-header h3 { font-size: 0.9rem; font-weight: 600; color: #fff; }
+    .comments-close { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: #fff; cursor: pointer; }
+    .comments-list { flex: 1; overflow-y: auto; padding: 0.5rem 1rem; }
+    .cmt-block { padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+    .cmt-row { display: flex; gap: 0.5rem; align-items: flex-start; }
+    .cmt-avatar { width: 28px; height: 28px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .cmt-body { flex: 1; }
+    .cmt-username { font-size: 0.7rem; font-weight: 600; color: #fff; }
+    .cmt-content { font-size: 0.75rem; color: #ddd; margin-top: 0.1rem; word-break: break-word; }
+    .cmt-meta { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.2rem; }
+    .cmt-time { font-size: 0.55rem; color: #666; }
+    .cmt-input-area { display: flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1rem; border-top: 1px solid rgba(255,255,255,0.08); background: #0a0a0a; }
+    .cmt-input-wrap { flex: 1; display: flex; align-items: center; background: #1a1a1a; border-radius: 1.2rem; border: 1px solid rgba(255,255,255,0.12); overflow: hidden; }
+    .cmt-mic-btn { width: 38px; height: 38px; border: none; background: transparent; color: #FFFC00; cursor: pointer; }
+    .cmt-input { flex: 1; padding: 0.5rem; border: none; background: transparent; color: #fff; font-size: 0.8rem; outline: none; }
+    .cmt-post-btn { background: #FFFC00; border: none; color: #000; font-size: 0.7rem; font-weight: 600; padding: 0.45rem 0.9rem; border-radius: 1.2rem; cursor: pointer; }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="scrollable-content" id="mainContent">
+      <div class="top-icons">
+        <a href="upload.html" class="corner-btn"><i class="fas fa-plus"></i></a>
+        <span class="top-brand">Choicho</span>
+        <a href="search.html" class="corner-btn"><i class="fas fa-search"></i></a>
+      </div>
+      
+      <div class="stories-section">
+        <div class="stories-bar" id="storiesBar"></div>
+        <div class="no-stories" id="noStories" style="display:none;">No recent stories</div>
+      </div>
+      
+      <div class="feed-section" id="feedContainer"></div>
+    </div>
+    
+    <div class="share-overlay" id="shareOverlay">
+      <div class="share-sheet">
+        <div class="share-handle"></div>
+        <div class="share-title">Share to</div>
+        <div class="share-quick-row" id="shareQuickRow"></div>
+        <div class="share-divider"><span>OR SEARCH USERS</span></div>
+        <input type="text" class="share-search" id="shareSearch" placeholder="🔍 Search...">
+        <div class="share-user-list" id="shareUserList"></div>
+        <div class="share-bottom-bar">
+          <span class="share-selected-count" id="shareSelectedCount">Select people</span>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="share-send-btn" id="shareSendBtn">Send</button>
+            <button class="share-cancel-btn" onclick="closeShare()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="comments-overlay" id="commentsOverlay">
+      <div class="comments-header"><h3>Comments</h3><button class="comments-close" onclick="closeComments()">✕</button></div>
+      <div class="comments-list" id="commentsList"></div>
+      <div class="cmt-input-area">
+        <div class="cmt-input-wrap">
+          <button class="cmt-mic-btn" id="mainMicBtn"><i class="fas fa-microphone"></i></button>
+          <input type="text" class="cmt-input" id="cmtInput" placeholder="Add a comment...">
+        </div>
+        <button class="cmt-post-btn" id="cmtPostBtn">Post</button>
+      </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <nav class="floating-nav">
+      <div class="nav-center">
+        <a href="index.html" class="active"><i class="fas fa-home"></i></a>
+        <a href="web.html"><i class="fas fa-globe"></i></a>
+        <a href="reel.html"><i class="fas fa-film"></i></a>
+        <a href="chat.html"><i class="fas fa-comment-dots"></i></a>
+        <a href="profile.html"><i class="fas fa-user"></i></a>
+        <a href="upload.html" class="nav-upload"><i class="fas fa-plus"></i></a>
+        <a href="search.html" class="nav-search"><i class="fas fa-search"></i></a>
+      </div>
+    </nav>
+  </div>
+
+  <script type="module">
+    import { db, auth, BACKEND_URL } from './js/firebase-config.js';
+    import { showToast, timeAgo, cleanUsername, getAvatarHTML, batchLoadProfiles, requireAuth } from './js/common.js';
+    import { getCurrentUser } from './js/auth.js';
+    import { collection, query, orderBy, limit, startAfter, getDocs, doc, addDoc, updateDoc, increment, serverTimestamp, where, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    
+    if (!requireAuth()) window.location.replace('login.html');
+    
+    const currentUser = getCurrentUser();
+    let lastVisible = null, allLoaded = false, loading = false;
+    let activePostId = null;
+    let sharePostId = null, sharePostSrc = null, sharePostCaption = null;
+    let selectedUsers = [];
+    let shareUserList = [];
+    
+    async function renderStories() {
+      const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      const friends = profile.friends || [];
+      const besties = profile.besties || [];
+      const storyUsers = [...friends.map(f => ({ name: f.name, type: 'friend', avatar: f.avatar })), ...besties.map(b => ({ name: b.name, type: 'bestie', avatar: b.avatar }))];
+      const bar = document.getElementById('storiesBar');
+      const ns = document.getElementById('noStories');
+      if (storyUsers.length === 0) { bar.style.display = 'none'; ns.style.display = 'block'; return; }
+      bar.style.display = 'flex'; ns.style.display = 'none';
+      const ownAvatar = profile.avatar || null;
+      bar.innerHTML = `<div class="story-item" onclick="window.location.href='profile.html?user=${encodeURIComponent(currentUser.username)}'"><div class="story-ring friend"><div class="story-avatar">${ownAvatar ? `<img src="${ownAvatar}" alt="">` : '<i class="fas fa-user"></i>'}</div></div><span class="story-name">Your Story</span></div>${storyUsers.map(s => `<div class="story-item" onclick="window.location.href='profile.html?user=${encodeURIComponent(s.name)}'"><div class="story-ring ${s.type}"><div class="story-avatar">${s.avatar ? `<img src="${s.avatar}" alt="">` : '<i class="fas fa-user"></i>'}</div></div><span class="story-name">${cleanUsername(s.name)}</span></div>`).join('')}`;
+    }
+    
+    async function loadPosts() {
+      if (loading || allLoaded) return;
+      loading = true;
+      try {
+        let q = lastVisible ? query(collection(db, 'posts'), orderBy('createdAt', 'desc'), startAfter(lastVisible), limit(10)) : query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(10));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) { allLoaded = true; loading = false; if (!lastVisible) document.getElementById('feedContainer').innerHTML = '<div style="text-align:center;color:#555;padding:3rem;">No posts yet</div>'; return; }
+        const posts = [];
+        snapshot.forEach(doc => { const d = doc.data(); const src = d.data || d.url || ''; if (src) posts.push({ id: doc.id, userId: d.username || d.userId, caption: d.caption || '', src: src, s3Key: d.s3Key, likes: d.likes || 0, comments: d.comments || 0, time: d.createdAt ? timeAgo(new Date(d.createdAt)) : 'Recently' }); });
+        lastVisible = snapshot.docs[snapshot.docs.length - 1];
+        if (posts.length) { await batchLoadProfiles(posts.map(p => p.userId)); renderPosts(posts); }
+      } catch(e) { showToast('Failed to load posts'); } finally { loading = false; }
+    }
+    
+    function renderPosts(posts) {
+      const container = document.getElementById('feedContainer');
+      posts.forEach(p => {
+        const card = document.createElement('div'); card.className = 'feed-card';
+        card.innerHTML = `<div class="feed-header"><div class="feed-avatar" data-avatar-user="${p.userId}" onclick="window.location.href='profile.html?user=${encodeURIComponent(p.userId)}'">${getAvatarHTML(p.userId)}</div><div><div class="feed-username" onclick="window.location.href='profile.html?user=${encodeURIComponent(p.userId)}'">${cleanUsername(p.userId)}</div></div><span class="feed-time">${p.time}</span></div><div class="feed-image-container"><img class="feed-image" src="${p.src}" alt="post" loading="lazy"></div><div class="feed-actions"><button class="feed-action" id="likeBtn-${p.id}" onclick="toggleLike('${p.id}')"><i class="far fa-heart"></i></button><button class="feed-action" onclick="openComments('${p.id}')"><i class="far fa-comment"></i></button><button class="feed-action" onclick="openShare('${p.id}','${p.src.replace(/'/g, "\\'")}','${(p.caption || '').replace(/'/g, "\\'")}')"><i class="far fa-share-square"></i></button></div><div class="feed-likes" id="likes-${p.id}">${p.likes} likes</div><div class="feed-caption"><span onclick="window.location.href='profile.html?user=${encodeURIComponent(p.userId)}'">${cleanUsername(p.userId)}</span> ${p.caption || ''}</div><div class="view-comments-btn" onclick="openComments('${p.id}')">View all ${p.comments} comments</div>`;
+        container.appendChild(card);
+      });
+    }
+    
+    window.toggleLike = async function(postId) {
+      const btn = document.getElementById(`likeBtn-${postId}`), likesEl = document.getElementById(`likes-${postId}`);
+      if (!btn || !likesEl) return;
+      const isLiked = btn.classList.contains('liked'), currentLikes = parseInt(likesEl.textContent) || 0;
+      if (isLiked) {
+        btn.classList.remove('liked'); btn.querySelector('i').className = 'far fa-heart';
+        likesEl.textContent = Math.max(0, currentLikes - 1) + ' likes';
+        await updateDoc(doc(db, 'posts', postId), { likes: increment(-1) });
+      } else {
+        btn.classList.add('liked'); btn.querySelector('i').className = 'fas fa-heart';
+        likesEl.textContent = (currentLikes + 1) + ' likes';
+        await updateDoc(doc(db, 'posts', postId), { likes: increment(1) });
+        showToast('Liked! ❤️');
+      }
+    };
+    
+    window.openComments = async function(postId) { activePostId = postId; document.getElementById('commentsOverlay').classList.add('show'); await loadComments(postId); };
+    window.closeComments = function() { document.getElementById('commentsOverlay').classList.remove('show'); activePostId = null; };
+    
+    async function loadComments(postId) {
+      const listEl = document.getElementById('commentsList'); listEl.innerHTML = '<div style="text-align:center;color:#555;padding:2rem;">Loading...</div>';
+      try {
+        const snapshot = await getDocs(query(collection(db, 'posts', postId, 'comments'), orderBy('createdAt', 'asc')));
+        if (snapshot.empty) { listEl.innerHTML = '<div style="text-align:center;color:#555;padding:2rem;">No comments yet</div>'; return; }
+        listEl.innerHTML = '';
+        snapshot.forEach(doc => { const c = doc.data(); const time = c.createdAt ? timeAgo(new Date(c.createdAt)) : ''; const div = document.createElement('div'); div.className = 'cmt-block'; div.innerHTML = `<div class="cmt-row"><div class="cmt-avatar">${getAvatarHTML(c.username)}</div><div class="cmt-body"><div class="cmt-username">${cleanUsername(c.username)}</div><div class="cmt-content">${c.text || ''}</div><div class="cmt-meta"><span class="cmt-time">${time}</span></div></div></div>`; listEl.appendChild(div); });
+      } catch(e) { listEl.innerHTML = '<div style="text-align:center;color:#ef4444;padding:2rem;">Error loading comments</div>'; }
+    }
+    
+    window.postComment = async function() {
+      const input = document.getElementById('cmtInput'), text = input.value.trim();
+      if (!text || !activePostId) return;
+      try {
+        await addDoc(collection(db, 'posts', activePostId, 'comments'), { text, username: currentUser.username, createdAt: serverTimestamp() });
+        await updateDoc(doc(db, 'posts', activePostId), { comments: increment(1) });
+        input.value = ''; await loadComments(activePostId); showToast('Comment posted!');
+      } catch(e) { showToast('Failed to post comment'); }
+    };
+    
+    window.openShare = function(postId, src, caption) { sharePostId = postId; sharePostSrc = src; sharePostCaption = caption; selectedUsers = []; loadShareUsers(); document.getElementById('shareOverlay').classList.add('show'); };
+    window.closeShare = function() { document.getElementById('shareOverlay').classList.remove('show'); };
+    
+    async function loadShareUsers() {
+      const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      shareUserList = [...(profile.friends || []), ...(profile.besties || [])].map(f => ({ username: f.name, name: cleanUsername(f.name), avatar: f.avatar })).filter(u => u.username !== currentUser.username);
+      renderQuickRow(shareUserList.slice(0, 8)); renderShareUserList(shareUserList);
+    }
+    
+    function renderQuickRow(users) {
+      const row = document.getElementById('shareQuickRow');
+      row.innerHTML = users.map(u => `<div class="share-quick-item ${selectedUsers.includes(u.username) ? 'selected' : ''}" onclick="toggleSelectUser('${u.username}')"><div class="share-quick-avatar">${u.avatar ? `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fas fa-user"></i>'}<div class="share-quick-check">✓</div></div><span class="share-quick-name">${u.name}</span></div>`).join('');
+    }
+    
+    window.toggleSelectUser = function(username) {
+      const idx = selectedUsers.indexOf(username);
+      idx >= 0 ? selectedUsers.splice(idx, 1) : selectedUsers.push(username);
+      document.getElementById('shareSelectedCount').textContent = selectedUsers.length ? selectedUsers.length + ' selected' : 'Select people';
+      document.getElementById('shareSendBtn').classList.toggle('show', selectedUsers.length > 0);
+      renderQuickRow(shareUserList.slice(0, 8));
+    };
+    
+    function renderShareUserList(users) {
+      const list = document.getElementById('shareUserList');
+      list.innerHTML = users.map(u => `<div class="share-user-item ${selectedUsers.includes(u.username) ? 'selected' : ''}" onclick="toggleSelectUser('${u.username}')"><div class="share-checkbox">${selectedUsers.includes(u.username) ? '✓' : ''}</div><div class="share-user-avatar">${u.avatar ? `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fas fa-user"></i>'}</div><div class="share-user-info"><div class="share-user-name">${u.name}</div><div class="share-user-username">${cleanUsername(u.username)}</div></div></div>`).join('');
+    }
+    
+    document.getElementById('shareSendBtn').addEventListener('click', async () => {
+      if (!selectedUsers.length) return;
+      for (const target of selectedUsers) {
+        const chatId = [currentUser.uid, target.replace('@','')].sort().join('_');
+        await setDoc(doc(db, 'chats', chatId), { lastMessage: '📷 Shared a post', lastTime: serverTimestamp() }, { merge: true });
+        await addDoc(collection(db, 'chats', chatId, 'messages'), { imageUrl: sharePostSrc, text: sharePostCaption || 'Shared post', sender: currentUser.uid, createdAt: serverTimestamp() });
+      }
+      closeShare(); showToast(`Shared to ${selectedUsers.length} people!`);
+    });
+    
+    document.getElementById('shareSearch').addEventListener('input', (e) => {
+      const search = e.target.value.toLowerCase();
+      renderShareUserList(shareUserList.filter(u => u.name.toLowerCase().includes(search) || u.username.toLowerCase().includes(search)));
+    });
+    
+    document.getElementById('shareOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('shareOverlay')) closeShare(); });
+    document.getElementById('commentsOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('commentsOverlay')) closeComments(); });
+    document.getElementById('cmtPostBtn').addEventListener('click', window.postComment);
+    document.getElementById('cmtInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') window.postComment(); });
+    
+    function setupInfiniteScroll() {
+      const container = document.getElementById('mainContent');
+      container.addEventListener('scroll', () => { if (container.scrollHeight - container.scrollTop - container.clientHeight < 500) loadPosts(); });
+    }
+    
+    renderStories(); setupInfiniteScroll(); loadPosts();
+  </script>
+</body>
+</html>

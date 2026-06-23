@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Activity · Choicho</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .notifications-header {
+      padding: 0.8rem 1rem;
+      background: #000;
+      border-bottom: 1px solid #1a1a1a;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .notifications-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .notification-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .notification-item:active {
+      background: rgba(255,255,255,0.03);
+    }
+    .notification-item.unread {
+      background: rgba(56,151,240,0.08);
+      border-left: 3px solid #3897f0;
+    }
+    .notification-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      font-size: 1.2rem;
+    }
+    .notification-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .notification-content {
+      flex: 1;
+    }
+    .notification-text {
+      font-size: 0.85rem;
+      color: #fff;
+      line-height: 1.3;
+    }
+    .notification-text strong {
+      color: #3897f0;
+    }
+    .notification-time {
+      font-size: 0.6rem;
+      color: #666;
+      margin-top: 0.2rem;
+    }
+    .notification-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.2rem;
+    }
+    .notification-icon.like {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+    .notification-icon.comment {
+      background: rgba(56,151,240,0.15);
+      color: #3897f0;
+    }
+    .notification-icon.follow {
+      background: rgba(74,222,128,0.15);
+      color: #4ade80;
+    }
+    .notification-icon.gift {
+      background: rgba(255,252,0,0.15);
+      color: #FFFC00;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #555;
+    }
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.5;
+    }
+    .tabs {
+      display: flex;
+      padding: 0.5rem 1rem;
+      gap: 0.5rem;
+      background: #000;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 0.5rem;
+      background: transparent;
+      border: none;
+      color: #666;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 2rem;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+    
+    /* Mobile Header - Back button left, title center */
+    .top-icons-hart {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 0.8rem 0.3rem 0.8rem;
+      flex-shrink: 0;
+      position: relative;
+      background: #000;
+      margin: 0 auto;
+    }
+    .corner-btn-left, .corner-btn-right {
+      width: 2.4rem;
+      height: 2.4rem;
+      background: #1a1a1a;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border: 1px solid #333;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .corner-btn-left:active, .corner-btn-right:active {
+      transform: scale(0.95);
+      background: #2a2a2a;
+    }
+    .hart-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 2px;
+      font-family: 'Segoe Script', 'Brush Script MT', 'Apple Chancery', 'Comic Sans MS', cursive;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      line-height: 1;
+      font-style: italic;
+    }
+    
+    /* No navbar */
+    .floating-nav {
+      display: none !important;
+    }
+    
+    @media (min-width: 1024px) {
+      .scrollable-content { padding-left: 0; }
+      .top-icons-hart { display: flex; }
+      .notifications-header, .tabs, #notificationsList { max-width: 550px; margin: 0 auto; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="scrollable-content">
+      <!-- Hart Header with Back Button - navigates to chat.html -->
+      <div class="top-icons-hart">
+        <a href="chat.html" class="corner-btn-left">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <span class="hart-brand">Activity</span>
+        <div style="width:2.4rem;"></div>
+      </div>
+      
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="all" onclick="switchNotifTab('all')">
+          <i class="fas fa-bell"></i> All
+        </button>
+        <button class="tab-btn" data-tab="likes" onclick="switchNotifTab('likes')">
+          <i class="fas fa-heart"></i> Likes
+        </button>
+        <button class="tab-btn" data-tab="gifts" onclick="switchNotifTab('gifts')">
+          <i class="fas fa-gift"></i> Gifts
+        </button>
+      </div>
+      
+      <div id="notificationsList">
+        <div class="empty-state">
+          <i class="fas fa-bell-slash"></i>
+          <p>No notifications yet</p>
+          <p style="font-size:0.7rem;margin-top:0.5rem;">When someone interacts with you, you'll see it here</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <!-- No navbar - removed -->
+  </div>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { showToast, timeAgo, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
+    import { getCurrentUser } from './js/auth.js';
+    import { collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    
+    if (!requireAuth()) window.location.replace('login.html');
+    
+    const currentUser = getCurrentUser();
+    const currentUserId = currentUser.uid;
+    let currentTab = 'all';
+    let allNotifications = [];
+    
+    async function loadNotifications() {
+      const container = document.getElementById('notificationsList');
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:#555;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div>';
+      
+      allNotifications = [];
+      
+      try {
+        // Load gift notifications from token_transfers
+        const transfersQuery = query(
+          collection(db, 'token_transfers'), 
+          where('receiverUid', '==', currentUserId), 
+          orderBy('timestamp', 'desc'), 
+          limit(30)
+        );
+        const transfersSnap = await getDocs(transfersQuery);
+        transfersSnap.forEach(doc => {
+          const data = doc.data();
+          allNotifications.push({
+            id: doc.id,
+            type: 'gift',
+            from: data.senderUsername,
+            tokenType: data.tokenType,
+            amount: data.amount || 1,
+            timestamp: data.timestamp,
+            read: false
+          });
+        });
+        
+        // Load like notifications (simplified - from posts where current user is tagged)
+        const postsQuery = query(
+          collection(db, 'posts'),
+          where('userId', '==', currentUserId),
+          orderBy('createdAt', 'desc'),
+          limit(20)
+        );
+        const postsSnap = await getDocs(postsQuery);
+        
+        for (const postDoc of postsSnap.docs) {
+          const postId = postDoc.id;
+          // Check for likes on this post
+          const likesQuery = query(
+            collection(db, 'posts', postId, 'likes'),
+            orderBy('createdAt', 'desc'),
+            limit(10)
+          );
+          const likesSnap = await getDocs(likesQuery);
+          likesSnap.forEach(likeDoc => {
+            const data = likeDoc.data();
+            if (data.userId !== currentUserId) {
+              allNotifications.push({
+                id: `${postId}_like_${likeDoc.id}`,
+                type: 'like',
+                from: data.username,
+                postId: postId,
+                timestamp: data.timestamp,
+                read: false
+              });
+            }
+          });
+        }
+        
+        // Sort by timestamp (newest first)
+        allNotifications.sort((a, b) => {
+          const aTime = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+          const bTime = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
+          return bTime - aTime;
+        });
+        
+        renderNotifications();
+        
+      } catch (error) {
+        console.error('Load notifications error:', error);
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading notifications</p></div>';
+      }
+    }
+    
+    function renderNotifications() {
+      const container = document.getElementById('notificationsList');
+      
+      let filtered = allNotifications;
+      if (currentTab === 'likes') {
+        filtered = allNotifications.filter(n => n.type === 'like');
+      } else if (currentTab === 'gifts') {
+        filtered = allNotifications.filter(n => n.type === 'gift');
+      }
+      
+      if (filtered.length === 0) {
+        let message = '';
+        if (currentTab === 'likes') message = 'No likes yet';
+        else if (currentTab === 'gifts') message = 'No gifts received yet';
+        else message = 'No notifications yet';
+        
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-${currentTab === 'likes' ? 'heart' : currentTab === 'gifts' ? 'gift' : 'bell-slash'}"></i>
+            <p>${message}</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = '';
+      for (const notif of filtered.slice(0, 50)) {
+        const div = document.createElement('div');
+        div.className = `notification-item ${notif.read ? '' : 'unread'}`;
+        
+        let iconHtml = '';
+        let textHtml = '';
+        let actionUrl = '';
+        
+        switch (notif.type) {
+          case 'gift':
+            const emojiMap = { chicken: '🍗', lion: '🦁', fish: '🐟', bike: '🏍️' };
+            const emoji = emojiMap[notif.tokenType] || '🎁';
+            iconHtml = `<div class="notification-icon gift"><i class="fas fa-gift"></i></div>`;
+            textHtml = `<div class="notification-text"><strong>${cleanUsername(notif.from)}</strong> sent you ${emoji} <strong>${notif.tokenType}</strong> token!</div>`;
+            actionUrl = `web.html`;
+            break;
+          case 'like':
+            iconHtml = `<div class="notification-icon like"><i class="fas fa-heart"></i></div>`;
+            textHtml = `<div class="notification-text"><strong>${cleanUsername(notif.from)}</strong> liked your post</div>`;
+            actionUrl = `index.html`;
+            break;
+          default:
+            iconHtml = `<div class="notification-avatar">${getAvatarHTML(notif.from)}</div>`;
+            textHtml = `<div class="notification-text"><strong>${cleanUsername(notif.from)}</strong> interacted with you</div>`;
+            actionUrl = `profile.html?user=${encodeURIComponent(notif.from)}`;
+        }
+        
+        const timeStr = notif.timestamp ? timeAgo(notif.timestamp.toDate ? notif.timestamp.toDate() : new Date(notif.timestamp)) : 'recently';
+        
+        div.innerHTML = `
+          ${iconHtml}
+          <div class="notification-content">
+            ${textHtml}
+            <div class="notification-time"><i class="far fa-clock"></i> ${timeStr}</div>
+          </div>
+        `;
+        
+        div.onclick = () => {
+          if (actionUrl) window.location.href = actionUrl;
+        };
+        
+        container.appendChild(div);
+      }
+    }
+    
+    window.switchNotifTab = function(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      renderNotifications();
+    };
+    
+    // Refresh every 30 seconds
+    loadNotifications();
+    setInterval(loadNotifications, 30000);
+  </script>
+</body>
+</html>

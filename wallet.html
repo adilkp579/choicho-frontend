@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Wallet · Choicho</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    /* ===== WALLET HEADER ===== */
+    .wallet-header {
+      padding: 2rem 1.5rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .profile-photo {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4ade80, #3b82f6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.15);
+      flex-shrink: 0;
+    }
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .profile-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .profile-id {
+      font-size: 11px;
+      color: #666;
+    }
+
+    /* ===== BALANCE SECTION ===== */
+    .balance-section {
+      padding: 0 1.5rem 1.5rem;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .balance-label {
+      font-size: 11px;
+      color: #666;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .balance-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .balance-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.3s;
+    }
+    .balance-card:active {
+      transform: scale(0.97);
+    }
+    .balance-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .balance-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .balance-card-icon.chicken { background: rgba(245,158,11,0.2); }
+    .balance-card-icon.lion { background: rgba(239,68,68,0.2); }
+    .balance-card-icon.fish { background: rgba(59,130,246,0.2); }
+    .balance-card-icon.bike { background: rgba(168,85,247,0.2); }
+    .balance-card-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #aaa;
+    }
+    .balance-card-amount {
+      font-size: 26px;
+      font-weight: 700;
+      padding-left: 4px;
+    }
+    .balance-card-amount.chicken { color: #f59e0b; }
+    .balance-card-amount.lion { color: #ef4444; }
+    .balance-card-amount.fish { color: #3b82f6; }
+    .balance-card-amount.bike { color: #a855f7; }
+    .balance-card .token-sub {
+      font-size: 10px;
+      color: #555;
+      padding-left: 4px;
+    }
+
+    /* ===== MENU GRID ===== */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 0 1.5rem 1.5rem;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .menu-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .menu-card:active {
+      transform: scale(0.96);
+    }
+    .menu-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+    .menu-card-icon.deposit {
+      background: rgba(74,222,128,0.15);
+      color: #4ade80;
+    }
+    .menu-card-icon.withdraw {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+    .menu-card-icon.send {
+      background: rgba(56,151,240,0.15);
+      color: #3897f0;
+    }
+    .menu-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .menu-card-subtitle {
+      font-size: 10px;
+      color: #666;
+    }
+
+    /* ===== HISTORY SECTION ===== */
+    .history-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0 1.5rem 2rem;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .history-tabs {
+      display: flex;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-wrap: wrap;
+    }
+    .history-tab {
+      padding: 8px 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #888;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    .history-tab.active {
+      background: rgba(255,252,0,0.12);
+      border-color: rgba(255,252,0,0.3);
+      color: #FFFC00;
+    }
+    .history-tab:active {
+      transform: scale(0.95);
+    }
+    .history-content {
+      flex: 1;
+      overflow-y: auto;
+      padding-top: 12px;
+    }
+    .history-list {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .history-list.visible {
+      display: flex;
+      animation: fadeInUp 0.3s ease;
+    }
+
+    /* ===== HISTORY ITEM ===== */
+    .history-item {
+      background: rgba(255,255,255,0.04);
+      border-radius: 12px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .history-item:active {
+      transform: scale(0.98);
+    }
+    .history-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+    .history-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .history-icon.received {
+      background: rgba(74,222,128,0.15);
+      color: #4ade80;
+    }
+    .history-icon.sent {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+    .history-icon.deposit {
+      background: rgba(74,222,128,0.15);
+      color: #4ade80;
+    }
+    .history-icon.withdraw {
+      background: rgba(245,158,11,0.15);
+      color: #f59e0b;
+    }
+    .history-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+    .history-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .history-subtitle {
+      font-size: 10px;
+      color: #666;
+    }
+    .history-amount {
+      font-size: 14px;
+      font-weight: 700;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .history-amount.positive {
+      color: #4ade80;
+    }
+    .history-amount.negative {
+      color: #ef4444;
+    }
+    .history-token-icon {
+      font-size: 14px;
+      margin-right: 2px;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      text-align: center;
+      color: #555;
+      padding: 30px;
+      font-size: 13px;
+    }
+    .empty-state i {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      opacity: 0.5;
+    }
+    .empty-state p {
+      font-size: 0.8rem;
+    }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.7rem;
+      z-index: 800;
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 380px) {
+      .balance-grid {
+        gap: 8px;
+      }
+      .balance-card {
+        padding: 10px;
+      }
+      .balance-card-amount {
+        font-size: 20px;
+      }
+      .balance-card-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 15px;
+      }
+      .wallet-header {
+        padding: 1.5rem 1rem 1rem;
+      }
+      .profile-photo {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+      }
+      .profile-name {
+        font-size: 16px;
+      }
+      .menu-card {
+        padding: 16px;
+      }
+      .menu-card-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .top-icons {
+        display: none;
+      }
+      .scrollable-content {
+        padding: 0 0 2rem 0;
+      }
+      .wallet-header, .balance-section, .menu-grid, .history-section {
+        max-width: 550px;
+        margin: 0 auto;
+        width: 100%;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="scrollable-content">
+      <!-- Top Icons -->
+      <div class="top-icons">
+        <a href="web.html" class="corner-btn"><i class="fas fa-arrow-left"></i></a>
+        <span class="top-brand">Wallet</span>
+        <div style="width:2.4rem;"></div>
+      </div>
+
+      <!-- Wallet Header -->
+      <div class="wallet-header">
+        <div class="profile-photo" id="profilePhoto">?</div>
+        <div class="profile-info">
+          <span class="profile-name" id="profileName">@username</span>
+          <span class="profile-id" id="profileId">ID: ---</span>
+        </div>
+      </div>
+
+      <!-- Balance Section -->
+      <div class="balance-section">
+        <div class="balance-label">💰 Token Balance</div>
+        <div class="balance-grid">
+          <div class="balance-card">
+            <div class="balance-card-header">
+              <div class="balance-card-icon chicken">🍗</div>
+              <span class="balance-card-name">Chicken</span>
+            </div>
+            <span class="balance-card-amount chicken" id="balChicken">0</span>
+            <span class="token-sub">$1.00 each</span>
+          </div>
+          <div class="balance-card">
+            <div class="balance-card-header">
+              <div class="balance-card-icon lion">🦁</div>
+              <span class="balance-card-name">Lion</span>
+            </div>
+            <span class="balance-card-amount lion" id="balLion">0</span>
+            <span class="token-sub">$2.00 each</span>
+          </div>
+          <div class="balance-card">
+            <div class="balance-card-header">
+              <div class="balance-card-icon fish">🐟</div>
+              <span class="balance-card-name">Fish</span>
+            </div>
+            <span class="balance-card-amount fish" id="balFish">0</span>
+            <span class="token-sub">$0.50 each</span>
+          </div>
+          <div class="balance-card">
+            <div class="balance-card-header">
+              <div class="balance-card-icon bike">🏍️</div>
+              <span class="balance-card-name">Bike</span>
+            </div>
+            <span class="balance-card-amount bike" id="balBike">0</span>
+            <span class="token-sub">$3.00 each</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu Grid -->
+      <div class="menu-grid">
+        <div class="menu-card" onclick="showToast('Deposit coming soon! 💳')">
+          <div class="menu-card-icon deposit"><i class="fas fa-plus-circle"></i></div>
+          <span class="menu-card-title">Deposit</span>
+          <span class="menu-card-subtitle">Buy tokens</span>
+        </div>
+        <div class="menu-card" onclick="showToast('Withdraw coming soon! 💸')">
+          <div class="menu-card-icon withdraw"><i class="fas fa-arrow-down"></i></div>
+          <span class="menu-card-title">Withdraw</span>
+          <span class="menu-card-subtitle">Cash out</span>
+        </div>
+      </div>
+
+      <!-- History Section -->
+      <div class="history-section">
+        <div class="history-tabs">
+          <button class="history-tab active" id="tabTransactions" onclick="switchHistory('transactions')">
+            <i class="fas fa-exchange-alt"></i> Transactions
+          </button>
+          <button class="history-tab" id="tabTransfers" onclick="switchHistory('transfers')">
+            <i class="fas fa-gift"></i> Gifts
+          </button>
+        </div>
+        <div class="history-content">
+          <div class="history-list visible" id="listTransactions">
+            <div class="empty-state">
+              <i class="fas fa-receipt"></i>
+              <p>No transactions yet</p>
+            </div>
+          </div>
+          <div class="history-list" id="listTransfers">
+            <div class="empty-state">
+              <i class="fas fa-gift"></i>
+              <p>No gifts received yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { showToast, timeAgo, requireAuth } from './js/common.js';
+    import { getCurrentUser } from './js/auth.js';
+    import { doc, getDoc, collection, query, where, orderBy, limit, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    
+    if (!requireAuth()) window.location.replace('login.html');
+    
+    const currentUser = getCurrentUser();
+    const currentUserId = currentUser.uid;
+    
+    let tokenBalances = { chicken: 0, lion: 0, fish: 0, bike: 0 };
+    const tokenEmojis = { chicken: '🍗', lion: '🦁', fish: '🐟', bike: '🏍️' };
+    const tokenNames = { chicken: 'Chicken', lion: 'Lion', fish: 'Fish', bike: 'Bike' };
+    
+    // ===== LOAD WALLET =====
+    async function loadWallet() {
+      try {
+        const walletRef = doc(db, 'wallets', currentUserId);
+        const docSnap = await getDoc(walletRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          tokenBalances.chicken = data.chicken || 0;
+          tokenBalances.lion = data.lion || 0;
+          tokenBalances.fish = data.fish || 0;
+          tokenBalances.bike = data.bike || 0;
+        } else {
+          // Create default wallet
+          tokenBalances = { chicken: 10, lion: 5, fish: 8, bike: 3 };
+        }
+        updateDisplay();
+      } catch (error) {
+        console.error('Error loading wallet:', error);
+        showToast('Error loading wallet');
+      }
+    }
+    
+    function updateDisplay() {
+      document.getElementById('balChicken').textContent = tokenBalances.chicken;
+      document.getElementById('balLion').textContent = tokenBalances.lion;
+      document.getElementById('balFish').textContent = tokenBalances.fish;
+      document.getElementById('balBike').textContent = tokenBalances.bike;
+      
+      // Profile
+      document.getElementById('profileName').textContent = currentUser.username || '@user';
+      document.getElementById('profilePhoto').textContent = (currentUser.username || '@user').charAt(1).toUpperCase() || 'U';
+      document.getElementById('profileId').textContent = 'ID: ' + (currentUserId?.substring(0, 8) || '---') + '...';
+    }
+    
+    // ===== LOAD TRANSACTIONS =====
+    async function loadTransactions() {
+      const container = document.getElementById('listTransactions');
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Loading...</p></div>';
+      
+      try {
+        const q = query(
+          collection(db, 'transactions'),
+          where('userId', '==', currentUserId),
+          orderBy('timestamp', 'desc'),
+          limit(30)
+        );
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet</p></div>';
+          return;
+        }
+        
+        container.innerHTML = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const isDeposit = data.type === 'deposit';
+          const emoji = tokenEmojis[data.token] || '🪙';
+          const tokenName = tokenNames[data.token] || data.token;
+          
+          const div = document.createElement('div');
+          div.className = 'history-item';
+          div.innerHTML = `
+            <div class="history-item-left">
+              <div class="history-icon ${isDeposit ? 'deposit' : 'withdraw'}">
+                <i class="fas fa-${isDeposit ? 'plus' : 'minus'}"></i>
+              </div>
+              <div class="history-details">
+                <span class="history-title">${isDeposit ? 'Purchased' : 'Cashed Out'} ${emoji} ${tokenName}</span>
+                <span class="history-subtitle">${data.amount} tokens • ${timeAgo(new Date(data.timestamp?.toDate?.() || data.timestamp))}</span>
+              </div>
+            </div>
+            <span class="history-amount ${isDeposit ? 'positive' : 'negative'}">
+              ${isDeposit ? '+' : '-'}${data.amount}
+            </span>
+          `;
+          container.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Error loading transactions:', error);
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading transactions</p></div>';
+      }
+    }
+    
+    // ===== LOAD TRANSFERS (Gifts) =====
+    function loadTransfers() {
+      const container = document.getElementById('listTransfers');
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Loading...</p></div>';
+      
+      try {
+        const q = query(
+          collection(db, 'token_transfers'),
+          where('participants', 'array-contains', currentUserId),
+          orderBy('timestamp', 'desc'),
+          limit(30)
+        );
+        
+        onSnapshot(q, (snapshot) => {
+          if (snapshot.empty) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-gift"></i><p>No gifts received yet</p></div>';
+            return;
+          }
+          
+          container.innerHTML = '';
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const isReceived = data.receiverUid === currentUserId;
+            const otherUser = isReceived ? (data.senderUsername || 'Unknown') : (data.receiverUsername || 'Unknown');
+            const emoji = tokenEmojis[data.tokenType] || '🎁';
+            const tokenName = tokenNames[data.tokenType] || data.tokenType;
+            
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+              <div class="history-item-left">
+                <div class="history-icon ${isReceived ? 'received' : 'sent'}">
+                  <i class="fas fa-${isReceived ? 'arrow-down' : 'arrow-up'}"></i>
+                </div>
+                <div class="history-details">
+                  <span class="history-title">${isReceived ? 'From' : 'To'} ${otherUser}</span>
+                  <span class="history-subtitle">${emoji} ${tokenName} • ${timeAgo(new Date(data.timestamp?.toDate?.() || data.timestamp))}</span>
+                </div>
+              </div>
+              <span class="history-amount ${isReceived ? 'positive' : 'negative'}">
+                ${isReceived ? '+' : '-'}${data.amount || 1}
+              </span>
+            `;
+            container.appendChild(div);
+          });
+        }, (error) => {
+          console.error('Error loading transfers:', error);
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading gifts</p></div>';
+        });
+        
+      } catch (error) {
+        console.error('Error setting up transfers listener:', error);
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading gifts</p></div>';
+      }
+    }
+    
+    // ===== SWITCH HISTORY TAB =====
+    window.switchHistory = function(type) {
+      ['transactions', 'transfers'].forEach(t => {
+        const tab = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+        const list = document.getElementById('list' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (tab) tab.classList.toggle('active', t === type);
+        if (list) list.classList.toggle('visible', t === type);
+      });
+      
+      if (type === 'transactions') {
+        loadTransactions();
+      }
+    };
+    
+    // ===== INITIALIZE =====
+    loadWallet();
+    loadTransactions();
+    loadTransfers();
+    
+    // Refresh wallet every 30 seconds
+    setInterval(loadWallet, 30000);
+  </script>
+</body>
+</html>

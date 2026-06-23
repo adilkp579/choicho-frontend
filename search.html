@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Search · Choicho</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    /* ===== SEARCH PAGE STYLES ===== */
+    .search-page {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+      overflow: hidden;
+    }
+    
+    /* ===== TOP HEADER ===== */
+    .search-header {
+      padding: 0.8rem 1rem 0.5rem 1rem;
+      background: #000;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+    }
+    
+    /* ===== SEARCH BAR - FULL WIDTH ===== */
+    .search-input-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    
+    .search-input-wrapper i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 0.8rem 1rem 0.8rem 2.8rem;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 2rem;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+    
+    .search-input:focus {
+      border-color: #3897f0;
+      background: #222;
+    }
+    
+    .search-input::placeholder {
+      color: #555;
+    }
+    
+    .search-clear-btn {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: none;
+      padding: 0.2rem 0.3rem;
+    }
+    
+    .search-clear-btn.show {
+      display: block;
+    }
+    
+    .search-clear-btn:hover {
+      color: #fff;
+    }
+    
+    /* ===== TABS ===== */
+    .search-tabs {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #000;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      width: 100%;
+    }
+    
+    .search-tab {
+      padding: 0.5rem 1.2rem;
+      background: transparent;
+      border: none;
+      color: #888;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 1.5rem;
+      transition: all 0.2s;
+    }
+    
+    .search-tab.active {
+      background: #3897f0;
+      color: #fff;
+    }
+    
+    .search-tab:hover {
+      color: #fff;
+    }
+    
+    /* ===== RESULTS ===== */
+    .search-results {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem 0;
+    }
+    
+    .search-results::-webkit-scrollbar {
+      width: 0;
+    }
+    
+    .result-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      transition: background 0.2s;
+      width: 100%;
+    }
+    
+    .result-item:hover {
+      background: rgba(255,255,255,0.03);
+    }
+    
+    .result-item:active {
+      background: rgba(255,255,255,0.06);
+    }
+    
+    .result-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      font-size: 1.2rem;
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.06);
+    }
+    
+    .result-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .result-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .result-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .result-username {
+      font-size: 0.7rem;
+      color: #888;
+    }
+    
+    .result-bio {
+      font-size: 0.65rem;
+      color: #666;
+      margin-top: 0.1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+    
+    .follow-btn {
+      padding: 0.4rem 1.2rem;
+      border-radius: 1.5rem;
+      border: none;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #3897f0;
+      color: #fff;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    
+    .follow-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .follow-btn.following {
+      background: rgba(255,255,255,0.08);
+      color: #aaa;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .follow-btn.following:hover {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+      border-color: rgba(239,68,68,0.3);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #555;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.5;
+    }
+    
+    .empty-state p {
+      font-size: 0.8rem;
+    }
+    
+    .loading-state {
+      text-align: center;
+      padding: 2rem;
+      color: #555;
+    }
+    
+    .loading-state i {
+      font-size: 1.5rem;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      .search-header { padding: 0.6rem 0.8rem 0.4rem 0.8rem; }
+      .search-input { 
+        font-size: 0.8rem; 
+        padding: 0.6rem 0.8rem 0.6rem 2.4rem; 
+        border-radius: 1.5rem;
+      }
+      .search-input-wrapper i { font-size: 0.8rem; left: 0.8rem; }
+      .result-item { padding: 0.6rem 0.8rem; }
+      .result-avatar { width: 42px; height: 42px; font-size: 1rem; }
+      .result-name { font-size: 0.8rem; }
+      .follow-btn { padding: 0.3rem 0.8rem; font-size: 0.65rem; }
+      .search-tabs { padding: 0.4rem 0.8rem; }
+      .search-tab { font-size: 0.7rem; padding: 0.4rem 0.8rem; }
+    }
+    
+    @media (min-width: 768px) {
+      .search-header {
+        padding: 0.8rem 1.5rem 0.5rem 1.5rem;
+      }
+      .search-tabs {
+        padding: 0.5rem 1.5rem;
+      }
+      .result-item {
+        padding: 0.8rem 1.5rem;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .scrollable-content {
+        padding-left: 5.5rem;
+      }
+      .search-header {
+        padding: 0.8rem 2rem 0.5rem 2rem;
+      }
+      .search-tabs {
+        padding: 0.5rem 2rem;
+      }
+      .result-item {
+        padding: 0.8rem 2rem;
+      }
+      .search-input {
+        max-width: 600px;
+        margin: 0 auto;
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="scrollable-content">
+      <!-- ===== TOP HEADER ===== -->
+      <div class="top-icons">
+        <a href="index.html" class="corner-btn" title="Back">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <span class="top-brand">Search</span>
+        <div style="width:2.4rem;"></div>
+      </div>
+      
+      <!-- ===== SEARCH BAR - FULL WIDTH ===== -->
+      <div class="search-header">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search"></i>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search users..." autocomplete="off">
+          <i class="fas fa-times search-clear-btn" id="searchClearBtn" onclick="clearSearch()"></i>
+        </div>
+      </div>
+      
+      <!-- ===== SEARCH TABS ===== -->
+      <div class="search-tabs">
+        <button class="search-tab active" data-tab="users" onclick="switchTab('users')">
+          <i class="fas fa-users"></i> Users
+        </button>
+        <button class="search-tab" data-tab="recent" onclick="switchTab('recent')">
+          <i class="fas fa-clock"></i> Recent
+        </button>
+      </div>
+      
+      <!-- ===== SEARCH RESULTS ===== -->
+      <div class="search-results" id="searchResults">
+        <div class="loading-state">
+          <i class="fas fa-spinner"></i>
+          <p>Loading users...</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script type="module">
+    // ================================================================
+    // SEARCH PAGE - Complete
+    // ================================================================
+    
+    import { db } from './js/firebase-config.js';
+    import { showToast, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
+    import { getCurrentUser } from './js/auth.js';
+    import { collection, query, orderBy, limit, getDocs, doc, updateDoc, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    
+    if (!requireAuth()) {
+      window.location.replace('login.html');
+    }
+    
+    const currentUser = getCurrentUser();
+    const currentUserId = currentUser.uid;
+    let allUsers = [];
+    let recentSearches = [];
+    let currentTab = 'users';
+    let isLoading = false;
+    
+    // ===== LOAD RECENT SEARCHES =====
+    function loadRecentSearches() {
+      try {
+        recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+      } catch (e) {
+        recentSearches = [];
+      }
+    }
+    
+    function saveRecentSearch(username) {
+      recentSearches = recentSearches.filter(u => u !== username);
+      recentSearches.unshift(username);
+      if (recentSearches.length > 10) recentSearches.pop();
+      localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+    }
+    
+    // ===== LOAD ALL USERS =====
+    async function loadUsers() {
+      if (isLoading) return;
+      isLoading = true;
+      
+      try {
+        const container = document.getElementById('searchResults');
+        container.innerHTML = '<div class="loading-state"><i class="fas fa-spinner"></i><p>Loading users...</p></div>';
+        
+        // Remove orderBy to avoid index issues
+        const q = query(collection(db, 'users'), limit(200));
+        const snapshot = await getDocs(q);
+        
+        allUsers = [];
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const username = d.username || '';
+          if (username && username !== currentUser.username) {
+            allUsers.push({
+              id: doc.id,
+              username: username,
+              name: d.name || cleanUsername(username),
+              avatar: d.avatar || null,
+              bio: d.bio || ''
+            });
+          }
+        });
+        
+        console.log('✅ Users loaded:', allUsers.length);
+        
+        if (currentTab === 'users') {
+          renderResults();
+        } else {
+          renderRecent();
+        }
+        
+      } catch (error) {
+        console.error('Error loading users:', error);
+        const container = document.getElementById('searchResults');
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading users</p><p style="font-size:0.65rem;margin-top:0.5rem;">Please refresh and try again</p></div>';
+      } finally {
+        isLoading = false;
+      }
+    }
+    
+    // ===== CHECK IF FOLLOWING =====
+    async function isFollowing(username) {
+      try {
+        const q = query(collection(db, 'users'), where('username', '==', currentUser.username));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          const data = snapshot.docs[0].data();
+          return (data.besties || []).some(f => f.name === username);
+        }
+      } catch (e) {
+        console.warn('Follow check error:', e);
+      }
+      return false;
+    }
+    
+    // ===== RENDER RESULTS =====
+    async function renderResults(searchTerm = '') {
+      const container = document.getElementById('searchResults');
+      
+      let filtered = allUsers;
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filtered = allUsers.filter(u => 
+          u.username.toLowerCase().includes(term) || 
+          (u.name || '').toLowerCase().includes(term)
+        );
+      }
+      
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-${searchTerm ? 'user-slash' : 'search'}"></i>
+            <p>${searchTerm ? 'No users found for "' + searchTerm + '"' : 'Search for users'}</p>
+            ${searchTerm ? '<p style="font-size:0.65rem;margin-top:0.3rem;">Try a different search term</p>' : ''}
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      for (const user of filtered) {
+        const following = await isFollowing(user.username);
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        div.onclick = () => {
+          saveRecentSearch(user.username);
+          window.location.href = `profile.html?user=${encodeURIComponent(user.username)}`;
+        };
+        
+        const avatarHTML = user.avatar && user.avatar !== 'null' 
+          ? `<img src="${user.avatar}" alt="${cleanUsername(user.username)}">` 
+          : `<i class="fas fa-user"></i>`;
+        
+        div.innerHTML = `
+          <div class="result-avatar">${avatarHTML}</div>
+          <div class="result-info">
+            <div class="result-name">${user.name || cleanUsername(user.username)}</div>
+            <div class="result-username">${user.username}</div>
+            ${user.bio ? `<div class="result-bio">${user.bio.substring(0, 50)}</div>` : ''}
+          </div>
+          <button class="follow-btn ${following ? 'following' : ''}" onclick="event.stopPropagation(); toggleFollow('${user.username}', this)">
+            ${following ? 'Following' : 'Follow'}
+          </button>
+        `;
+        container.appendChild(div);
+      }
+    }
+    
+    // ===== RENDER RECENT SEARCHES =====
+    async function renderRecent() {
+      const container = document.getElementById('searchResults');
+      
+      loadRecentSearches();
+      
+      if (recentSearches.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-history"></i>
+            <p>No recent searches</p>
+            <p style="font-size:0.65rem;margin-top:0.3rem;">Search for users and they will appear here</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      for (const username of recentSearches) {
+        const user = allUsers.find(u => u.username === username);
+        if (!user) continue;
+        
+        const following = await isFollowing(user.username);
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        div.onclick = () => {
+          window.location.href = `profile.html?user=${encodeURIComponent(user.username)}`;
+        };
+        
+        const avatarHTML = user.avatar && user.avatar !== 'null' 
+          ? `<img src="${user.avatar}" alt="${cleanUsername(user.username)}">` 
+          : `<i class="fas fa-user"></i>`;
+        
+        div.innerHTML = `
+          <div class="result-avatar">${avatarHTML}</div>
+          <div class="result-info">
+            <div class="result-name">${user.name || cleanUsername(user.username)}</div>
+            <div class="result-username">${user.username}</div>
+          </div>
+          <button class="follow-btn ${following ? 'following' : ''}" onclick="event.stopPropagation(); toggleFollow('${user.username}', this)">
+            ${following ? 'Following' : 'Follow'}
+          </button>
+        `;
+        container.appendChild(div);
+      }
+    }
+    
+    // ===== TOGGLE FOLLOW =====
+    window.toggleFollow = async function(username, btn) {
+      const isNowFollowing = btn.textContent === 'Follow';
+      
+      try {
+        const q = query(collection(db, 'users'), where('username', '==', currentUser.username));
+        const snapshot = await getDocs(q);
+        
+        if (!snapshot.empty) {
+          const userRef = doc(db, 'users', snapshot.docs[0].id);
+          const userData = snapshot.docs[0].data();
+          let besties = userData.besties || [];
+          
+          if (isNowFollowing) {
+            besties.push({ name: username, avatar: null });
+            btn.textContent = 'Following';
+            btn.classList.add('following');
+            showToast(`Following ${cleanUsername(username)}`);
+          } else {
+            besties = besties.filter(f => f.name !== username);
+            btn.textContent = 'Follow';
+            btn.classList.remove('following');
+            showToast(`Unfollowed ${cleanUsername(username)}`);
+          }
+          
+          await updateDoc(userRef, { besties });
+          
+          // Update local profile
+          const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+          if (isNowFollowing) {
+            if (!profile.besties) profile.besties = [];
+            if (!profile.besties.find(f => f.name === username)) {
+              profile.besties.push({ name: username, avatar: null });
+            }
+          } else {
+            if (profile.besties) {
+              profile.besties = profile.besties.filter(f => f.name !== username);
+            }
+          }
+          localStorage.setItem('userProfile', JSON.stringify(profile));
+        }
+      } catch (error) {
+        console.error('Follow error:', error);
+        showToast('Error updating follow status');
+      }
+    };
+    
+    // ===== SWITCH TAB =====
+    window.switchTab = function(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.search-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tab);
+      });
+      
+      const searchInput = document.getElementById('searchInput');
+      if (tab === 'recent') {
+        searchInput.value = '';
+        document.getElementById('searchClearBtn').classList.remove('show');
+        renderRecent();
+      } else {
+        renderResults(searchInput.value);
+      }
+    };
+    
+    // ===== CLEAR SEARCH =====
+    window.clearSearch = function() {
+      const input = document.getElementById('searchInput');
+      input.value = '';
+      document.getElementById('searchClearBtn').classList.remove('show');
+      if (currentTab === 'users') {
+        renderResults('');
+      }
+      input.focus();
+    };
+    
+    // ===== SEARCH INPUT HANDLER =====
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const value = e.target.value.trim();
+      const clearBtn = document.getElementById('searchClearBtn');
+      
+      if (value.length > 0) {
+        clearBtn.classList.add('show');
+      } else {
+        clearBtn.classList.remove('show');
+      }
+      
+      if (currentTab === 'users') {
+        renderResults(value);
+      }
+    });
+    
+    // ===== KEYBOARD SHORTCUTS =====
+    document.getElementById('searchInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        this.blur();
+        clearSearch();
+      }
+    });
+    
+    // ===== INITIALIZE =====
+    loadRecentSearches();
+    await loadUsers();
+    
+    // If there are recent searches, show them first
+    if (recentSearches.length > 0) {
+      // Still show users tab by default
+      document.querySelector('.search-tab[data-tab="users"]').classList.add('active');
+      document.querySelector('.search-tab[data-tab="recent"]').classList.remove('active');
+    }
+  </script>
+</body>
+</html>

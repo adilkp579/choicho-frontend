@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Profile · Choicho</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .profile-header { display: flex; align-items: center; gap: 1.2rem; width: 100%; max-width: 400px; padding: 0.3rem 0; }
+    .avatar { width: 75px; height: 75px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; overflow: hidden; border: 2px solid rgba(255,255,255,0.15); }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .stats-row { display: flex; gap: 1rem; flex: 1; justify-content: space-around; }
+    .stat { text-align: center; cursor: pointer; }
+    .stat-num { font-size: 1rem; font-weight: 700; }
+    .stat-label { font-size: 0.6rem; color: #888; }
+    .bio-section { width: 100%; max-width: 400px; text-align: left; }
+    .username { font-size: 0.9rem; font-weight: 650; color: #fff; }
+    .bio-text { font-size: 0.7rem; color: #bbb; margin-top: 0.1rem; }
+    .website { font-size: 0.65rem; color: #3897f0; margin-top: 0.1rem; }
+    .actions-row { display: flex; gap: 0.4rem; width: 100%; max-width: 400px; }
+    .action-btn { flex: 1; padding: 0.45rem; border-radius: 0.4rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.7rem; font-weight: 600; cursor: pointer; text-align: center; }
+    .action-btn.primary { background: #3897f0; border: none; }
+    .action-btn.following { background: #1a3a5c; border-color: #3897f0; color: #3897f0; }
+    .tabs { display: flex; width: 100%; max-width: 400px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 0.2rem; }
+    .tab { flex: 1; text-align: center; padding: 0.5rem 0; color: #666; font-size: 0.7rem; cursor: pointer; border-bottom: 1px solid transparent; }
+    .tab.active { color: #fff; border-bottom-color: #fff; }
+    .tab i { font-size: 1.1rem; display: block; margin-bottom: 0.1rem; }
+    .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; width: 100%; max-width: 400px; }
+    .post-item { aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
+    .post-item img { width: 100%; height: 100%; object-fit: cover; }
+    .empty-text { color: #444; font-size: 0.75rem; text-align: center; padding: 2rem 0; }
+    @media (min-width: 1024px) { .profile-header, .bio-section, .actions-row, .tabs, .posts-grid { max-width: 500px; } .scrollable-content { padding-left: 5.5rem; } .avatar { width: 85px; height: 85px; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="scrollable-content">
+      <div class="top-icons">
+        <button class="back-btn" id="backBtn" style="display:none;" onclick="window.history.back()"><i class="fas fa-arrow-left"></i></button>
+        <button class="corner-btn" id="settingsBtn" onclick="window.location.href='settings.html'"><i class="fas fa-cog"></i></button>
+        <span class="top-brand" id="topBrand">Profile</span>
+        <button class="corner-btn" id="logoutBtn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+      <div class="content" style="padding:0.5rem 1.2rem 2rem; display:flex; flex-direction:column; align-items:center; gap:0.6rem; width:100%;">
+        <div class="profile-header"><div class="avatar" id="profileAvatar"><i class="fas fa-user"></i></div><div class="stats-row"><div class="stat"><div class="stat-num" id="postCount">0</div><div class="stat-label">Posts</div></div><div class="stat" onclick="showList('friends')"><div class="stat-num" id="friendsCount">0</div><div class="stat-label">Friends</div></div><div class="stat" onclick="showList('besties')"><div class="stat-num" id="bestiesCount">0</div><div class="stat-label">Besties</div></div></div></div>
+        <div class="bio-section"><div class="username" id="displayName"></div><div class="bio-text" id="displayBio"></div><div class="website" id="displayWebsite"></div></div>
+        <div class="actions-row" id="actionsRow"><button class="action-btn primary" id="editProfileBtn" onclick="openEditProfile()">Edit Profile</button><button class="action-btn" onclick="shareProfile()"><i class="fas fa-share-alt"></i> Share</button></div>
+        <div class="tabs"><div class="tab active" onclick="switchTab(this,'posts')"><i class="fas fa-grid-2"></i>Posts</div><div class="tab" onclick="switchTab(this,'reels')"><i class="fas fa-film"></i>Reels</div></div>
+        <div class="posts-grid" id="postsGrid"></div><div class="posts-grid" id="reelsGrid" style="display:none;"></div><div class="empty-text" id="emptyText">No posts yet</div>
+      </div>
+    </div>
+    <div class="modal-overlay" id="editModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:300; align-items:center; justify-content:center;"><div class="modal" style="background:#1a1a1a; border-radius:1rem; padding:1.2rem; width:90%; max-width:360px;"><h3 style="margin-bottom:0.8rem;">Edit Profile</h3><label>Username</label><input type="text" id="editUsername" style="width:100%; padding:0.6rem; margin-bottom:0.5rem; background:#111; border:1px solid #333; color:#fff; border-radius:0.4rem;"><label>Bio</label><textarea id="editBio" rows="2" style="width:100%; padding:0.6rem; background:#111; border:1px solid #333; color:#fff; border-radius:0.4rem;"></textarea><div class="btn-row" style="display:flex; gap:0.5rem; margin-top:1rem;"><button class="btn-cancel" onclick="closeEditProfile()" style="flex:1; padding:0.6rem; background:#333; border:none; color:#fff; border-radius:0.4rem;">Cancel</button><button class="btn-save" onclick="saveProfile()" style="flex:1; padding:0.6rem; background:#3897f0; border:none; color:#fff; border-radius:0.4rem;">Save</button></div></div></div>
+    <div class="toast" id="toast"></div>
+    <nav class="floating-nav"><div class="nav-center"><a href="index.html"><i class="fas fa-home"></i></a><a href="web.html"><i class="fas fa-globe"></i></a><a href="reel.html"><i class="fas fa-film"></i></a><a href="chat.html"><i class="fas fa-comment-dots"></i></a><a href="profile.html" class="active"><i class="fas fa-user"></i></a><a href="upload.html" class="nav-upload"><i class="fas fa-plus"></i></a><a href="search.html" class="nav-search"><i class="fas fa-search"></i></a></div></nav>
+  </div>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { showToast, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
+    import { getCurrentUser, logout as authLogout } from './js/auth.js';
+    import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    
+    if (!requireAuth()) window.location.replace('login.html');
+    
+    const currentUser = getCurrentUser();
+    let profile = null;
+    
+    async function loadProfile() {
+      const userRef = doc(db, 'users', currentUser.uid);
+      const docSnap = await getDoc(userRef);
+      if (docSnap.exists()) profile = docSnap.data();
+      else profile = { username: currentUser.username, name: cleanUsername(currentUser.username), bio: '', website: '', avatar: null, friends: [], besties: [], posts: [] };
+      updateUI();
+      renderContent();
+    }
+    
+    function updateUI() {
+      document.getElementById('displayName').textContent = profile.name || cleanUsername(profile.username);
+      document.getElementById('displayBio').textContent = profile.bio || '';
+      document.getElementById('displayWebsite').textContent = profile.website ? '🔗 ' + profile.website : '';
+      document.getElementById('profileAvatar').innerHTML = profile.avatar ? `<img src="${profile.avatar}">` : '<i class="fas fa-user"></i>';
+      document.getElementById('postCount').textContent = (profile.posts || []).filter(p => p.type === 'image').length;
+      document.getElementById('friendsCount').textContent = (profile.friends || []).length;
+      document.getElementById('bestiesCount').textContent = (profile.besties || []).length;
+      document.getElementById('topBrand').textContent = cleanUsername(profile.username);
+    }
+    
+    function renderContent() {
+      const posts = profile.posts || [];
+      const images = posts.filter(p => p.type === 'image');
+      const reels = posts.filter(p => p.type === 'reel' || p.type === 'video');
+      const activeTab = document.querySelector('.tab.active');
+      const isReels = activeTab && activeTab.textContent.includes('Reels');
+      const pg = document.getElementById('postsGrid'), rg = document.getElementById('reelsGrid'), et = document.getElementById('emptyText');
+      if (isReels) {
+        pg.style.display = 'none'; rg.style.display = 'grid'; et.style.display = reels.length ? 'none' : 'block';
+        et.textContent = reels.length ? '' : 'No reels yet';
+        rg.innerHTML = reels.map(r => `<div class="post-item"><video src="${r.src}" style="width:100%;height:100%;object-fit:cover;" muted loop playsinline></video></div>`).join('');
+      } else {
+        rg.style.display = 'none'; pg.style.display = 'grid'; et.style.display = images.length ? 'none' : 'block';
+        et.textContent = images.length ? '' : 'No posts yet';
+        pg.innerHTML = images.map(i => `<div class="post-item"><img src="${i.src}" alt="post" loading="lazy"></div>`).join('');
+      }
+    }
+    
+    window.switchTab = function(el, type) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); renderContent(); };
+    window.openEditProfile = function() { document.getElementById('editUsername').value = profile.name || ''; document.getElementById('editBio').value = profile.bio || ''; document.getElementById('editModal').style.display = 'flex'; };
+    window.closeEditProfile = function() { document.getElementById('editModal').style.display = 'none'; };
+    window.saveProfile = async function() { profile.name = document.getElementById('editUsername').value.trim() || cleanUsername(profile.username); profile.bio = document.getElementById('editBio').value.trim(); await setDoc(doc(db, 'users', currentUser.uid), profile, { merge: true }); updateUI(); closeEditProfile(); showToast('Profile saved!'); };
+    window.shareProfile = function() { navigator.clipboard.writeText(window.location.href); showToast('Link copied!'); };
+    window.showList = function(type) { showToast(`${type}: ${(profile[type] || []).map(f => f.name).join(', ') || 'None'}`); };
+    window.logout = function() { authLogout(); };
+    
+    loadProfile();
+  </script>
+</body>
+</html>

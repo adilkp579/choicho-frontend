@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Reels · Choicho</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .reel-wrapper { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; height: 100%; }
+    .reel-wrapper::-webkit-scrollbar { width: 0; }
+    .reel-slide { width: 100%; height: 100vh; height: 100dvh; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; background: #000; flex-shrink: 0; }
+    .reel-slide video { width: 100%; height: 100%; object-fit: contain; background: #000; position: absolute; top: 0; left: 0; }
+    .video-loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; z-index: 6; }
+    .user-tag { position: absolute; top: 1rem; left: 1rem; display: flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); padding: 0.4rem 0.8rem; border-radius: 1.5rem; z-index: 10; }
+    .user-tag .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #fff; }
+    .user-tag .name { font-size: 0.8rem; font-weight: 500; color: #fff; }
+    .actions-bar { position: absolute; right: 0.8rem; bottom: 35%; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; z-index: 10; }
+    .action-btn { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; background: none; border: none; color: #fff; cursor: pointer; font-size: 1.5rem; }
+    .action-btn.liked { color: #ef4444; }
+    .action-btn span { font-size: 0.65rem; font-weight: 500; }
+    .caption-bar { position: absolute; bottom: 1rem; left: 1rem; right: 5rem; z-index: 10; }
+    .caption-text { color: #fff; font-size: 0.8rem; background: rgba(0,0,0,0.4); padding: 0.5rem 0.8rem; border-radius: 0.5rem; display: inline-block; max-width: 100%; }
+    .play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; color: rgba(255,255,255,0.4); pointer-events: none; z-index: 5; transition: opacity 0.2s; }
+    .empty-state { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #555; }
+    @media (min-width: 1024px) {
+      .reel-wrapper { margin-left: 5rem; }
+      .reel-slide { max-width: 500px; margin: 0 auto; }
+      .actions-bar { right: 2rem; bottom: 35%; }
+    }
+    @media (max-width: 380px) { .actions-bar { right: 0.5rem; gap: 1.2rem; } .action-btn { font-size: 1.2rem; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="reel-wrapper" id="reelWrapper">
+      <div class="empty-state" id="emptyState" style="display:none;"><i class="fas fa-film"></i><p>No reels yet</p></div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <nav class="floating-nav">
+      <div class="nav-center">
+        <a href="index.html"><i class="fas fa-home"></i></a>
+        <a href="web.html"><i class="fas fa-globe"></i></a>
+        <a href="reel.html" class="active"><i class="fas fa-film"></i></a>
+        <a href="chat.html"><i class="fas fa-comment-dots"></i></a>
+        <a href="profile.html"><i class="fas fa-user"></i></a>
+        <a href="upload.html" class="nav-upload"><i class="fas fa-plus"></i></a>
+        <a href="search.html" class="nav-search"><i class="fas fa-search"></i></a>
+      </div>
+    </nav>
+  </div>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { showToast, timeAgo, cleanUsername, requireAuth } from './js/common.js';
+    import { collection, query, orderBy, limit, startAfter, getDocs, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    
+    if (!requireAuth()) window.location.replace('login.html');
+    
+    const wrapper = document.getElementById('reelWrapper');
+    let reels = [], currentIndex = 0, lastDoc = null, allLoaded = false, loading = false;
+    let mounted = new Map(), observer = null, retryCounts = new Map();
+    
+    function isVideo(src) { return src && (src.match(/\.(mp4|webm|mov)($|\?)/i) || src.includes('video')); }
+    function escapeHTML(str) { if (!str) return ''; const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+    
+    async function loadReels() {
+      if (loading || allLoaded) return;
+      loading = true;
+      try {
+        let q = lastDoc ? query(collection(db, 'posts'), orderBy('createdAt', 'desc'), startAfter(lastDoc), limit(6)) : query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(6));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) { allLoaded = true; loading = false; return; }
+        snapshot.forEach(doc => { const d = doc.data(); const src = d.data || d.url || ''; if (isVideo(src)) reels.push({ id: doc.id, userId: d.username, caption: d.caption || '', src: src, likes: d.likes || 0, comments: d.comments || 0, liked: false }); });
+        lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        loading = false;
+        for (let i = Math.max(0, reels.length - 6); i < reels.length; i++) mountReel(i);
+        if (reels.length === 0 && !loading) document.getElementById('emptyState').style.display = 'flex';
+      } catch(e) { loading = false; showToast('Failed to load reels'); }
+    }
+    
+    function mountReel(index) {
+      if (mounted.has(index)) return;
+      const reel = reels[index];
+      if (!reel) return;
+      const slide = document.createElement('div'); slide.className = 'reel-slide'; slide.id = `slide${index}`; slide.dataset.index = index;
+      slide.innerHTML = `<video id="video${index}" muted loop playsinline preload="none"></video><div class="play-overlay" id="overlay${index}"><i class="fas fa-play-circle"></i></div><div class="user-tag" onclick="window.location.href='profile.html?user=${encodeURIComponent(reel.userId)}'"><div class="avatar"><i class="fas fa-user"></i></div><span class="name">${cleanUsername(reel.userId)}</span></div><div class="actions-bar"><button class="action-btn ${reel.liked ? 'liked' : ''}" data-action="like" data-index="${index}"><i class="${reel.liked ? 'fas' : 'far'} fa-heart"></i><span class="likes-count">${reel.likes}</span></button><button class="action-btn" data-action="comment"><i class="far fa-comment"></i><span>${reel.comments}</span></button><button class="action-btn" data-action="share"><i class="far fa-share-square"></i><span>Share</span></button></div>${reel.caption ? `<div class="caption-bar"><div class="caption-text">${escapeHTML(reel.caption)}</div></div>` : ''}`;
+      const video = slide.querySelector('video');
+      video.addEventListener('click', () => togglePlay(index));
+      slide.querySelector('[data-action="like"]').addEventListener('click', (e) => { e.stopPropagation(); toggleLike(index); });
+      wrapper.appendChild(slide); mounted.set(index, slide);
+      if (observer) observer.observe(slide);
+      if (Math.abs(index - currentIndex) <= 2) preloadVideo(video, reel.src);
+    }
+    
+    function preloadVideo(video, src) { if (video && src && video.src !== src) { video.preload = 'metadata'; video.src = src; video.load(); } }
+    
+    async function toggleLike(index) {
+      const reel = reels[index]; if (!reel) return;
+      reel.liked = !reel.liked; reel.likes += reel.liked ? 1 : -1;
+      const slide = document.getElementById(`slide${index}`);
+      if (slide) { const btn = slide.querySelector('[data-action="like"]'), span = slide.querySelector('.likes-count'); if (btn) { btn.classList.toggle('liked', reel.liked); btn.querySelector('i').className = reel.liked ? 'fas fa-heart' : 'far fa-heart'; } if (span) span.textContent = reel.likes; }
+      await updateDoc(doc(db, 'posts', reel.id), { likes: increment(reel.liked ? 1 : -1) });
+      showToast(reel.liked ? 'Liked! ❤️' : 'Unliked');
+    }
+    
+    function togglePlay(index) {
+      const video = document.getElementById(`video${index}`), overlay = document.getElementById(`overlay${index}`);
+      if (!video) return;
+      if (video.paused) { video.play(); if (overlay) overlay.style.opacity = '0'; }
+      else { video.pause(); if (overlay) overlay.style.opacity = '1'; }
+    }
+    
+    function onScroll() {
+      const scrollTop = wrapper.scrollTop, slideHeight = wrapper.clientHeight;
+      let newIndex = Math.round(scrollTop / slideHeight);
+      newIndex = Math.max(0, Math.min(newIndex, reels.length - 1));
+      if (newIndex !== currentIndex) {
+        const oldVideo = document.getElementById(`video${currentIndex}`);
+        if (oldVideo) { oldVideo.pause(); if (document.getElementById(`overlay${currentIndex}`)) document.getElementById(`overlay${currentIndex}`).style.opacity = '1'; }
+        currentIndex = newIndex;
+        const newVideo = document.getElementById(`video${currentIndex}`);
+        if (newVideo) { newVideo.play().catch(()=>{}); if (document.getElementById(`overlay${currentIndex}`)) document.getElementById(`overlay${currentIndex}`).style.opacity = '0'; }
+        for (let i = currentIndex - 2; i <= currentIndex + 2; i++) if (i >= 0 && i < reels.length && !mounted.has(i)) mountReel(i);
+      }
+      if (newIndex >= reels.length - 2 && !allLoaded && !loading) loadReels();
+    }
+    
+    function setupObserver() { observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { const idx = parseInt(entry.target.dataset.index); if (!isNaN(idx) && reels[idx]) preloadVideo(entry.target.querySelector('video'), reels[idx].src); } }); }, { threshold: 0.1 }); }
+    
+    wrapper.addEventListener('scroll', () => requestAnimationFrame(onScroll));
+    setupObserver(); loadReels();
+  </script>
+</body>
+</html>
