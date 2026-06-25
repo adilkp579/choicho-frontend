@@ -18,6 +18,7 @@
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
     
+    /* ===== TOP HEADER - Mobile ===== */
     .top-icons {
       width:100%;max-width:500px;display:flex;align-items:center;justify-content:space-between;
       padding:0.8rem 0.8rem 0.3rem 0.8rem;flex-shrink:0;position:relative;background:#000;
@@ -35,30 +36,121 @@
       line-height:1;font-style:italic;
     }
 
-    /* ===== SEARCH BAR - Hashtag search (no extra space) ===== */
+    /* ===== TOP HEADER - Desktop (visible only on desktop) ===== */
+    .top-icons-desktop {
+      display:none;
+      width:100%;
+      max-width:1100px;
+      align-items:center;
+      justify-content:space-between;
+      padding:0.6rem 1.5rem;
+      flex-shrink:0;
+      background:#000;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+      margin:0 auto;
+      position:relative;
+      z-index:10;
+    }
+    .top-icons-desktop .left-group {
+      display:flex;
+      align-items:center;
+      gap:0.8rem;
+    }
+    .top-icons-desktop .right-group {
+      display:flex;
+      align-items:center;
+      gap:0.8rem;
+    }
+    .top-icons-desktop .brand-text {
+      font-size:1.8rem;
+      font-weight:700;
+      color:#fff;
+      letter-spacing:3px;
+      font-family:'Segoe Script','Brush Script MT','Apple Chancery','Comic Sans MS',cursive;
+      font-style:italic;
+    }
+    .top-icons-desktop .corner-btn {
+      width:2.4rem;
+      height:2.4rem;
+      background:#1a1a1a;
+      border-radius:50%;
+      color:#fff;
+      font-size:1rem;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      border:1px solid #333;
+      cursor:pointer;
+      transition:all 0.3s;
+    }
+    .top-icons-desktop .corner-btn:hover {
+      background:#2a2a2a;
+    }
+    .top-icons-desktop .corner-btn:active {
+      transform:scale(0.95);
+    }
+    .top-icons-desktop .heart-icon { color:#ef4444; }
+    .top-icons-desktop .plus-icon { color:#FFFC00; font-weight:700; }
+
+    /* ===== SEARCH BAR - Hashtag search (larger) ===== */
     .search-bar-container {
-      width:100%;max-width:500px;padding:0.2rem 0.8rem 0.2rem 0.8rem;
-      flex-shrink:0;background:#000;margin:0 auto;
+      width:100%;
+      max-width:500px;
+      padding:0.3rem 0.8rem 0.3rem 0.8rem;
+      flex-shrink:0;
+      background:#000;
+      margin:0 auto;
     }
     .search-bar {
-      display:flex;align-items:center;gap:0.5rem;
-      background:#111;border:1px solid rgba(255,255,255,0.08);
-      border-radius:2rem;padding:0.35rem 0.8rem;width:100%;
+      display:flex;
+      align-items:center;
+      gap:0.6rem;
+      background:#1a1a1a;
+      border:1.5px solid rgba(255,255,255,0.08);
+      border-radius:2rem;
+      padding:0.5rem 1rem;
+      width:100%;
+      transition:all 0.3s;
     }
-    .search-bar:focus-within { border-color:#FFFC00; }
-    .search-bar i { color:#666;font-size:0.75rem; }
+    .search-bar:focus-within { 
+      border-color:#FFFC00;
+      background:#222;
+      box-shadow:0 0 30px rgba(255,252,0,0.04);
+    }
+    .search-bar i { 
+      color:#666;
+      font-size:0.9rem; 
+    }
     .search-bar input {
-      flex:1;background:transparent;border:none;color:#fff;
-      font-size:0.75rem;outline:none;width:100%;
+      flex:1;
+      background:transparent;
+      border:none;
+      color:#fff;
+      font-size:0.9rem;
+      outline:none;
+      width:100%;
+      padding:0.2rem 0;
     }
-    .search-bar input::placeholder { color:#555; }
+    .search-bar input::placeholder { 
+      color:#555;
+      font-size:0.85rem;
+    }
     .search-clear {
-      color:#666;cursor:pointer;font-size:0.7rem;display:none;
+      color:#666;
+      cursor:pointer;
+      font-size:0.8rem;
+      display:none;
+      padding:0.2rem 0.3rem;
     }
     .search-clear.show { display:block; }
     
     .main-content {
-      flex:1;display:flex;flex-direction:column;padding:0.2rem 1.2rem 1rem 1.2rem;position:relative;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      padding:0.2rem 1.2rem 1rem 1.2rem;
+      position:relative;
       gap:6px;
     }
     
@@ -348,10 +440,18 @@
       .search-bar input { font-size: 0.65rem; }
       .stranger-camera { height: 50vh; }
       .my-camera { height: 25vh; }
+      .search-bar { padding: 0.4rem 0.7rem; }
     }
 
+    /* ===== DESKTOP STYLES ===== */
     @media (min-width: 1024px) {
+      /* Hide mobile top header */
       .top-icons { display: none; }
+      
+      /* Show desktop top header */
+      .top-icons-desktop { display:flex; }
+      
+      /* Floating nav becomes sidebar */
       .nav-upload, .nav-search { display: flex !important; }
       .floating-nav {
         position: fixed;
@@ -380,23 +480,64 @@
         width: 2.6rem;
         height: 2.6rem;
       }
+      
+      /* Page layout */
       .page { padding-left: 5rem; }
-      .main-content { max-width: 950px; margin: 0 auto; width: 100%; }
+      .main-content { 
+        max-width: 1100px; 
+        margin: 0 auto; 
+        width: 100%;
+        padding: 0.5rem 1.5rem 1rem 1.5rem;
+      }
+      
+      /* Search bar - larger on desktop */
+      .search-bar-container {
+        max-width: 1100px;
+        padding: 0.3rem 0 0.5rem 0;
+      }
+      .search-bar {
+        max-width: 500px;
+        padding: 0.6rem 1.2rem;
+        border-radius: 2.5rem;
+        background: #1a1a1a;
+      }
+      .search-bar i { font-size:1rem; }
+      .search-bar input { font-size:1rem; }
+      .search-bar input::placeholder { font-size:0.95rem; }
+      
+      /* Camera area */
       .camera-area { gap: 20px; }
       .stranger-section { width: 48%; }
       .you-section { width: 48%; align-items: flex-start; }
       .stranger-camera { height: 55vh; }
       .my-camera { height: 55vh; }
-      .token-stack { flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; justify-content: flex-start; }
-      .token-btn { width: auto; min-width: 85px; height: 34px; padding: 0 10px; }
+      .token-stack { 
+        flex-direction: row; 
+        flex-wrap: wrap; 
+        gap: 8px; 
+        margin-top: 8px; 
+        align-items: center; 
+        justify-content: flex-start; 
+      }
+      .token-btn { 
+        width: auto; 
+        min-width: 85px; 
+        height: 34px; 
+        padding: 0 10px; 
+      }
       .stranger-controls-row { display: flex; }
       .control-row.mobile-only { display: none; }
-      .chat-box { width: 400px; left: auto; right: 2rem; transform: none; }
-      .search-bar-container { max-width: 550px; }
+      .chat-box { 
+        width: 400px; 
+        left: auto; 
+        right: 2rem; 
+        transform: none; 
+      }
     }
     @media (max-width: 1023px) {
       .stranger-controls-row { display: none; }
       .control-row.mobile-only { display: flex; }
+      .top-icons-desktop { display: none; }
     }
   </style>
 </head>
@@ -404,13 +545,42 @@
   <div class="https-warning" id="httpsWarning">⚠️ Camera requires HTTPS! <a href="javascript:void(0)" onclick="window.location.href=window.location.href.replace('http://','https://')">Switch to secure</a></div>
   
   <div class="page" id="mainPage" style="display:flex;">
+    
+    <!-- ===== MOBILE TOP HEADER ===== -->
     <div class="top-icons">
       <a href="live.html" class="corner-btn"><i class="fas fa-broadcast-tower"></i></a>
       <span class="top-brand">Nokk</span>
       <a href="wallet.html" class="corner-btn"><i class="fas fa-wallet"></i></a>
     </div>
 
-    <!-- ===== SEARCH BAR - Hashtag search (compact) ===== -->
+    <!-- ===== DESKTOP TOP HEADER ===== -->
+    <div class="top-icons-desktop" id="desktopHeader">
+      <div class="left-group">
+        <a href="hart.html" class="corner-btn" title="Activity">
+          <i class="fas fa-heart heart-icon"></i>
+        </a>
+        <span class="brand-text">Nokk</span>
+      </div>
+      <div class="right-group">
+        <a href="upload.html" class="corner-btn" title="Upload">
+          <i class="fas fa-plus plus-icon"></i>
+        </a>
+        <a href="search.html" class="corner-btn" title="Search">
+          <i class="fas fa-search"></i>
+        </a>
+        <a href="wallet.html" class="corner-btn" title="Wallet">
+          <i class="fas fa-wallet"></i>
+        </a>
+        <a href="live.html" class="corner-btn" title="Live">
+          <i class="fas fa-broadcast-tower"></i>
+        </a>
+        <a href="settings.html" class="corner-btn" title="Settings">
+          <i class="fas fa-cog"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- ===== SEARCH BAR - Hashtag search (larger) ===== -->
     <div class="search-bar-container">
       <div class="search-bar" id="searchBar">
         <i class="fas fa-hashtag"></i>
