@@ -43,7 +43,7 @@
       position: relative;
     }
 
-    /* ===== TOP HEADER - Mobile (same as web.html) ===== */
+    /* ===== TOP HEADER - Same as web.html ===== */
     .top-icons-chat {
       display: flex;
       align-items: center;
@@ -59,6 +59,7 @@
     }
     .top-icons-chat.hidden { display: none; }
     
+    /* Left icon - same as web.html */
     .corner-btn-left {
       width: 2.4rem;
       height: 2.4rem;
@@ -78,6 +79,7 @@
     .corner-btn-left:active { transform: scale(0.94); background: #2a2a2a; }
     .heart-icon { color: #ef4444; }
 
+    /* Center brand text - same as web.html */
     .chat-brand {
       font-size: 1.6rem;
       font-weight: 700;
@@ -92,6 +94,7 @@
       line-height: 1;
     }
 
+    /* Right icons group - same as web.html */
     .top-right-group {
       display: flex;
       gap: 0.4rem;
@@ -274,8 +277,7 @@
     .user-list-item:active { background: rgba(255,255,255,0.04); }
     .user-list-item.hidden { display: none !important; }
     .user-avatar {
-      width: 48px;
-      height: 48px;
+      width: 48px; height: 48px;
       border-radius: 50%;
       background: #1a1a1a;
       display: flex;
@@ -718,7 +720,7 @@
     .floating-nav.hidden { display: none; }
 
     /* ==============================================================
-       RESPONSIVE - Mobile & Desktop (same as web.html)
+       RESPONSIVE - Same as web.html
        ============================================================== */
     @media (max-width: 480px) {
       .chat-brand { font-size: 1.3rem; }
@@ -741,7 +743,6 @@
         overflow: hidden;
       }
       
-      /* Left Panel - User List */
       .chat-list-full {
         max-width: 400px;
         min-width: 300px;
@@ -756,7 +757,6 @@
         display: flex !important;
       }
       
-      /* Right Panel - Chat View */
       .chat-view {
         max-width: none;
         flex: 1;
@@ -768,7 +768,6 @@
         display: flex !important;
       }
       
-      /* Top header for desktop */
       .top-icons-chat {
         display: flex !important;
         max-width: 400px;
@@ -785,7 +784,6 @@
         display: none !important;
       }
       
-      /* Chat header when open - desktop */
       .chat-header {
         display: none !important;
         max-width: none;
@@ -797,7 +795,6 @@
         display: flex !important;
       }
       
-      /* Search bar in left panel */
       .search-bar-container {
         max-width: 400px;
         padding: 0.3rem 0.8rem 0.5rem 0.8rem;
@@ -808,7 +805,6 @@
         display: block !important;
       }
       
-      /* Chat input area - desktop */
       .chat-input-area {
         max-width: none;
         padding: 0.5rem 1rem;
@@ -820,30 +816,25 @@
         display: flex !important;
       }
       
-      /* Messages container - desktop */
       .messages-container {
         flex: 1;
         overflow-y: auto;
         padding: 1rem;
       }
       
-      /* Hide floating nav on desktop */
       .floating-nav {
         display: none !important;
       }
       
-      /* Empty chat state */
       .empty-chat {
         font-size: 1rem;
         color: #444;
       }
       
-      /* Back button hidden on desktop */
       .chat-back {
         display: none;
       }
       
-      /* Partner info - desktop */
       .chat-partner-info {
         text-align: left;
         padding: 0.2rem 0.8rem;
@@ -862,7 +853,7 @@
 
     <!-- ===== LEFT PANEL - CHAT LIST ===== -->
     <div class="chat-list-full" id="chatListFull">
-      <!-- TOP HEADER (mobile size same as web.html) -->
+      <!-- TOP HEADER - Same size as web.html -->
       <div class="top-icons-chat" id="topIconsChat">
         <a href="hart.html" class="corner-btn-left" title="Activity">
           <i class="fas fa-heart heart-icon"></i>
@@ -1099,7 +1090,6 @@
       });
     } catch (e) {}
     
-    // For desktop: just show the chat view without hiding left panel
     const isDesktop = window.innerWidth >= 1024;
     
     if (!isDesktop) {
@@ -1115,7 +1105,6 @@
     
     document.getElementById('partnerNameText').textContent = cleanUsername(partner);
     
-    // Highlight selected chat
     document.querySelectorAll('.user-list-item').forEach(el => {
       el.classList.remove('active');
       if (el.getAttribute('onclick')?.includes(partner)) {
@@ -1655,11 +1644,9 @@
     loadRequests();
   }, 1000);
   
-  // Handle window resize for desktop/mobile switching
   window.addEventListener('resize', () => {
     const isDesktop = window.innerWidth >= 1024;
     if (isDesktop && currentPartner) {
-      // On desktop, keep both panels visible
       document.getElementById('topIconsChat').classList.remove('hidden');
       document.getElementById('chatListFull').classList.remove('hidden');
       document.getElementById('searchBarContainer').classList.remove('hidden');
