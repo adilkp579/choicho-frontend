@@ -36,7 +36,7 @@
       line-height:1;font-style:italic;
     }
 
-    /* ===== TOP HEADER - Desktop (simplified) ===== */
+    /* ===== TOP HEADER - Desktop (Live left | Brand center | Wallet right) ===== */
     .top-icons-desktop {
       display:none;
       width:100%;
@@ -51,23 +51,29 @@
       position:relative;
       z-index:10;
     }
-    .top-icons-desktop .left-group {
+    .top-icons-desktop .desktop-left {
       display:flex;
       align-items:center;
       gap:0.8rem;
+      flex-shrink:0;
     }
-    .top-icons-desktop .right-group {
+    .top-icons-desktop .desktop-right {
       display:flex;
       align-items:center;
       gap:0.8rem;
+      flex-shrink:0;
     }
-    .top-icons-desktop .brand-text {
+    .top-icons-desktop .brand-text-center {
       font-size:1.8rem;
       font-weight:700;
       color:#fff;
       letter-spacing:3px;
       font-family:'Segoe Script','Brush Script MT','Apple Chancery','Comic Sans MS',cursive;
       font-style:italic;
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      white-space:nowrap;
     }
     .top-icons-desktop .corner-btn {
       width:2.4rem;
@@ -91,7 +97,7 @@
       transform:scale(0.95);
     }
 
-    /* ===== SEARCH BAR - Hashtag search (full width on desktop) ===== */
+    /* ===== SEARCH BAR - Hashtag search (mobile original size) ===== */
     .search-bar-container {
       width:100%;
       max-width:500px;
@@ -103,41 +109,40 @@
     .search-bar {
       display:flex;
       align-items:center;
-      gap:0.6rem;
-      background:#1a1a1a;
-      border:1.5px solid rgba(255,255,255,0.08);
+      gap:0.5rem;
+      background:#111;
+      border:1px solid rgba(255,255,255,0.08);
       border-radius:2rem;
-      padding:0.5rem 1rem;
+      padding:0.4rem 0.8rem;
       width:100%;
       transition:all 0.3s;
     }
     .search-bar:focus-within { 
       border-color:#FFFC00;
-      background:#222;
-      box-shadow:0 0 30px rgba(255,252,0,0.04);
+      background:#1a1a1a;
     }
     .search-bar i { 
       color:#666;
-      font-size:0.9rem; 
+      font-size:0.8rem; 
     }
     .search-bar input {
       flex:1;
       background:transparent;
       border:none;
       color:#fff;
-      font-size:0.9rem;
+      font-size:0.8rem;
       outline:none;
       width:100%;
-      padding:0.2rem 0;
+      padding:0.1rem 0;
     }
     .search-bar input::placeholder { 
       color:#555;
-      font-size:0.85rem;
+      font-size:0.75rem;
     }
     .search-clear {
       color:#666;
       cursor:pointer;
-      font-size:0.8rem;
+      font-size:0.7rem;
       display:none;
       padding:0.2rem 0.3rem;
     }
@@ -438,7 +443,7 @@
       .search-bar input { font-size: 0.65rem; }
       .stranger-camera { height: 50vh; }
       .my-camera { height: 25vh; }
-      .search-bar { padding: 0.4rem 0.7rem; }
+      .search-bar { padding: 0.35rem 0.7rem; }
     }
 
     /* ===== DESKTOP STYLES ===== */
@@ -488,22 +493,22 @@
         padding: 0.5rem 1.5rem 1rem 1.5rem;
       }
       
-      /* Search bar - FULL WIDTH on desktop */
+      /* Search bar - desktop (same as mobile) */
       .search-bar-container {
-        max-width: 1100px;
-        padding: 0.3rem 0 0.5rem 0;
-        width: 100%;
+        max-width: 500px;
+        padding: 0.3rem 0.8rem 0.3rem 0.8rem;
+        width: auto;
       }
       .search-bar {
-        max-width: 100%;
-        padding: 0.6rem 1.2rem;
-        border-radius: 2.5rem;
-        background: #1a1a1a;
+        max-width: 500px;
+        padding: 0.4rem 0.8rem;
+        border-radius: 2rem;
+        background: #111;
         width: 100%;
       }
-      .search-bar i { font-size:1rem; }
-      .search-bar input { font-size:1rem; }
-      .search-bar input::placeholder { font-size:0.95rem; }
+      .search-bar i { font-size:0.8rem; }
+      .search-bar input { font-size:0.8rem; }
+      .search-bar input::placeholder { font-size:0.75rem; }
       
       /* Camera area */
       .camera-area { gap: 20px; }
@@ -553,22 +558,22 @@
       <a href="wallet.html" class="corner-btn"><i class="fas fa-wallet"></i></a>
     </div>
 
-    <!-- ===== DESKTOP TOP HEADER (simplified) ===== -->
+    <!-- ===== DESKTOP TOP HEADER (Live left | Brand center | Wallet right) ===== -->
     <div class="top-icons-desktop" id="desktopHeader">
-      <div class="left-group">
-        <span class="brand-text">Nokk</span>
-      </div>
-      <div class="right-group">
+      <div class="desktop-left">
         <a href="live.html" class="corner-btn" title="Live">
           <i class="fas fa-broadcast-tower"></i>
         </a>
+      </div>
+      <span class="brand-text-center">Nokk</span>
+      <div class="desktop-right">
         <a href="wallet.html" class="corner-btn" title="Wallet">
           <i class="fas fa-wallet"></i>
         </a>
       </div>
     </div>
 
-    <!-- ===== SEARCH BAR - Hashtag search (full width on desktop) ===== -->
+    <!-- ===== SEARCH BAR - Hashtag search (original size) ===== -->
     <div class="search-bar-container">
       <div class="search-bar" id="searchBar">
         <i class="fas fa-hashtag"></i>
