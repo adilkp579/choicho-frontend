@@ -43,7 +43,7 @@
       position: relative;
     }
 
-    /* ===== TOP HEADER - Consistent across all pages ===== */
+    /* ===== TOP HEADER ===== */
     .top-icons-chat {
       display: flex;
       align-items: center;
@@ -74,8 +74,6 @@
       text-decoration: none;
       font-size: 1rem;
       flex-shrink: 0;
-      position: relative;
-      z-index: 2;
     }
     .corner-btn-left:active { transform: scale(0.94); background: #2a2a2a; }
     .heart-icon { color: #ef4444; }
@@ -92,7 +90,6 @@
       transform: translateX(-50%);
       white-space: nowrap;
       line-height: 1;
-      z-index: 1;
     }
 
     .top-right-group {
@@ -100,8 +97,6 @@
       gap: 0.4rem;
       align-items: center;
       flex-shrink: 0;
-      position: relative;
-      z-index: 2;
     }
     .corner-btn-right {
       width: 2.4rem;
@@ -279,8 +274,7 @@
     .user-list-item:active { background: rgba(255,255,255,0.04); }
     .user-list-item.hidden { display: none !important; }
     .user-avatar {
-      width: 48px;
-      height: 48px;
+      width: 48px; height: 48px;
       border-radius: 50%;
       background: #1a1a1a;
       display: flex;
@@ -448,7 +442,7 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ==============================================================
-       NEW CHAT MODAL
+       NEW CHAT MODAL — GLASSMORPHISM
        ============================================================== */
     .new-chat-overlay {
       position: fixed;
@@ -732,7 +726,7 @@
       .call-btn { width: 2.2rem; height: 2.2rem; font-size: 0.9rem; }
     }
 
-    /* ===== DESKTOP: Split-screen like WhatsApp ===== */
+    /* ===== DESKTOP: Split-screen like web.html ===== */
     @media (min-width: 1024px) {
       .page {
         max-width: 1100px;
@@ -1650,7 +1644,7 @@
   });
 
   // ===== INITIALIZE =====
-  console.log('🚀 Initializing chat with desktop split-screen...');
+  console.log('🚀 Initializing chat...');
   loadChats();
   loadExistingChats();
   loadSentRequests();
