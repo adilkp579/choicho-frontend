@@ -36,7 +36,7 @@
       line-height:1;font-style:italic;
     }
 
-    /* ===== TOP HEADER - Desktop (visible only on desktop) ===== */
+    /* ===== TOP HEADER - Desktop (simplified) ===== */
     .top-icons-desktop {
       display:none;
       width:100%;
@@ -90,10 +90,8 @@
     .top-icons-desktop .corner-btn:active {
       transform:scale(0.95);
     }
-    .top-icons-desktop .heart-icon { color:#ef4444; }
-    .top-icons-desktop .plus-icon { color:#FFFC00; font-weight:700; }
 
-    /* ===== SEARCH BAR - Hashtag search (larger) ===== */
+    /* ===== SEARCH BAR - Hashtag search (full width on desktop) ===== */
     .search-bar-container {
       width:100%;
       max-width:500px;
@@ -490,16 +488,18 @@
         padding: 0.5rem 1.5rem 1rem 1.5rem;
       }
       
-      /* Search bar - larger on desktop */
+      /* Search bar - FULL WIDTH on desktop */
       .search-bar-container {
         max-width: 1100px;
         padding: 0.3rem 0 0.5rem 0;
+        width: 100%;
       }
       .search-bar {
-        max-width: 500px;
+        max-width: 100%;
         padding: 0.6rem 1.2rem;
         border-radius: 2.5rem;
         background: #1a1a1a;
+        width: 100%;
       }
       .search-bar i { font-size:1rem; }
       .search-bar input { font-size:1rem; }
@@ -553,34 +553,22 @@
       <a href="wallet.html" class="corner-btn"><i class="fas fa-wallet"></i></a>
     </div>
 
-    <!-- ===== DESKTOP TOP HEADER ===== -->
+    <!-- ===== DESKTOP TOP HEADER (simplified) ===== -->
     <div class="top-icons-desktop" id="desktopHeader">
       <div class="left-group">
-        <a href="hart.html" class="corner-btn" title="Activity">
-          <i class="fas fa-heart heart-icon"></i>
-        </a>
         <span class="brand-text">Nokk</span>
       </div>
       <div class="right-group">
-        <a href="upload.html" class="corner-btn" title="Upload">
-          <i class="fas fa-plus plus-icon"></i>
-        </a>
-        <a href="search.html" class="corner-btn" title="Search">
-          <i class="fas fa-search"></i>
+        <a href="live.html" class="corner-btn" title="Live">
+          <i class="fas fa-broadcast-tower"></i>
         </a>
         <a href="wallet.html" class="corner-btn" title="Wallet">
           <i class="fas fa-wallet"></i>
         </a>
-        <a href="live.html" class="corner-btn" title="Live">
-          <i class="fas fa-broadcast-tower"></i>
-        </a>
-        <a href="settings.html" class="corner-btn" title="Settings">
-          <i class="fas fa-cog"></i>
-        </a>
       </div>
     </div>
 
-    <!-- ===== SEARCH BAR - Hashtag search (larger) ===== -->
+    <!-- ===== SEARCH BAR - Hashtag search (full width on desktop) ===== -->
     <div class="search-bar-container">
       <div class="search-bar" id="searchBar">
         <i class="fas fa-hashtag"></i>
