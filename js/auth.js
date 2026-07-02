@@ -1,408 +1,332 @@
 // ================================================================
-// AUTH.JS - Authentication functions (Username restrictions removed)
+// AUTHENTICATION MODULE
 // ================================================================
 
 import { 
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
-  signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { 
-  getFirestore, doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { app } from './firebase-config.js';
-
-const auth = getAuth(app);
-const db = getFirestore(app);
+  auth, 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInAnonymously,
+  signOut,
+  sendPasswordResetEmail,
+  updateProfile,
+  updateEmail,
+  updatePassword,
+  sendEmailVerification,
+  db,
+  BACKEND_URL
+} from './firebase-config.js';
+import { showToast } from './common.js';
+import { collection, query, where, getDocs, doc, setDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 // ================================================================
-// REGISTER - Create new user account (No username restrictions)
+// Simple password hash (for Firestore fallback)
 // ================================================================
 
-export async function register(email, password, username, fullName = '') {
+function hashPassword(pw) {
+  let h = 0;
+  for (let i = 0; i < pw.length; i++) {
+    const c = pw.charCodeAt(i);
+    h = ((h << 5) - h) + c;
+    h = h & h;
+  }
+  return 'h_' + Math.abs(h).toString(16);
+}
+
+// ================================================================
+// LOGIN with Email/Password
+// ================================================================
+
+export async function login(usernameOrEmail, password) {
   try {
-    // ===== REMOVED ALL USERNAME RESTRICTIONS =====
-    // Username can be anything - no length or character restrictions
-    // Only check if username exists (not empty)
+    let email = usernameOrEmail;
+    let userData = null;
     
-    if (!username || username.trim() === '') {
-      return { success: false, error: 'Username is required' };
+    // If not email, try to find email from username
+    if (!usernameOrEmail.includes('@')) {
+      const q = query(
+        collection(db, 'users'), 
+        where('username', '==', usernameOrEmail.startsWith('@') ? usernameOrEmail : '@' + usernameOrEmail)
+      );
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        userData = snapshot.docs[0].data();
+        email = userData.email || usernameOrEmail + '@choicho.com';
+      }
+    } else {
+      // Try to find by email
+      const q = query(collection(db, 'users'), where('email', '==', usernameOrEmail));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        userData = snapshot.docs[0].data();
+      }
     }
-
-    if (!email || email.trim() === '') {
-      return { success: false, error: 'Email is required' };
+    
+    // Try Firebase Auth
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      localStorage.setItem('uid', userCredential.user.uid);
+      
+      if (userData) {
+        localStorage.setItem('currentUser', userData.username);
+        localStorage.setItem('userProfile', JSON.stringify(userData));
+      }
+      
+      return { success: true, user: userCredential.user };
+    } catch (authError) {
+      // If user not found, try to create account
+      if (authError.code === 'auth/user-not-found' && userData) {
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          localStorage.setItem('uid', userCredential.user.uid);
+          localStorage.setItem('currentUser', userData.username);
+          localStorage.setItem('userProfile', JSON.stringify(userData));
+          return { success: true, user: userCredential.user };
+        } catch (createError) {
+          console.warn('Account creation failed:', createError);
+        }
+      }
+      
+      // Fallback to Firestore auth
+      if (userData && userData.password === hashPassword(password)) {
+        // Try anonymous auth for session
+        try {
+          const guestCred = await signInAnonymously(auth);
+          localStorage.setItem('uid', guestCred.user.uid);
+        } catch (e) {
+          localStorage.setItem('uid', 'firestore_' + userData.username.replace('@', ''));
+        }
+        localStorage.setItem('currentUser', userData.username);
+        localStorage.setItem('userProfile', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+      
+      throw authError;
     }
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, error: error.message };
+  }
+}
 
-    if (!password || password.length < 6) {
-      return { success: false, error: 'Password must be at least 6 characters' };
+// ================================================================
+// REGISTER new user
+// ================================================================
+
+export async function register(name, username, email, password) {
+  try {
+    // Validate
+    if (!name || !username || !email || !password) {
+      return { success: false, error: 'All fields required' };
     }
-
-    const trimmedUsername = username.trim();
-    const trimmedFullName = fullName.trim() || trimmedUsername;
-
-    console.log('📝 Registering user:', { username: trimmedUsername, email });
-
-    // Create user with email and password
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    console.log('✅ User created:', user.uid);
-
-    // Update profile with display name
-    await updateProfile(user, {
-      displayName: trimmedFullName
-    });
-
-    // Create user document in Firestore
-    const userRef = doc(db, 'users', user.uid);
-    await setDoc(userRef, {
-      uid: user.uid,
-      username: trimmedUsername,
-      name: trimmedFullName,
+    
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      return { success: false, error: 'Username: 3-20 chars, letters/numbers/underscore' };
+    }
+    
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return { success: false, error: 'Invalid email' };
+    }
+    
+    if (password.length < 6) {
+      return { success: false, error: 'Password min 6 chars' };
+    }
+    
+    // Check if username exists in Firestore
+    const existingUser = await getDocs(query(collection(db, 'users'), where('username', '==', '@' + username)));
+    if (!existingUser.empty) {
+      return { success: false, error: 'Username taken' };
+    }
+    
+    // Check if email exists in Firestore
+    const existingEmail = await getDocs(query(collection(db, 'users'), where('email', '==', email)));
+    if (!existingEmail.empty) {
+      return { success: false, error: 'Email registered' };
+    }
+    
+    // Try Firebase Auth
+    let firebaseUser = null;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      firebaseUser = userCredential.user;
+      
+      // Update profile with display name
+      await updateProfile(firebaseUser, { displayName: name });
+      localStorage.setItem('uid', firebaseUser.uid);
+    } catch (authError) {
+      console.warn('Firebase Auth registration failed:', authError);
+      // Continue with Firestore only
+    }
+    
+    // Create user in Firestore
+    const userData = {
+      name: name,
+      username: '@' + username,
       email: email,
+      password: hashPassword(password),
       avatar: null,
       bio: '',
       website: '',
       friends: [],
       besties: [],
       posts: [],
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-
-    console.log('✅ User document created in Firestore');
-
-    // Create wallet document
-    const walletRef = doc(db, 'wallets', user.uid);
-    await setDoc(walletRef, {
-      userId: user.uid,
+      createdAt: serverTimestamp()
+    };
+    
+    const userRef = await addDoc(collection(db, 'users'), userData);
+    
+    // Create wallet
+    await setDoc(doc(db, 'wallets', userRef.id), {
+      userId: userRef.id,
+      username: '@' + username,
       chicken: 10,
       lion: 5,
       fish: 8,
       bike: 3,
       createdAt: serverTimestamp()
     });
-
-    console.log('✅ Wallet created');
-
-    return { 
-      success: true, 
-      user: user,
-      username: trimmedUsername,
-      uid: user.uid
-    };
-
-  } catch (error) {
-    console.error('❌ Registration error:', error);
     
-    let errorMessage = error.message;
-    if (error.code === 'auth/email-already-in-use') {
-      errorMessage = 'This email is already registered. Please use a different email or login.';
-    } else if (error.code === 'auth/invalid-email') {
-      errorMessage = 'Invalid email address. Please check and try again.';
-    } else if (error.code === 'auth/weak-password') {
-      errorMessage = 'Password is too weak. Please use a stronger password.';
-    } else if (error.code === 'auth/configuration-not-found') {
-      errorMessage = 'Firebase Authentication is not enabled. Please enable Email/Password in Firebase Console.';
-    } else if (error.code === 'auth/operation-not-allowed') {
-      errorMessage = 'Email/Password sign-in is not enabled. Please enable it in Firebase Console.';
+    // Save to localStorage
+    const profile = {
+      username: '@' + username,
+      name: name,
+      bio: '',
+      website: '',
+      avatar: null,
+      friends: [],
+      besties: [],
+      posts: []
+    };
+    localStorage.setItem('userProfile', JSON.stringify(profile));
+    localStorage.setItem('currentUser', '@' + username);
+    
+    if (!firebaseUser) {
+      localStorage.setItem('uid', userRef.id);
     }
     
-    return { 
-      success: false, 
-      error: errorMessage,
-      code: error.code
-    };
+    return { success: true, userId: userRef.id };
+    
+  } catch (error) {
+    console.error('Registration error:', error);
+    return { success: false, error: error.message };
   }
 }
 
 // ================================================================
-// LOGIN - Sign in existing user
+// UPDATE USER PROFILE
 // ================================================================
 
-export async function login(email, password) {
+export async function updateUserProfile(uid, data) {
   try {
-    if (!email || !password) {
-      return { success: false, error: 'Email and password are required' };
-    }
-
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // Get user data from Firestore
-    const userRef = doc(db, 'users', user.uid);
-    const userDoc = await getDoc(userRef);
-    
-    let userData = {};
-    if (userDoc.exists()) {
-      userData = userDoc.data();
-    } else {
-      // If user document doesn't exist, create one
-      await setDoc(userRef, {
-        uid: user.uid,
-        username: user.displayName || 'user_' + user.uid.substring(0, 6),
-        name: user.displayName || 'User',
-        email: user.email,
-        avatar: null,
-        bio: '',
-        website: '',
-        friends: [],
-        besties: [],
-        posts: [],
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-      userData = { username: user.displayName || 'user_' + user.uid.substring(0, 6) };
-    }
-
-    return { 
-      success: true, 
-      user: user,
-      userData: userData
-    };
-
-  } catch (error) {
-    console.error('❌ Login error:', error);
-    
-    let errorMessage = 'Invalid email or password';
-    if (error.code === 'auth/user-not-found') {
-      errorMessage = 'No account found with this email';
-    } else if (error.code === 'auth/wrong-password') {
-      errorMessage = 'Incorrect password';
-    } else if (error.code === 'auth/invalid-email') {
-      errorMessage = 'Invalid email address';
-    } else if (error.code === 'auth/user-disabled') {
-      errorMessage = 'This account has been disabled';
-    } else if (error.code === 'auth/too-many-requests') {
-      errorMessage = 'Too many failed attempts. Please try again later.';
-    }
-    
-    return { 
-      success: false, 
-      error: errorMessage,
-      code: error.code
-    };
-  }
-}
-
-// ================================================================
-// LOGOUT - Sign out current user
-// ================================================================
-
-export async function logout() {
-  try {
-    await signOut(auth);
-    // Clear local storage
-    localStorage.removeItem('userProfile');
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('recentSearches');
-    console.log('✅ Logged out successfully');
-    return { success: true };
-  } catch (error) {
-    console.error('❌ Logout error:', error);
-    return { 
-      success: false, 
-      error: error.message 
-    };
-  }
-}
-
-// ================================================================
-// GET CURRENT USER - Get currently logged in user
-// ================================================================
-
-export function getCurrentUser() {
-  return auth.currentUser;
-}
-
-// ================================================================
-// GET USER DATA - Get user data from Firestore
-// ================================================================
-
-export async function getUserData(uid) {
-  try {
-    if (!uid) {
-      const currentUser = getCurrentUser();
-      if (!currentUser) {
-        return { success: false, error: 'No user logged in' };
-      }
-      uid = currentUser.uid;
-    }
-
     const userRef = doc(db, 'users', uid);
-    const userDoc = await getDoc(userRef);
-    
-    if (userDoc.exists()) {
-      return { 
-        success: true, 
-        data: userDoc.data() 
-      };
-    } else {
-      return { 
-        success: false, 
-        error: 'User not found' 
-      };
-    }
-  } catch (error) {
-    console.error('❌ Get user data error:', error);
-    return { 
-      success: false, 
-      error: error.message 
-    };
-  }
-}
-
-// ================================================================
-// UPDATE USER PROFILE - Update user profile in Firestore
-// ================================================================
-
-export async function updateUserProfile(uid, updates) {
-  try {
-    if (!uid) {
-      const currentUser = getCurrentUser();
-      if (!currentUser) {
-        return { success: false, error: 'No user logged in' };
-      }
-      uid = currentUser.uid;
-    }
-
-    const userRef = doc(db, 'users', uid);
-    await setDoc(userRef, {
-      ...updates,
+    await updateDoc(userRef, {
+      ...data,
       updatedAt: serverTimestamp()
-    }, { merge: true });
+    });
     
-    // Update local storage
-    const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-    localStorage.setItem('userProfile', JSON.stringify({ ...profile, ...updates }));
+    // Update Firebase Auth profile if needed
+    const user = auth.currentUser;
+    if (user && data.name) {
+      await updateProfile(user, { displayName: data.name });
+    }
     
     return { success: true };
   } catch (error) {
-    console.error('❌ Update profile error:', error);
-    return { 
-      success: false, 
-      error: error.message 
-    };
+    console.error('Update profile error:', error);
+    return { success: false, error: error.message };
   }
 }
 
 // ================================================================
-// RESET PASSWORD - Send password reset email
+// UPDATE AVATAR
+// ================================================================
+
+export async function updateUserAvatar(uid, avatarUrl) {
+  try {
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, {
+      avatar: avatarUrl,
+      updatedAt: serverTimestamp()
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Update avatar error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// ================================================================
+// SEND PASSWORD RESET EMAIL
 // ================================================================
 
 export async function resetPassword(email) {
   try {
-    if (!email) {
-      return { success: false, error: 'Email is required' };
-    }
-    
     await sendPasswordResetEmail(auth, email);
     return { success: true };
   } catch (error) {
-    console.error('❌ Reset password error:', error);
-    
-    let errorMessage = 'Failed to send reset email';
-    if (error.code === 'auth/user-not-found') {
-      errorMessage = 'No account found with this email';
-    } else if (error.code === 'auth/invalid-email') {
-      errorMessage = 'Invalid email address';
-    }
-    
-    return { 
-      success: false, 
-      error: errorMessage 
-    };
+    console.error('Reset password error:', error);
+    return { success: false, error: error.message };
   }
 }
 
 // ================================================================
-// AUTH STATE LISTENER - Listen for auth state changes
+// SEND EMAIL VERIFICATION
 // ================================================================
 
-export function onAuthStateChange(callback) {
-  return onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // User is signed in
-      callback(user);
-    } else {
-      // User is signed out
-      callback(null);
-    }
-  });
-}
-
-// ================================================================
-// CHECK USERNAME AVAILABILITY - Check if username exists
-// ================================================================
-
-export async function checkUsernameAvailability(username) {
+export async function verifyEmail() {
   try {
-    if (!username) {
-      return { available: false, error: 'Username is required' };
+    const user = auth.currentUser;
+    if (user) {
+      await sendEmailVerification(user);
+      return { success: true };
     }
-    
-    const q = query(collection(db, 'users'), where('username', '==', username));
-    const snapshot = await getDocs(q);
-    return { 
-      available: snapshot.empty,
-      exists: !snapshot.empty
-    };
+    return { success: false, error: 'No user logged in' };
   } catch (error) {
-    console.error('❌ Check username error:', error);
-    return { 
-      available: false, 
-      error: error.message 
-    };
+    console.error('Email verification error:', error);
+    return { success: false, error: error.message };
   }
 }
 
 // ================================================================
-// REQUIRE AUTH - Check if user is authenticated (for page protection)
+// LOGOUT
 // ================================================================
 
-export function requireAuth() {
-  const user = getCurrentUser();
-  if (!user) {
-    return false;
-  }
-  return true;
+export function logout() {
+  signOut(auth).catch(() => {});
+  localStorage.removeItem('uid');
+  localStorage.removeItem('currentUser');
+  localStorage.removeItem('userProfile');
+  window.location.href = 'login.html';
 }
 
 // ================================================================
-// GET AUTH TOKEN - Get Firebase ID token for backend authentication
+// GET CURRENT USER
+// ================================================================
+
+export function getCurrentUser() {
+  return {
+    uid: localStorage.getItem('uid'),
+    username: localStorage.getItem('currentUser') || '@anonymous'
+  };
+}
+
+// ================================================================
+// CHECK AUTH STATE
+// ================================================================
+
+export function onAuth(callback) {
+  return onAuthStateChanged(auth, callback);
+}
+
+// ================================================================
+// GET AUTH TOKEN (for backend API)
 // ================================================================
 
 export async function getAuthToken() {
-  const user = getCurrentUser();
-  if (!user) {
-    return null;
-  }
-  try {
+  const user = auth.currentUser;
+  if (user) {
     return await user.getIdToken();
-  } catch (error) {
-    console.error('❌ Get auth token error:', error);
-    return null;
   }
-}
-
-// ================================================================
-// SYNC USER PROFILE - Sync local profile with Firestore
-// ================================================================
-
-export async function syncUserProfile() {
-  const user = getCurrentUser();
-  if (!user) {
-    return { success: false, error: 'No user logged in' };
-  }
-
-  try {
-    const result = await getUserData(user.uid);
-    if (result.success) {
-      localStorage.setItem('userProfile', JSON.stringify(result.data));
-      return { success: true, data: result.data };
-    }
-    return { success: false, error: result.error };
-  } catch (error) {
-    console.error('❌ Sync profile error:', error);
-    return { success: false, error: error.message };
-  }
+  return localStorage.getItem('uid') || null;
 }
