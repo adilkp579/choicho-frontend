@@ -7,7 +7,7 @@ import {
   signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { 
-  getFirestore, doc, setDoc, getDoc, serverTimestamp 
+  getFirestore, doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { app } from './firebase-config.js';
 
@@ -84,9 +84,21 @@ export async function register(email, password, username, fullName = '') {
 
   } catch (error) {
     console.error('Registration error:', error);
+    
+    let errorMessage = error.message;
+    if (error.code === 'auth/email-already-in-use') {
+      errorMessage = 'This email is already registered. Please use a different email or login.';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = 'Invalid email address. Please check and try again.';
+    } else if (error.code === 'auth/weak-password') {
+      errorMessage = 'Password is too weak. Please use a stronger password.';
+    } else if (error.code === 'auth/configuration-not-found') {
+      errorMessage = 'Firebase Authentication is not enabled. Please enable it in Firebase Console.';
+    }
+    
     return { 
       success: false, 
-      error: error.message 
+      error: errorMessage 
     };
   }
 }
@@ -258,7 +270,6 @@ export function onAuthStateChange(callback) {
 
 export async function checkUsernameAvailability(username) {
   try {
-    // This is a simple check - you may want to implement a more robust check
     const q = query(collection(db, 'users'), where('username', '==', username));
     const snapshot = await getDocs(q);
     return { 
@@ -272,4 +283,16 @@ export async function checkUsernameAvailability(username) {
       error: error.message 
     };
   }
+}
+
+// ================================================================
+// REQUIRE AUTH - Check if user is authenticated
+// ================================================================
+
+export function requireAuth() {
+  const user = getCurrentUser();
+  if (!user) {
+    return false;
+  }
+  return true;
 }
