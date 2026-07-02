@@ -100,6 +100,26 @@
       color: #555;
     }
     
+    /* ===== PASSWORD TOGGLE BUTTON ===== */
+    .password-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      cursor: pointer;
+      font-size: 0.9rem;
+      z-index: 2;
+      background: transparent;
+      border: none;
+      padding: 0.2rem;
+      transition: color 0.3s;
+    }
+    
+    .password-toggle:hover {
+      color: #fff;
+    }
+    
     .auth-error {
       color: #ef4444;
       font-size: 0.75rem;
@@ -209,6 +229,7 @@
     @media (max-width: 480px) {
       .auth-box { padding: 1.5rem 1.2rem; }
       .auth-brand h1 { font-size: 1.5rem; }
+      .password-toggle { right: 10px; }
     }
   </style>
 </head>
@@ -231,24 +252,34 @@
           <input type="text" id="signupFullName" placeholder="Full Name" autocomplete="name">
         </div>
         
+        <!-- ===== USERNAME FIELD ===== -->
         <div class="input-group">
           <i class="fas fa-user"></i>
           <input type="text" id="signupUsername" placeholder="Username" autocomplete="username">
         </div>
         
+        <!-- ===== EMAIL FIELD ===== -->
         <div class="input-group">
           <i class="fas fa-envelope"></i>
           <input type="email" id="signupEmail" placeholder="Email" autocomplete="email">
         </div>
         
+        <!-- ===== PASSWORD FIELD WITH TOGGLE ===== -->
         <div class="input-group">
           <i class="fas fa-lock"></i>
           <input type="password" id="signupPassword" placeholder="Password (min 6 characters)" autocomplete="new-password">
+          <button class="password-toggle" id="passwordToggle" type="button" onclick="togglePasswordVisibility()">
+            <i class="fas fa-eye"></i>
+          </button>
         </div>
         
+        <!-- ===== CONFIRM PASSWORD FIELD WITH TOGGLE ===== -->
         <div class="input-group">
           <i class="fas fa-lock"></i>
           <input type="password" id="signupConfirm" placeholder="Confirm Password" autocomplete="new-password">
+          <button class="password-toggle" id="confirmToggle" type="button" onclick="toggleConfirmVisibility()">
+            <i class="fas fa-eye"></i>
+          </button>
         </div>
         
         <div class="auth-error" id="signupError"></div>
@@ -268,7 +299,7 @@
   
   <script type="module">
     // ================================================================
-    // SIGNUP - Full Name + Username + Email + Password
+    // SIGNUP - Full Name + Username (no restrictions) + Email + Password
     // ================================================================
     
     import { register } from './js/auth.js';
@@ -283,6 +314,35 @@
         toast.className = 'toast';
       }, 3000);
     }
+    
+    // ===== PASSWORD TOGGLE FUNCTIONS =====
+    window.togglePasswordVisibility = function() {
+      const passwordInput = document.getElementById('signupPassword');
+      const toggleBtn = document.getElementById('passwordToggle');
+      const icon = toggleBtn.querySelector('i');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        passwordInput.type = 'password';
+        icon.className = 'fas fa-eye';
+      }
+    };
+    
+    window.toggleConfirmVisibility = function() {
+      const confirmInput = document.getElementById('signupConfirm');
+      const toggleBtn = document.getElementById('confirmToggle');
+      const icon = toggleBtn.querySelector('i');
+      
+      if (confirmInput.type === 'password') {
+        confirmInput.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        confirmInput.type = 'password';
+        icon.className = 'fas fa-eye';
+      }
+    };
     
     window.handleSignup = async function() {
       const fullName = document.getElementById('signupFullName').value.trim();
@@ -313,24 +373,9 @@
         return;
       }
       
-      // Username validation
-      if (username.length < 3) {
-        errorEl.textContent = '❌ Username must be at least 3 characters';
-        showToast('Username must be at least 3 characters', true);
-        return;
-      }
-      
-      if (username.length > 20) {
-        errorEl.textContent = '❌ Username must be less than 20 characters';
-        showToast('Username must be less than 20 characters', true);
-        return;
-      }
-      
-      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-        errorEl.textContent = '❌ Username can only contain letters, numbers, and underscores';
-        showToast('Username can only contain letters, numbers, and underscores', true);
-        return;
-      }
+      // ===== NO RESTRICTIONS ON USERNAME =====
+      // Username can be anything - no length or character restrictions
+      // Only check if it's not empty (already checked above)
       
       // Email validation
       if (!email || !email.includes('@') || !email.includes('.')) {
