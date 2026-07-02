@@ -1,263 +1,224 @@
 // ================================================================
-// AUTHENTICATION MODULE
+// AUTH.JS - Authentication functions
 // ================================================================
 
 import { 
-  auth, 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signInAnonymously,
-  signOut,
-  sendPasswordResetEmail,
-  updateProfile,
-  updateEmail,
-  updatePassword,
-  sendEmailVerification,
-  db,
-  BACKEND_URL
-} from './firebase-config.js';
-import { showToast } from './common.js';
-import { collection, query, where, getDocs, doc, setDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
+  signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { 
+  getFirestore, doc, setDoc, getDoc, serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { app } from './firebase-config.js';
+
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // ================================================================
-// Simple password hash (for Firestore fallback)
+// REGISTER - Create new user account
 // ================================================================
 
-function hashPassword(pw) {
-  let h = 0;
-  for (let i = 0; i < pw.length; i++) {
-    const c = pw.charCodeAt(i);
-    h = ((h << 5) - h) + c;
-    h = h & h;
-  }
-  return 'h_' + Math.abs(h).toString(16);
-}
-
-// ================================================================
-// LOGIN with Email/Password
-// ================================================================
-
-export async function login(usernameOrEmail, password) {
+export async function register(email, password, username, fullName = '') {
   try {
-    let email = usernameOrEmail;
-    let userData = null;
+    // ===== REMOVED ALL USERNAME RESTRICTIONS =====
+    // No validation on username - can be anything
+    // Only check if username exists (not empty)
     
-    // If not email, try to find email from username
-    if (!usernameOrEmail.includes('@')) {
-      const q = query(
-        collection(db, 'users'), 
-        where('username', '==', usernameOrEmail.startsWith('@') ? usernameOrEmail : '@' + usernameOrEmail)
-      );
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        userData = snapshot.docs[0].data();
-        email = userData.email || usernameOrEmail + '@choicho.com';
-      }
-    } else {
-      // Try to find by email
-      const q = query(collection(db, 'users'), where('email', '==', usernameOrEmail));
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        userData = snapshot.docs[0].data();
-      }
+    if (!username || username.trim() === '') {
+      return { success: false, error: 'Username is required' };
     }
-    
-    // Try Firebase Auth
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      localStorage.setItem('uid', userCredential.user.uid);
-      
-      if (userData) {
-        localStorage.setItem('currentUser', userData.username);
-        localStorage.setItem('userProfile', JSON.stringify(userData));
-      }
-      
-      return { success: true, user: userCredential.user };
-    } catch (authError) {
-      // If user not found, try to create account
-      if (authError.code === 'auth/user-not-found' && userData) {
-        try {
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          localStorage.setItem('uid', userCredential.user.uid);
-          localStorage.setItem('currentUser', userData.username);
-          localStorage.setItem('userProfile', JSON.stringify(userData));
-          return { success: true, user: userCredential.user };
-        } catch (createError) {
-          console.warn('Account creation failed:', createError);
-        }
-      }
-      
-      // Fallback to Firestore auth
-      if (userData && userData.password === hashPassword(password)) {
-        // Try anonymous auth for session
-        try {
-          const guestCred = await signInAnonymously(auth);
-          localStorage.setItem('uid', guestCred.user.uid);
-        } catch (e) {
-          localStorage.setItem('uid', 'firestore_' + userData.username.replace('@', ''));
-        }
-        localStorage.setItem('currentUser', userData.username);
-        localStorage.setItem('userProfile', JSON.stringify(userData));
-        return { success: true, user: userData };
-      }
-      
-      throw authError;
-    }
-  } catch (error) {
-    console.error('Login error:', error);
-    return { success: false, error: error.message };
-  }
-}
 
-// ================================================================
-// REGISTER new user
-// ================================================================
+    if (!email || email.trim() === '') {
+      return { success: false, error: 'Email is required' };
+    }
 
-export async function register(name, username, email, password) {
-  try {
-    // Validate
-    if (!name || !username || !email || !password) {
-      return { success: false, error: 'All fields required' };
+    if (!password || password.length < 6) {
+      return { success: false, error: 'Password must be at least 6 characters' };
     }
-    
-    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
-      return { success: false, error: 'Username: 3-20 chars, letters/numbers/underscore' };
-    }
-    
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return { success: false, error: 'Invalid email' };
-    }
-    
-    if (password.length < 6) {
-      return { success: false, error: 'Password min 6 chars' };
-    }
-    
-    // Check if username exists in Firestore
-    const existingUser = await getDocs(query(collection(db, 'users'), where('username', '==', '@' + username)));
-    if (!existingUser.empty) {
-      return { success: false, error: 'Username taken' };
-    }
-    
-    // Check if email exists in Firestore
-    const existingEmail = await getDocs(query(collection(db, 'users'), where('email', '==', email)));
-    if (!existingEmail.empty) {
-      return { success: false, error: 'Email registered' };
-    }
-    
-    // Try Firebase Auth
-    let firebaseUser = null;
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      firebaseUser = userCredential.user;
-      
-      // Update profile with display name
-      await updateProfile(firebaseUser, { displayName: name });
-      localStorage.setItem('uid', firebaseUser.uid);
-    } catch (authError) {
-      console.warn('Firebase Auth registration failed:', authError);
-      // Continue with Firestore only
-    }
-    
-    // Create user in Firestore
-    const userData = {
-      name: name,
-      username: '@' + username,
+
+    const trimmedUsername = username.trim();
+    const trimmedFullName = fullName.trim() || trimmedUsername;
+
+    // Create user with email and password
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Update profile with display name
+    await updateProfile(user, {
+      displayName: trimmedFullName
+    });
+
+    // Create user document in Firestore
+    const userRef = doc(db, 'users', user.uid);
+    await setDoc(userRef, {
+      uid: user.uid,
+      username: trimmedUsername,
+      name: trimmedFullName,
       email: email,
-      password: hashPassword(password),
       avatar: null,
       bio: '',
       website: '',
       friends: [],
       besties: [],
       posts: [],
-      createdAt: serverTimestamp()
-    };
-    
-    const userRef = await addDoc(collection(db, 'users'), userData);
-    
-    // Create wallet
-    await setDoc(doc(db, 'wallets', userRef.id), {
-      userId: userRef.id,
-      username: '@' + username,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+
+    // Create wallet document
+    const walletRef = doc(db, 'wallets', user.uid);
+    await setDoc(walletRef, {
+      userId: user.uid,
       chicken: 10,
       lion: 5,
       fish: 8,
       bike: 3,
       createdAt: serverTimestamp()
     });
-    
-    // Save to localStorage
-    const profile = {
-      username: '@' + username,
-      name: name,
-      bio: '',
-      website: '',
-      avatar: null,
-      friends: [],
-      besties: [],
-      posts: []
+
+    return { 
+      success: true, 
+      user: user,
+      username: trimmedUsername 
     };
-    localStorage.setItem('userProfile', JSON.stringify(profile));
-    localStorage.setItem('currentUser', '@' + username);
-    
-    if (!firebaseUser) {
-      localStorage.setItem('uid', userRef.id);
-    }
-    
-    return { success: true, userId: userRef.id };
-    
+
   } catch (error) {
     console.error('Registration error:', error);
-    return { success: false, error: error.message };
+    return { 
+      success: false, 
+      error: error.message 
+    };
   }
 }
 
 // ================================================================
-// UPDATE USER PROFILE
+// LOGIN - Sign in existing user
 // ================================================================
 
-export async function updateUserProfile(uid, data) {
+export async function login(email, password) {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Get user data from Firestore
+    const userRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userRef);
+    
+    let userData = {};
+    if (userDoc.exists()) {
+      userData = userDoc.data();
+    }
+
+    return { 
+      success: true, 
+      user: user,
+      userData: userData
+    };
+
+  } catch (error) {
+    console.error('Login error:', error);
+    
+    let errorMessage = 'Invalid email or password';
+    if (error.code === 'auth/user-not-found') {
+      errorMessage = 'No account found with this email';
+    } else if (error.code === 'auth/wrong-password') {
+      errorMessage = 'Incorrect password';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = 'Invalid email address';
+    } else if (error.code === 'auth/user-disabled') {
+      errorMessage = 'This account has been disabled';
+    } else if (error.code === 'auth/too-many-requests') {
+      errorMessage = 'Too many failed attempts. Please try again later.';
+    }
+    
+    return { 
+      success: false, 
+      error: errorMessage 
+    };
+  }
+}
+
+// ================================================================
+// LOGOUT - Sign out current user
+// ================================================================
+
+export async function logout() {
+  try {
+    await signOut(auth);
+    // Clear local storage
+    localStorage.removeItem('userProfile');
+    localStorage.removeItem('currentUser');
+    return { success: true };
+  } catch (error) {
+    console.error('Logout error:', error);
+    return { 
+      success: false, 
+      error: error.message 
+    };
+  }
+}
+
+// ================================================================
+// GET CURRENT USER - Get currently logged in user
+// ================================================================
+
+export function getCurrentUser() {
+  return auth.currentUser;
+}
+
+// ================================================================
+// GET USER DATA - Get user data from Firestore
+// ================================================================
+
+export async function getUserData(uid) {
   try {
     const userRef = doc(db, 'users', uid);
-    await updateDoc(userRef, {
-      ...data,
-      updatedAt: serverTimestamp()
-    });
+    const userDoc = await getDoc(userRef);
     
-    // Update Firebase Auth profile if needed
-    const user = auth.currentUser;
-    if (user && data.name) {
-      await updateProfile(user, { displayName: data.name });
+    if (userDoc.exists()) {
+      return { 
+        success: true, 
+        data: userDoc.data() 
+      };
+    } else {
+      return { 
+        success: false, 
+        error: 'User not found' 
+      };
     }
+  } catch (error) {
+    console.error('Get user data error:', error);
+    return { 
+      success: false, 
+      error: error.message 
+    };
+  }
+}
+
+// ================================================================
+// UPDATE USER PROFILE - Update user profile in Firestore
+// ================================================================
+
+export async function updateUserProfile(uid, updates) {
+  try {
+    const userRef = doc(db, 'users', uid);
+    await setDoc(userRef, {
+      ...updates,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
     
     return { success: true };
   } catch (error) {
     console.error('Update profile error:', error);
-    return { success: false, error: error.message };
+    return { 
+      success: false, 
+      error: error.message 
+    };
   }
 }
 
 // ================================================================
-// UPDATE AVATAR
-// ================================================================
-
-export async function updateUserAvatar(uid, avatarUrl) {
-  try {
-    const userRef = doc(db, 'users', uid);
-    await updateDoc(userRef, {
-      avatar: avatarUrl,
-      updatedAt: serverTimestamp()
-    });
-    return { success: true };
-  } catch (error) {
-    console.error('Update avatar error:', error);
-    return { success: false, error: error.message };
-  }
-}
-
-// ================================================================
-// SEND PASSWORD RESET EMAIL
+// RESET PASSWORD - Send password reset email
 // ================================================================
 
 export async function resetPassword(email) {
@@ -266,67 +227,49 @@ export async function resetPassword(email) {
     return { success: true };
   } catch (error) {
     console.error('Reset password error:', error);
-    return { success: false, error: error.message };
-  }
-}
-
-// ================================================================
-// SEND EMAIL VERIFICATION
-// ================================================================
-
-export async function verifyEmail() {
-  try {
-    const user = auth.currentUser;
-    if (user) {
-      await sendEmailVerification(user);
-      return { success: true };
+    
+    let errorMessage = 'Failed to send reset email';
+    if (error.code === 'auth/user-not-found') {
+      errorMessage = 'No account found with this email';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = 'Invalid email address';
     }
-    return { success: false, error: 'No user logged in' };
+    
+    return { 
+      success: false, 
+      error: errorMessage 
+    };
+  }
+}
+
+// ================================================================
+// AUTH STATE LISTENER - Listen for auth state changes
+// ================================================================
+
+export function onAuthStateChange(callback) {
+  return onAuthStateChanged(auth, (user) => {
+    callback(user);
+  });
+}
+
+// ================================================================
+// CHECK USERNAME AVAILABILITY - Check if username exists
+// ================================================================
+
+export async function checkUsernameAvailability(username) {
+  try {
+    // This is a simple check - you may want to implement a more robust check
+    const q = query(collection(db, 'users'), where('username', '==', username));
+    const snapshot = await getDocs(q);
+    return { 
+      available: snapshot.empty,
+      exists: !snapshot.empty
+    };
   } catch (error) {
-    console.error('Email verification error:', error);
-    return { success: false, error: error.message };
+    console.error('Check username error:', error);
+    return { 
+      available: false, 
+      error: error.message 
+    };
   }
-}
-
-// ================================================================
-// LOGOUT
-// ================================================================
-
-export function logout() {
-  signOut(auth).catch(() => {});
-  localStorage.removeItem('uid');
-  localStorage.removeItem('currentUser');
-  localStorage.removeItem('userProfile');
-  window.location.href = 'login.html';
-}
-
-// ================================================================
-// GET CURRENT USER
-// ================================================================
-
-export function getCurrentUser() {
-  return {
-    uid: localStorage.getItem('uid'),
-    username: localStorage.getItem('currentUser') || '@anonymous'
-  };
-}
-
-// ================================================================
-// CHECK AUTH STATE
-// ================================================================
-
-export function onAuth(callback) {
-  return onAuthStateChanged(auth, callback);
-}
-
-// ================================================================
-// GET AUTH TOKEN (for backend API)
-// ================================================================
-
-export async function getAuthToken() {
-  const user = auth.currentUser;
-  if (user) {
-    return await user.getIdToken();
-  }
-  return localStorage.getItem('uid') || null;
 }
