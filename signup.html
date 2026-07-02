@@ -100,7 +100,15 @@
       color: #555;
     }
     
-    /* ===== PASSWORD TOGGLE BUTTON ===== */
+    /* ===== PASSWORD TOGGLE INSIDE INPUT ===== */
+    .input-group.password-group {
+      position: relative;
+    }
+    
+    .input-group.password-group input {
+      padding-right: 2.8rem;
+    }
+    
     .password-toggle {
       position: absolute;
       right: 14px;
@@ -108,16 +116,23 @@
       transform: translateY(-50%);
       color: #666;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       z-index: 2;
       background: transparent;
       border: none;
       padding: 0.2rem;
       transition: color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .password-toggle:hover {
       color: #fff;
+    }
+    
+    .password-toggle:active {
+      transform: scale(0.9);
     }
     
     .auth-error {
@@ -229,7 +244,7 @@
     @media (max-width: 480px) {
       .auth-box { padding: 1.5rem 1.2rem; }
       .auth-brand h1 { font-size: 1.5rem; }
-      .password-toggle { right: 10px; }
+      .password-toggle { right: 10px; font-size: 0.85rem; }
     }
   </style>
 </head>
@@ -264,8 +279,8 @@
           <input type="email" id="signupEmail" placeholder="Email" autocomplete="email">
         </div>
         
-        <!-- ===== PASSWORD FIELD WITH TOGGLE ===== -->
-        <div class="input-group">
+        <!-- ===== PASSWORD FIELD WITH TOGGLE INSIDE ===== -->
+        <div class="input-group password-group">
           <i class="fas fa-lock"></i>
           <input type="password" id="signupPassword" placeholder="Password (min 6 characters)" autocomplete="new-password">
           <button class="password-toggle" id="passwordToggle" type="button" onclick="togglePasswordVisibility()">
@@ -273,8 +288,8 @@
           </button>
         </div>
         
-        <!-- ===== CONFIRM PASSWORD FIELD WITH TOGGLE ===== -->
-        <div class="input-group">
+        <!-- ===== CONFIRM PASSWORD FIELD WITH TOGGLE INSIDE ===== -->
+        <div class="input-group password-group">
           <i class="fas fa-lock"></i>
           <input type="password" id="signupConfirm" placeholder="Confirm Password" autocomplete="new-password">
           <button class="password-toggle" id="confirmToggle" type="button" onclick="toggleConfirmVisibility()">
