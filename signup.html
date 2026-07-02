@@ -225,6 +225,12 @@
           <p>Create your account</p>
         </div>
         
+        <!-- ===== FULL NAME FIELD ===== -->
+        <div class="input-group">
+          <i class="fas fa-user-circle"></i>
+          <input type="text" id="signupFullName" placeholder="Full Name" autocomplete="name">
+        </div>
+        
         <div class="input-group">
           <i class="fas fa-user"></i>
           <input type="text" id="signupUsername" placeholder="Username" autocomplete="username">
@@ -262,7 +268,7 @@
   
   <script type="module">
     // ================================================================
-    // SIGNUP - Proper account creation with username + email + password
+    // SIGNUP - Full Name + Username + Email + Password
     // ================================================================
     
     import { register } from './js/auth.js';
@@ -279,6 +285,7 @@
     }
     
     window.handleSignup = async function() {
+      const fullName = document.getElementById('signupFullName').value.trim();
       const username = document.getElementById('signupUsername').value.trim();
       const email = document.getElementById('signupEmail').value.trim();
       const password = document.getElementById('signupPassword').value;
@@ -293,9 +300,16 @@
       
       // ===== VALIDATION =====
       // Check all fields are filled
-      if (!username || !email || !password || !confirm) {
+      if (!fullName || !username || !email || !password || !confirm) {
         errorEl.textContent = '❌ All fields are required';
         showToast('All fields are required', true);
+        return;
+      }
+      
+      // Full Name validation
+      if (fullName.length < 2) {
+        errorEl.textContent = '❌ Please enter your full name';
+        showToast('Please enter your full name', true);
         return;
       }
       
@@ -343,9 +357,10 @@
       btn.disabled = true;
       
       try {
-        console.log('📝 Creating account for:', username, email);
+        console.log('📝 Creating account for:', { fullName, username, email });
         
-        const result = await register(email, password, username);
+        // Pass fullName as the display name
+        const result = await register(email, password, username, fullName);
         
         console.log('📝 Register result:', result);
         
@@ -354,7 +369,7 @@
         
         if (result.success) {
           successEl.textContent = '✅ Account created! Redirecting...';
-          showToast(`Welcome ${username}! 🎉`);
+          showToast(`Welcome ${fullName}! 🎉`);
           setTimeout(() => {
             window.location.href = 'index.html';
           }, 1500);
@@ -388,6 +403,12 @@
     });
     
     // Also allow Enter key on all fields
+    document.getElementById('signupFullName').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('signupUsername').focus();
+      }
+    });
+    
     document.getElementById('signupUsername').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         document.getElementById('signupEmail').focus();
