@@ -68,7 +68,6 @@
       margin-bottom: 1rem;
     }
     
-    /* Left icon - for username, email, etc. */
     .input-group .input-icon {
       position: absolute;
       left: 14px;
@@ -79,7 +78,6 @@
       z-index: 2;
     }
     
-    /* Password toggle icon - positioned where lock icon was (left side) */
     .password-toggle {
       position: absolute;
       left: 14px;
@@ -271,7 +269,7 @@
           <input type="email" id="signupEmail" placeholder="Email" autocomplete="email">
         </div>
         
-        <!-- ===== PASSWORD FIELD - Lock icon removed, show icon in its place ===== -->
+        <!-- ===== PASSWORD FIELD ===== -->
         <div class="input-group">
           <button type="button" class="password-toggle" id="togglePassword1" onclick="togglePassword('signupPassword', 'togglePassword1')">
             <i class="fas fa-eye"></i>
@@ -279,7 +277,7 @@
           <input type="password" id="signupPassword" placeholder="Password (min 6 characters)" autocomplete="new-password">
         </div>
         
-        <!-- ===== CONFIRM PASSWORD FIELD - Lock icon removed, show icon in its place ===== -->
+        <!-- ===== CONFIRM PASSWORD FIELD ===== -->
         <div class="input-group">
           <button type="button" class="password-toggle" id="togglePassword2" onclick="togglePassword('signupConfirm', 'togglePassword2')">
             <i class="fas fa-eye"></i>
@@ -363,9 +361,6 @@
         return;
       }
       
-      // Username validation - no restrictions (only check not empty)
-      // Username can be anything - no length or character restrictions
-      
       // Email validation
       if (!email || !email.includes('@') || !email.includes('.')) {
         errorEl.textContent = '❌ Please enter a valid email address';
@@ -408,13 +403,6 @@
           }, 1500);
         } else {
           let errorMsg = result.error || 'Unknown error occurred';
-          if (errorMsg.includes('email-already-in-use')) {
-            errorMsg = 'This email is already registered. Please use a different email or login.';
-          } else if (errorMsg.includes('invalid-email')) {
-            errorMsg = 'Invalid email address. Please check and try again.';
-          } else if (errorMsg.includes('weak-password')) {
-            errorMsg = 'Password is too weak. Please use a stronger password.';
-          }
           errorEl.textContent = '❌ ' + errorMsg;
           showToast(errorMsg, true);
         }
