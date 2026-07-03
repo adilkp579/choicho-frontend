@@ -257,7 +257,7 @@
           <input type="text" id="signupFullName" placeholder="Full Name" autocomplete="name">
         </div>
         
-        <!-- ===== USERNAME FIELD ===== -->
+        <!-- ===== USERNAME FIELD (No restrictions) ===== -->
         <div class="input-group">
           <i class="fas fa-user input-icon"></i>
           <input type="text" id="signupUsername" placeholder="Username" autocomplete="username">
@@ -302,7 +302,7 @@
   
   <script type="module">
     // ================================================================
-    // SIGNUP - Full Name + Username + Email + Password
+    // SIGNUP - Full Name + Username (no restrictions) + Email + Password
     // ================================================================
     
     import { register } from './js/auth.js';
@@ -361,6 +361,9 @@
         return;
       }
       
+      // Username - no restrictions, just check not empty
+      // (already checked above)
+      
       // Email validation
       if (!email || !email.includes('@') || !email.includes('.')) {
         errorEl.textContent = '❌ Please enter a valid email address';
@@ -388,7 +391,8 @@
       try {
         console.log('📝 Creating account for:', { fullName, username, email });
         
-        const result = await register(email, password, username, fullName);
+        // Note: register expects (name, username, email, password)
+        const result = await register(fullName, username, email, password);
         
         console.log('📝 Register result:', result);
         
