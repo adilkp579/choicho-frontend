@@ -1,66 +1,95 @@
-import { db } from './firebase-config.js';
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+// ================================================================
+// COMMON.JS - Common utility functions
+// ================================================================
 
-const userCache = new Map();
+import { getCurrentUser } from './auth.js';
 
-export function showToast(message, duration = 2000) {
-  let toast = document.getElementById('toast');
+// ================================================================
+// SHOW TOAST - Show toast notification
+// ================================================================
+
+export function showToast(message, duration = 3000) {
+  const toast = document.getElementById('toast');
   if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'toast';
-    toast.className = 'toast';
-    document.body.appendChild(toast);
+    console.warn('Toast element not found');
+    return;
   }
+  
   toast.textContent = message;
-  toast.classList.add('show');
+  toast.className = 'toast show';
   clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+  toast._timer = setTimeout(() => {
+    toast.className = 'toast';
+  }, duration);
 }
+
+// ================================================================
+// TIME AGO - Convert timestamp to "time ago" format
+// ================================================================
 
 export function timeAgo(date) {
-  if (!date) return '';
+  if (!date) return 'Recently';
+  
   const now = new Date();
   const diff = now - date;
-  if (diff < 60000) return 'now';
-  if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
-  if (diff < 86400000) return Math.floor(diff / 3600000) + 'h';
-  if (diff < 604800000) return Math.floor(diff / 86400000) + 'd';
-  return date.toLocaleDateString();
+  
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const weeks = Math.floor(days / 7);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(days / 365);
+  
+  if (seconds < 60) return 'Just now';
+  if (minutes < 60) return minutes + 'm';
+  if (hours < 24) return hours + 'h';
+  if (days < 7) return days + 'd';
+  if (weeks < 4) return weeks + 'w';
+  if (months < 12) return months + 'mo';
+  return years + 'y';
 }
+
+// ================================================================
+// CLEAN USERNAME - Remove @ symbol and clean username
+// ================================================================
 
 export function cleanUsername(username) {
-  return (username || '').replace(/^@/, '');
+  if (!username) return 'User';
+  return username.replace('@', '');
 }
+
+// ================================================================
+// GET AVATAR HTML - Get avatar HTML for a user
+// ================================================================
 
 export function getAvatarHTML(username) {
-  const cached = userCache.get(username);
-  if (cached?.avatar && cached.avatar !== 'null') {
-    return `<img src="${cached.avatar}" alt="${cleanUsername(username)}" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>';">`;
+  if (!username) {
+    return '<i class="fas fa-user"></i>';
   }
-  return '<i class="fas fa-user"></i>';
+  
+  const initial = username.charAt(0).toUpperCase();
+  return `<span style="font-weight:600;font-size:1.1rem;">${initial}</span>`;
 }
 
-export async function batchLoadProfiles(usernames) {
-  const unique = [...new Set(usernames.filter(u => u && u !== '@anonymous' && !userCache.has(u)))];
-  for (let i = 0; i < unique.length; i += 10) {
-    const batch = unique.slice(i, i + 10);
-    try {
-      const q = query(collection(db, 'users'), where('username', 'in', batch));
-      const snapshot = await getDocs(q);
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        userCache.set(data.username, { username: data.username, name: data.name || cleanUsername(data.username), avatar: data.avatar });
-      });
-    } catch(e) {}
-  }
+// ================================================================
+// BATCH LOAD PROFILES - Load multiple user profiles
+// ================================================================
+
+export async function batchLoadProfiles(userIds) {
+  // This is a placeholder - implement if needed
+  return {};
 }
+
+// ================================================================
+// REQUIRE AUTH - Check if user is authenticated (redirects to login)
+// ================================================================
 
 export function requireAuth() {
-  if (!localStorage.getItem('uid')) {
+  const user = getCurrentUser();
+  if (!user) {
     window.location.replace('login.html');
     return false;
   }
   return true;
 }
-
-export { userCache };
