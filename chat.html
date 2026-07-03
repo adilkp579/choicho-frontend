@@ -6,7 +6,7 @@
   <title>Chat · Choicho</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- ===== MAIN.CSS - ALL STYLES FROM HERE ===== -->
-  <link rel="stylesheet" href="CSS/main.css">
+  <link rel="stylesheet" href="css/main.css">
   <style>
     /* ===== MINIMAL CHAT PAGE SPECIFIC STYLES ONLY ===== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -43,7 +43,7 @@
       position: relative;
     }
 
-    /* ===== TOP HEADER - Using main.css ===== */
+    /* ===== TOP HEADER - Using main.css styles ===== */
     .top-icons-chat {
       width: 100%;
       max-width: 500px;
@@ -57,6 +57,66 @@
       margin: 0 auto;
     }
     .top-icons-chat.hidden { display: none; }
+
+    /* Using main.css corner-btn */
+    .corner-btn-left {
+      width: 2.4rem;
+      height: 2.4rem;
+      background: #1a1a1a;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border: 1px solid #333;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    .corner-btn-left:active { transform: scale(0.95); }
+    .heart-icon { color: #ef4444; }
+
+    .corner-btn-right {
+      width: 2.4rem;
+      height: 2.4rem;
+      background: #1a1a1a;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border: 1px solid #333;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .corner-btn-right:active { transform: scale(0.95); }
+    .plus-icon { color: #FFFC00; font-weight: 700; }
+
+    /* Using main.css top-brand */
+    .chat-brand {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 3px;
+      font-family: 'Segoe Script', 'Brush Script MT', 'Apple Chancery', 'Comic Sans MS', cursive;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      line-height: 1;
+      font-style: italic;
+    }
+
+    .top-right-group {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      flex-shrink: 0;
+    }
 
     /* ===== CHAT HEADER (when inside a chat) ===== */
     .chat-header {
