@@ -6,7 +6,7 @@
   <title>Chat · Choicho</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- ===== MAIN.CSS IMPORT ===== -->
-  <link rel="stylesheet" href="CSS/main.css">
+  <link rel="stylesheet" href="css/main.css">
   <style>
     /* ===== BASE / RESET ===== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -43,7 +43,7 @@
       position: relative;
     }
 
-    /* ===== TOP HEADER - Same as index.html ===== */
+    /* ===== TOP HEADER - Using main.css styles ===== */
     .top-icons-chat {
       width: 100%;
       max-width: 500px;
@@ -58,7 +58,7 @@
     }
     .top-icons-chat.hidden { display: none; }
     
-    /* Left icon - heart */
+    /* Using main.css corner-btn */
     .corner-btn-left {
       width: 2.4rem;
       height: 2.4rem;
@@ -78,12 +78,12 @@
     .corner-btn-left:active { transform: scale(0.95); }
     .heart-icon { color: #ef4444; }
 
-    /* Center brand text */
+    /* Using main.css top-brand */
     .chat-brand {
-      font-size: 1.6rem;
+      font-size: 2rem;
       font-weight: 700;
       color: #fff;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       font-family: 'Segoe Script', 'Brush Script MT', 'Apple Chancery', 'Comic Sans MS', cursive;
       position: absolute;
       left: 50%;
@@ -93,7 +93,6 @@
       font-style: italic;
     }
 
-    /* Right icons */
     .top-right-group {
       display: flex;
       gap: 0.4rem;
@@ -799,26 +798,13 @@
       }
     }
 
-    /* ===== DESKTOP: Show navbar icons ===== */
     @media (min-width: 1024px) {
-      .page {
-        max-width: 1100px;
-        max-height: 95vh;
-        border-radius: 28px;
-        height: 95vh;
+      .top-icons-chat {
+        display: none;
       }
-      
-      .scrollable-content {
-        flex-direction: row;
-        overflow: hidden;
-        padding: 0;
-      }
-      
-      /* Show all navbar icons on desktop */
       .nav-upload, .nav-search {
         display: flex !important;
       }
-      
       .floating-nav {
         position: fixed;
         top: 50%;
@@ -836,22 +822,33 @@
         -webkit-backdrop-filter: blur(8px);
         border: 1px solid rgba(255,255,255,0.04);
       }
-      
       .nav-center {
         flex-direction: column;
         gap: 1.2rem;
         max-width: none;
       }
-      
       .nav-center a {
         font-size: 1.4rem;
         width: 2.6rem;
         height: 2.6rem;
       }
-      
       .page { padding-left: 5rem; }
+      .scrollable-content { padding: 0 0 1rem 5.5rem; }
       
-      /* Left Panel - Chat List */
+      /* Desktop: Split-screen like WhatsApp */
+      .page {
+        max-width: 1100px;
+        max-height: 95vh;
+        border-radius: 28px;
+        height: 95vh;
+      }
+      
+      .scrollable-content {
+        flex-direction: row;
+        overflow: hidden;
+        padding: 0;
+      }
+      
       .chat-list-full {
         max-width: 400px;
         min-width: 300px;
@@ -867,7 +864,6 @@
         display: flex !important;
       }
       
-      /* Right Panel - Chat View */
       .chat-view {
         max-width: none;
         flex: 1;
@@ -879,7 +875,6 @@
         display: flex !important;
       }
       
-      /* Top header for desktop */
       .top-icons-chat {
         display: flex !important;
         max-width: 400px;
@@ -896,7 +891,6 @@
         display: none !important;
       }
       
-      /* Chat header when open - desktop */
       .chat-header {
         display: none !important;
         max-width: none;
@@ -936,7 +930,7 @@
       }
       
       .floating-nav {
-        display: flex !important;
+        display: none !important;
       }
       
       .empty-chat {
@@ -966,7 +960,7 @@
 
     <!-- ===== LEFT PANEL - CHAT LIST ===== -->
     <div class="chat-list-full" id="chatListFull">
-      <!-- TOP HEADER -->
+      <!-- TOP HEADER - Using main.css styles -->
       <div class="top-icons-chat" id="topIconsChat">
         <a href="hart.html" class="corner-btn-left" title="Activity">
           <i class="fas fa-heart heart-icon"></i>
@@ -1060,7 +1054,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- ===== FLOATING NAV ===== -->
+  <!-- ===== FLOATING NAV - From main.css ===== -->
   <nav class="floating-nav" id="floatingNav">
     <div class="nav-center">
       <a href="index.html"><i class="fas fa-home"></i></a>
