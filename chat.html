@@ -495,12 +495,15 @@
 <body>
   <div class="page">
     <div class="scrollable-content">
-      <!-- Top Icons (settings icon instead of plus) -->
+      <!-- Top Icons: left heart, center title, right settings -->
       <div class="top-icons" id="topIcons">
-        <div style="width:2.4rem;"></div>
+        <!-- Left: heart icon linking to heart.html -->
+        <a href="heart.html" class="corner-btn" title="Heart" style="width:2.4rem; height:2.4rem; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#fff; font-size:1.3rem;">
+          <i class="fas fa-heart" style="color:#ff2d55;"></i>
+        </a>
         <span class="top-brand">Chats</span>
-        <!-- Changed to settings link -->
-        <a href="settings.html" class="corner-btn" title="Settings">
+        <!-- Right: settings icon linking to settings.html -->
+        <a href="settings.html" class="corner-btn" title="Settings" style="width:2.4rem; height:2.4rem; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#fff; font-size:1.2rem;">
           <i class="fas fa-cog"></i>
         </a>
       </div>
@@ -565,7 +568,7 @@
       </button>
     </div>
     
-    <!-- New Chat Modal (triggered by settings? we keep it but removed the plus button) -->
+    <!-- New Chat Modal (kept for potential use) -->
     <div class="new-chat-overlay" id="newChatOverlay">
       <div class="new-chat-modal">
         <div class="new-chat-tabs">
@@ -843,13 +846,6 @@
         badge.style.display = 'none';
       }
     }
-    
-    // Open new chat modal
-    // We keep the function but removed the plus button; you can still open via other means if needed
-    document.getElementById('newChatBtn')?.addEventListener('click', async () => {
-      // This would be triggered if we had a button with id newChatBtn, but we removed it.
-      // We keep it for potential future use.
-    });
     
     window.closeNewChat = function() {
       document.getElementById('newChatOverlay').classList.remove('show');
