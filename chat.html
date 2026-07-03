@@ -497,13 +497,13 @@
     <div class="scrollable-content">
       <!-- Top Icons: left heart, center title, right settings -->
       <div class="top-icons" id="topIcons">
-        <!-- Left: heart icon linking to heart.html -->
-        <a href="heart.html" class="corner-btn" title="Heart" style="width:2.4rem; height:2.4rem; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#fff; font-size:1.3rem;">
-          <i class="fas fa-heart" style="color:#ff2d55;"></i>
+        <!-- Left side: heart icon linking to heart.html -->
+        <a href="heart.html" class="corner-btn" title="Likes">
+          <i class="fas fa-heart"></i>
         </a>
         <span class="top-brand">Chats</span>
-        <!-- Right: settings icon linking to settings.html -->
-        <a href="settings.html" class="corner-btn" title="Settings" style="width:2.4rem; height:2.4rem; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#fff; font-size:1.2rem;">
+        <!-- Right side: settings icon -->
+        <a href="settings.html" class="corner-btn" title="Settings">
           <i class="fas fa-cog"></i>
         </a>
       </div>
@@ -847,6 +847,7 @@
       }
     }
     
+    // Open new chat modal (kept but not triggered by default)
     window.closeNewChat = function() {
       document.getElementById('newChatOverlay').classList.remove('show');
     };
