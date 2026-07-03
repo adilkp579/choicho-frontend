@@ -43,7 +43,7 @@
       position: relative;
     }
 
-    /* ===== TOP HEADER - Using main.css ===== */
+    /* ===== TOP HEADER - EXACTLY LIKE INDEX.HTML ===== */
     .top-icons-chat {
       width: 100%;
       max-width: 500px;
@@ -58,14 +58,17 @@
     }
     .top-icons-chat.hidden { display: none; }
 
-    /* Using main.css corner-btn */
-    .corner-btn-left {
-      width: 2.4rem;
-      height: 2.4rem;
+    /* FIXED: Icons stay same size on all screens */
+    .corner-btn-left,
+    .corner-btn-right {
+      width: 2.4rem !important;
+      height: 2.4rem !important;
+      min-width: 2.4rem !important;
+      min-height: 2.4rem !important;
       background: #1a1a1a;
       border-radius: 50%;
       color: #fff;
-      font-size: 1rem;
+      font-size: 1rem !important;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -75,30 +78,14 @@
       transition: all 0.3s;
       flex-shrink: 0;
     }
-    .corner-btn-left:active { transform: scale(0.95); }
-    .heart-icon { color: #ef4444; }
-
-    .corner-btn-right {
-      width: 2.4rem;
-      height: 2.4rem;
-      background: #1a1a1a;
-      border-radius: 50%;
-      color: #fff;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      border: 1px solid #333;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
+    .corner-btn-left:active,
     .corner-btn-right:active { transform: scale(0.95); }
+    .heart-icon { color: #ef4444; }
     .plus-icon { color: #FFFC00; font-weight: 700; }
 
-    /* Using main.css top-brand */
+    /* FIXED: Brand text stays same size */
     .chat-brand {
-      font-size: 2rem;
+      font-size: 2rem !important;
       font-weight: 700;
       color: #fff;
       letter-spacing: 3px;
@@ -716,13 +703,30 @@
     .toast.show { opacity: 1; }
 
     /* ==============================================================
-       RESPONSIVE - Using main.css for navbar
+       RESPONSIVE - FIXED: No size changes on mobile
        ============================================================== */
+    /* FIXED: Mobile & Desktop same icon sizes */
     @media (max-width: 480px) {
-      .chat-brand { font-size: 1.3rem; }
-      .corner-btn-left, .corner-btn-right { width: 2.2rem; height: 2.2rem; font-size: 0.9rem; }
-      .chat-back { width: 2.2rem; height: 2.2rem; font-size: 0.9rem; }
-      .call-btn { width: 2.2rem; height: 2.2rem; font-size: 0.9rem; }
+      .chat-brand { font-size: 1.6rem !important; }
+      /* Icons stay 2.4rem - no shrinking */
+      .corner-btn-left,
+      .corner-btn-right {
+        width: 2.4rem !important;
+        height: 2.4rem !important;
+        min-width: 2.4rem !important;
+        min-height: 2.4rem !important;
+        font-size: 1rem !important;
+      }
+      .chat-back {
+        width: 2.4rem !important;
+        height: 2.4rem !important;
+        font-size: 1rem !important;
+      }
+      .call-btn {
+        width: 2.4rem !important;
+        height: 2.4rem !important;
+        font-size: 1rem !important;
+      }
     }
 
     @media (min-width: 1024px) {
@@ -820,7 +824,7 @@
 
     <!-- ===== LEFT PANEL - CHAT LIST ===== -->
     <div class="chat-list-full" id="chatListFull">
-      <!-- TOP HEADER - Settings icon removed -->
+      <!-- TOP HEADER - FIXED: Icons stay same size -->
       <div class="top-icons-chat" id="topIconsChat">
         <a href="hart.html" class="corner-btn-left" title="Activity">
           <i class="fas fa-heart heart-icon"></i>
@@ -830,7 +834,6 @@
           <button class="corner-btn-right" id="newChatBtn" title="New Chat">
             <i class="fas fa-plus plus-icon"></i>
           </button>
-          <!-- Settings icon removed -->
         </div>
       </div>
 
