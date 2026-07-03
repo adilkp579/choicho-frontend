@@ -490,22 +490,71 @@
       .scrollable-content { padding-left: 5.5rem; }
       .chat-list-full, .chat-view { max-width: 550px; margin: 0 auto; width: 100%; }
     }
+    /* Top icons flex layout */
+    .top-icons {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+      background: #000;
+      flex-shrink: 0;
+    }
+    .top-icons .top-brand {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .top-icons .corner-btn {
+      width: 2.4rem;
+      height: 2.4rem;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .top-icons .corner-btn:active {
+      background: rgba(255,255,255,0.1);
+    }
+    .top-icons .left-group {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    .top-icons .right-group {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="scrollable-content">
-      <!-- Top Icons: left heart, center title, right settings -->
+      <!-- Top Icons: left heart, center title, right plus + settings -->
       <div class="top-icons" id="topIcons">
-        <!-- Left side: heart icon linking to heart.html -->
-        <a href="heart.html" class="corner-btn" title="Likes">
-          <i class="fas fa-heart"></i>
-        </a>
+        <div class="left-group">
+          <a href="heart.html" class="corner-btn" title="Likes">
+            <i class="fas fa-heart"></i>
+          </a>
+        </div>
         <span class="top-brand">Chats</span>
-        <!-- Right side: settings icon -->
-        <a href="settings.html" class="corner-btn" title="Settings">
-          <i class="fas fa-cog"></i>
-        </a>
+        <div class="right-group">
+          <!-- Plus icon to open new chat modal -->
+          <button class="corner-btn" id="newChatBtn" title="New Chat">
+            <i class="fas fa-plus"></i>
+          </button>
+          <!-- Settings icon -->
+          <a href="settings.html" class="corner-btn" title="Settings">
+            <i class="fas fa-cog"></i>
+          </a>
+        </div>
       </div>
       
       <!-- Chat Header (when chat open) -->
@@ -568,7 +617,7 @@
       </button>
     </div>
     
-    <!-- New Chat Modal (kept for potential use) -->
+    <!-- New Chat Modal (Users + Requests) -->
     <div class="new-chat-overlay" id="newChatOverlay">
       <div class="new-chat-modal">
         <div class="new-chat-tabs">
@@ -847,7 +896,19 @@
       }
     }
     
-    // Open new chat modal (kept but not triggered by default)
+    // Open new chat modal
+    document.getElementById('newChatBtn').addEventListener('click', async () => {
+      document.getElementById('newChatOverlay').classList.add('show');
+      document.getElementById('newChatSearch').value = '';
+      await loadAllUsers();
+      await loadRequests();
+      activeTab = 'users';
+      document.querySelectorAll('.new-chat-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === 'users');
+      });
+      renderNewChatList();
+    });
+    
     window.closeNewChat = function() {
       document.getElementById('newChatOverlay').classList.remove('show');
     };
