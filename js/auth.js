@@ -16,7 +16,37 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // ================================================================
-// REGISTER - Create new user account (Username stored in Firestore)
+// GET CURRENT USER - Get currently logged in user
+// ================================================================
+
+export function getCurrentUser() {
+  const user = auth.currentUser;
+  if (user) {
+    // Also ensure localStorage has current user
+    try {
+      const localUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      if (!localUser.uid || localUser.uid !== user.uid) {
+        // Update localStorage with current user
+        getUserData(user.uid).then(result => {
+          if (result.success) {
+            localStorage.setItem('userProfile', JSON.stringify(result.data));
+            localStorage.setItem('currentUser', JSON.stringify({
+              uid: user.uid,
+              username: result.data.username || user.displayName || 'User',
+              email: user.email
+            }));
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('LocalStorage sync error:', e);
+    }
+  }
+  return user;
+}
+
+// ================================================================
+// REGISTER - Create new user account
 // ================================================================
 
 export async function register(email, password, username, fullName = '') {
@@ -54,7 +84,7 @@ export async function register(email, password, username, fullName = '') {
 
     // Step 3: Create user document in Firestore with username
     const userRef = doc(db, 'users', user.uid);
-    await setDoc(userRef, {
+    const userData = {
       uid: user.uid,
       username: trimmedUsername,
       name: trimmedFullName,
@@ -67,7 +97,9 @@ export async function register(email, password, username, fullName = '') {
       posts: [],
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
-    });
+    };
+    
+    await setDoc(userRef, userData);
 
     console.log('✅ User document created in Firestore with username:', trimmedUsername);
 
@@ -85,7 +117,7 @@ export async function register(email, password, username, fullName = '') {
     console.log('✅ Wallet created');
 
     // Step 5: Save to localStorage for immediate use
-    const userProfile = {
+    const profileData = {
       uid: user.uid,
       username: trimmedUsername,
       name: trimmedFullName,
@@ -97,19 +129,21 @@ export async function register(email, password, username, fullName = '') {
       besties: [],
       posts: []
     };
-    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+    localStorage.setItem('userProfile', JSON.stringify(profileData));
     localStorage.setItem('currentUser', JSON.stringify({ 
       uid: user.uid, 
       username: trimmedUsername,
       email: email 
     }));
 
+    console.log('✅ LocalStorage updated');
+
     return { 
       success: true, 
       user: user,
       username: trimmedUsername,
       uid: user.uid,
-      userData: userProfile
+      userData: profileData
     };
 
   } catch (error) {
@@ -189,6 +223,8 @@ export async function login(email, password) {
       email: user.email 
     }));
 
+    console.log('✅ LocalStorage updated with user data');
+
     return { 
       success: true, 
       user: user,
@@ -243,14 +279,6 @@ export async function logout() {
 }
 
 // ================================================================
-// GET CURRENT USER - Get currently logged in user
-// ================================================================
-
-export function getCurrentUser() {
-  return auth.currentUser;
-}
-
-// ================================================================
 // GET USER DATA - Get user data from Firestore
 // ================================================================
 
@@ -271,6 +299,11 @@ export async function getUserData(uid) {
       const data = userDoc.data();
       // Update localStorage
       localStorage.setItem('userProfile', JSON.stringify(data));
+      localStorage.setItem('currentUser', JSON.stringify({
+        uid: uid,
+        username: data.username || data.name || 'User',
+        email: data.email
+      }));
       return { 
         success: true, 
         data: data 
@@ -369,7 +402,6 @@ export async function updateUsername(uid, newUsername) {
     const q = query(collection(db, 'users'), where('username', '==', newUsername.trim()));
     const snapshot = await getDocs(q);
     
-    // Check if another user has this username (excluding current user)
     let usernameTaken = false;
     snapshot.forEach(doc => {
       if (doc.id !== uid) {
@@ -445,10 +477,15 @@ export function onAuthStateChange(callback) {
   return onAuthStateChanged(auth, async (user) => {
     if (user) {
       // User is signed in - load their data
-      const result = await getUserData(user.uid);
-      if (result.success) {
-        callback(user, result.data);
-      } else {
+      try {
+        const result = await getUserData(user.uid);
+        if (result.success) {
+          callback(user, result.data);
+        } else {
+          callback(user, null);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
         callback(user, null);
       }
     } else {
@@ -532,5 +569,51 @@ export async function syncUserProfile() {
   } catch (error) {
     console.error('❌ Sync profile error:', error);
     return { success: false, error: error.message };
+  }
+}
+
+// ================================================================
+// GET USERNAME - Get username from localStorage or Firestore
+// ================================================================
+
+export function getUsername() {
+  try {
+    const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    if (profile.username) {
+      return profile.username;
+    }
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    if (currentUser.username) {
+      return currentUser.username;
+    }
+    const authUser = getCurrentUser();
+    if (authUser && authUser.displayName) {
+      return authUser.displayName;
+    }
+    return 'User';
+  } catch (e) {
+    console.warn('Error getting username:', e);
+    return 'User';
+  }
+}
+
+// ================================================================
+// GET USER DISPLAY NAME - Get display name
+// ================================================================
+
+export function getUserDisplayName() {
+  try {
+    const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    if (profile.name) {
+      return profile.name;
+    }
+    const authUser = getCurrentUser();
+    if (authUser && authUser.displayName) {
+      return authUser.displayName;
+    }
+    return getUsername();
+  } catch (e) {
+    console.warn('Error getting display name:', e);
+    return 'User';
   }
 }
