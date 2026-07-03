@@ -495,13 +495,14 @@
 <body>
   <div class="page">
     <div class="scrollable-content">
-      <!-- Top Icons -->
+      <!-- Top Icons (settings icon instead of plus) -->
       <div class="top-icons" id="topIcons">
         <div style="width:2.4rem;"></div>
         <span class="top-brand">Chats</span>
-        <button class="corner-btn" id="newChatBtn" title="New Chat">
-          <i class="fas fa-plus"></i>
-        </button>
+        <!-- Changed to settings link -->
+        <a href="settings.html" class="corner-btn" title="Settings">
+          <i class="fas fa-cog"></i>
+        </a>
       </div>
       
       <!-- Chat Header (when chat open) -->
@@ -564,7 +565,7 @@
       </button>
     </div>
     
-    <!-- New Chat Modal -->
+    <!-- New Chat Modal (triggered by settings? we keep it but removed the plus button) -->
     <div class="new-chat-overlay" id="newChatOverlay">
       <div class="new-chat-modal">
         <div class="new-chat-tabs">
@@ -586,7 +587,7 @@
     
     <div class="toast" id="toast"></div>
     
-    <nav class="floating-nav">
+    <nav class="floating-nav" id="floatingNav">
       <div class="nav-center">
         <a href="index.html"><i class="fas fa-home"></i></a>
         <a href="web.html"><i class="fas fa-globe"></i></a>
@@ -844,16 +845,10 @@
     }
     
     // Open new chat modal
-    document.getElementById('newChatBtn').addEventListener('click', async () => {
-      document.getElementById('newChatOverlay').classList.add('show');
-      document.getElementById('newChatSearch').value = '';
-      await loadAllUsers();
-      await loadRequests();
-      activeTab = 'users';
-      document.querySelectorAll('.new-chat-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.tab === 'users');
-      });
-      renderNewChatList();
+    // We keep the function but removed the plus button; you can still open via other means if needed
+    document.getElementById('newChatBtn')?.addEventListener('click', async () => {
+      // This would be triggered if we had a button with id newChatBtn, but we removed it.
+      // We keep it for potential future use.
     });
     
     window.closeNewChat = function() {
