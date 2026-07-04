@@ -469,6 +469,39 @@
       .scrollable-content { padding-left: 5.5rem; }
       .chat-list-full, .chat-view { max-width: 550px; margin: 0 auto; width: 100%; }
     }
+    /* search bar fix - ensure consistent style */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background: #0a0a0a;
+      border-radius: 2rem;
+      padding: 0.3rem 0.8rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: border 0.2s;
+    }
+    .search-bar:focus-within {
+      border-color: #FFFC00;
+    }
+    .search-bar i {
+      color: #666;
+      margin-right: 0.5rem;
+      font-size: 0.8rem;
+    }
+    .search-bar input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 0;
+      width: 100%;
+      font-size: 0.8rem;
+      outline: none;
+    }
+    .search-bar input::placeholder {
+      color: #555;
+    }
+    .search-bar input:focus {
+      outline: none;
+    }
   </style>
 </head>
 <body>
@@ -586,7 +619,7 @@
     import { db } from './js/firebase-config.js';
     import { showToast, timeAgo, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
     import { getCurrentUser } from './js/auth.js';
-    import { collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, increment, serverTimestamp, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, increment, serverTimestamp, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     
     if (!requireAuth()) window.location.replace('login.html');
     
@@ -598,6 +631,7 @@
     let allUsers = [];
     let pendingRequests = [];
     let activeTab = 'users';
+    let chatListData = []; // store chat data for filtering
     
     // Load chats list
     async function loadChats() {
@@ -619,8 +653,11 @@
             }
           }
         });
+        chatListData = chats;
         renderChatList(chats);
         document.getElementById('chatCount').textContent = chats.length ? `(${chats.length})` : '';
+        // Re-apply search filter after render
+        applySearchFilter();
       });
     }
     
@@ -631,7 +668,7 @@
         return;
       }
       container.innerHTML = chats.map(c => `
-        <div class="user-list-item ${currentPartner === c.partnerId ? 'active' : ''}" onclick="openChat('${c.partnerId}')">
+        <div class="user-list-item ${currentPartner === c.partnerId ? 'active' : ''}" data-partner="${c.partnerId}" onclick="openChat('${c.partnerId}')">
           <div class="user-avatar" onclick="event.stopPropagation();window.location.href='profile.html?user=${encodeURIComponent(c.partnerId)}'">
             ${getAvatarHTML(c.partnerId)}
           </div>
@@ -647,6 +684,29 @@
           </div>
         </div>
       `).join('');
+    }
+    
+    // Filter function using chatListData
+    window.filterChats = function() {
+      applySearchFilter();
+    };
+    
+    function applySearchFilter() {
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const items = document.querySelectorAll('#chatList .user-list-item');
+      if (!search) {
+        items.forEach(item => item.style.display = 'flex');
+        return;
+      }
+      items.forEach(item => {
+        const nameEl = item.querySelector('.user-name');
+        const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+        // also check last message
+        const msgEl = item.querySelector('.user-last-msg');
+        const msg = msgEl ? msgEl.textContent.toLowerCase() : '';
+        const match = name.includes(search) || msg.includes(search);
+        item.style.display = match ? 'flex' : 'none';
+      });
     }
     
     // Open chat with user
@@ -764,6 +824,8 @@
       document.getElementById('chatInputArea').classList.remove('show');
       document.getElementById('floatingNav').style.display = 'flex';
       document.getElementById('messagesContainer').innerHTML = '<div class="empty-chat">Select a chat to start messaging</div>';
+      // Re-apply search filter when returning
+      applySearchFilter();
     };
     
     window.goToPartnerProfile = function() {
@@ -772,15 +834,6 @@
     
     window.startCall = function(type) {
       showToast(`📞 ${type} call coming soon!`);
-    };
-    
-    window.filterChats = function() {
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      const items = document.querySelectorAll('.user-list-item');
-      items.forEach(item => {
-        const name = item.querySelector('.user-name')?.textContent.toLowerCase() || '';
-        item.style.display = name.includes(search) ? 'flex' : 'none';
-      });
     };
     
     // ========== NEW CHAT MODAL FUNCTIONS ==========
@@ -980,4 +1033,4 @@
     loadRequests();
   </script>
 </body>
-</html> 
+</html>
