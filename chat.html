@@ -70,11 +70,58 @@
     }
     .call-btn:active { transform: scale(0.95); }
     
-    /* Search bar - minimal, uses main.css */
+    /* Search Bar Styles - Added because main.css is missing them */
     .search-bar-container {
       padding: 0.5rem 1rem 0.7rem;
       background: #000;
       border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background: #111;
+      border-radius: 2rem;
+      padding: 0.4rem 1rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: border 0.25s, background 0.25s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .search-bar:focus-within {
+      border-color: #FFFC00;
+      background: #0a0a0a;
+      box-shadow: 0 0 0 3px rgba(255,252,0,0.08);
+    }
+    .search-bar i {
+      color: #666;
+      margin-right: 0.7rem;
+      font-size: 0.85rem;
+      transition: color 0.25s;
+      flex-shrink: 0;
+    }
+    .search-bar:focus-within i {
+      color: #FFFC00;
+    }
+    .search-bar input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      padding: 0.55rem 0;
+      width: 100%;
+      font-size: 0.85rem;
+      outline: none;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      min-width: 0;
+    }
+    .search-bar input::placeholder {
+      color: #555;
+      font-weight: 300;
+      letter-spacing: 0.2px;
+    }
+    .search-bar input::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+      appearance: none;
     }
     
     .chat-list-full {
@@ -510,11 +557,11 @@
         </div>
       </div>
       
-      <!-- Search Bar - using main.css styles -->
+      <!-- Search Bar with full styles -->
       <div class="search-bar-container" id="searchBarContainer">
         <div class="search-bar">
           <i class="fas fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Search messages..." oninput="filterChats()">
+          <input type="text" id="searchInput" placeholder="Search by name or message..." oninput="filterChats()">
         </div>
       </div>
       
