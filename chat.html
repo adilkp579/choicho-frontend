@@ -90,9 +90,9 @@
     }
     .call-btn:active { transform: scale(0.95); }
     
-    /* SEARCH BAR - FULL SCREEN WIDTH FIX */
+    /* SEARCH BAR - REDUCED HEIGHT */
     .search-bar-container {
-      padding: 0.5rem 1rem 0.7rem;
+      padding: 0.3rem 1rem 0.4rem;
       background: #000;
       border-bottom: 1px solid rgba(255,255,255,0.05);
       width: 100vw;
@@ -110,12 +110,13 @@
       align-items: center;
       background: #111;
       border-radius: 2rem;
-      padding: 0.2rem 1rem;
+      padding: 0.2rem 0.8rem;
       border: 1px solid rgba(255,255,255,0.08);
       transition: border 0.25s, background 0.25s;
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
+      min-height: 36px;
     }
     .search-bar:focus-within {
       border-color: #FFFC00;
@@ -124,8 +125,8 @@
     }
     .search-bar i {
       color: #666;
-      margin-right: 0.7rem;
-      font-size: 0.85rem;
+      margin-right: 0.5rem;
+      font-size: 0.75rem;
       transition: color 0.25s;
       flex-shrink: 0;
     }
@@ -136,19 +137,20 @@
       background: transparent;
       border: none;
       color: #fff;
-      padding: 0.55rem 0;
+      padding: 0.3rem 0;
       width: 100%;
       min-width: 0;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       outline: none;
       font-weight: 400;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
       box-sizing: border-box;
     }
     .search-bar input::placeholder {
       color: #555;
       font-weight: 300;
       letter-spacing: 0.2px;
+      font-size: 0.75rem;
     }
     .search-bar input::-webkit-search-cancel-button {
       -webkit-appearance: none;
@@ -625,11 +627,11 @@
         </div>
       </div>
       
-      <!-- SEARCH BAR - FULL SCREEN WIDTH -->
+      <!-- SEARCH BAR - REDUCED HEIGHT -->
       <div class="search-bar-container" id="searchBarContainer">
         <div class="search-bar">
           <i class="fas fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Search by name or message..." oninput="filterChats()">
+          <input type="text" id="searchInput" placeholder="Search..." oninput="filterChats()">
         </div>
       </div>
       
