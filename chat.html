@@ -97,7 +97,7 @@
     }
     .call-btn:active { transform: scale(0.95); }
     
-    /* SEARCH BAR */
+    /* SEARCH BAR - REDUCED HEIGHT */
     .search-bar-container {
       padding: 0.3rem 1rem 0.4rem;
       background: #000;
@@ -266,7 +266,7 @@
       flex-shrink: 0;
     }
     
-    /* CHAT VIEW - NO GAP BETWEEN MESSAGES AND INPUT */
+    /* CHAT VIEW - FIXED: No black space at bottom */
     .chat-view {
       display: none;
       flex-direction: column;
@@ -281,8 +281,8 @@
     .messages-container {
       flex: 1;
       overflow-y: auto;
-      padding: 0.5rem 0.8rem;
-      padding-bottom: 0.2rem;
+      padding: 0.8rem;
+      padding-bottom: 0.5rem;
       display: flex;
       flex-direction: column;
       gap: 0.2rem;
@@ -299,6 +299,7 @@
       color: #333;
       font-size: 0.8rem;
     }
+    /* Message wrapper - messages start from bottom */
     .message-wrapper {
       display: flex;
       max-width: 85%;
@@ -313,7 +314,7 @@
       align-self: flex-start;
     }
     .message-bubble {
-      padding: 0.45rem 0.7rem;
+      padding: 0.55rem 0.8rem;
       border-radius: 1.2rem;
       font-size: 0.85rem;
       line-height: 1.3;
@@ -330,13 +331,12 @@
       border-bottom-left-radius: 0.3rem;
     }
     .message-time {
-      font-size: 0.5rem;
-      margin-top: 0.05rem;
-      opacity: 0.7;
+      font-size: 0.55rem;
+      margin-top: 0.1rem;
     }
     .sent .message-time {
       text-align: right;
-      color: rgba(0,0,0,0.5);
+      color: rgba(0,0,0,0.45);
     }
     .received .message-time {
       color: rgba(255,255,255,0.35);
@@ -348,13 +348,12 @@
       cursor: pointer;
     }
     
-    /* CHAT INPUT - NO GAP, DIRECTLY ATTACHED TO MESSAGES */
     .chat-input-area {
       display: none;
       align-items: center;
       gap: 0.4rem;
-      padding: 0.4rem 0.8rem;
-      padding-bottom: max(0.4rem, env(safe-area-inset-bottom, 0.4rem));
+      padding: 0.5rem 0.8rem;
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
       background: #000;
       border-top: 1px solid rgba(255,255,255,0.06);
       width: 100%;
@@ -362,8 +361,8 @@
     }
     .chat-input-area.show { display: flex; }
     .camera-btn-s, .mic-btn-s {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.1);
@@ -373,11 +372,10 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      font-size: 0.85rem;
     }
     .chat-input {
       flex: 1;
-      padding: 0.5rem 0.9rem;
+      padding: 0.6rem 1rem;
       border-radius: 1.5rem;
       border: 1px solid rgba(255,255,255,0.12);
       background: #0a0a0a;
@@ -388,8 +386,8 @@
     }
     .chat-input:focus { border-color: #FFFC00; }
     .send-btn {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       background: #FFFC00;
       border: none;
@@ -399,7 +397,6 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      font-size: 0.85rem;
     }
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(10px); }
@@ -615,6 +612,7 @@
       padding-right: 1rem;
     }
     
+    /* Fix for floating nav */
     .floating-nav {
       flex-shrink: 0;
     }
@@ -671,7 +669,7 @@
         <div id="chatList"></div>
       </div>
       
-      <!-- CHAT VIEW - Messages and input directly attached -->
+      <!-- CHAT VIEW - Messages start from bottom, no black space -->
       <div class="chat-view" id="chatView">
         <div class="messages-container" id="messagesContainer">
           <div class="empty-chat">Select a chat to start messaging</div>
@@ -679,7 +677,7 @@
       </div>
     </div>
     
-    <!-- Chat Input Area - Directly attached to messages -->
+    <!-- Chat Input Area -->
     <div class="chat-input-area" id="chatInputArea">
       <button class="camera-btn-s" id="cameraBtn" onclick="document.getElementById('imageInput').click()">
         <i class="fas fa-camera"></i>
@@ -861,6 +859,7 @@
           }
           container.appendChild(div);
         });
+        // Scroll to bottom immediately after messages load
         container.scrollTop = container.scrollHeight;
       });
     };
@@ -890,6 +889,7 @@
           sender: currentUserId,
           createdAt: serverTimestamp()
         });
+        // Scroll to bottom after sending
         const container = document.getElementById('messagesContainer');
         setTimeout(() => {
           container.scrollTop = container.scrollHeight;
