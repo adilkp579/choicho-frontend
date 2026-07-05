@@ -70,11 +70,13 @@
     }
     .call-btn:active { transform: scale(0.95); }
     
-    /* Search Bar Styles - Added because main.css is missing them */
+    /* Search Bar - Full Width */
     .search-bar-container {
       padding: 0.5rem 1rem 0.7rem;
       background: #000;
       border-bottom: 1px solid rgba(255,255,255,0.05);
+      width: 100%;
+      box-sizing: border-box;
     }
     .search-bar {
       display: flex;
@@ -113,6 +115,7 @@
       font-weight: 400;
       letter-spacing: 0.3px;
       min-width: 0;
+      box-sizing: border-box;
     }
     .search-bar input::placeholder {
       color: #555;
@@ -525,7 +528,7 @@
 <body>
   <div class="page">
     <div class="scrollable-content">
-      <!-- Top Icons: left heart, center title, right settings -->
+      <!-- Top Icons -->
       <div class="top-icons" id="topIcons">
         <a href="heart.html" class="corner-btn" title="Likes">
           <i class="fas fa-heart"></i>
@@ -536,7 +539,7 @@
         </a>
       </div>
       
-      <!-- Chat Header (when chat open) -->
+      <!-- Chat Header -->
       <div class="chat-header" id="chatHeader">
         <button class="chat-back" onclick="goBack()">
           <i class="fas fa-arrow-left"></i>
@@ -557,7 +560,7 @@
         </div>
       </div>
       
-      <!-- Search Bar with full styles -->
+      <!-- Search Bar - Full Width -->
       <div class="search-bar-container" id="searchBarContainer">
         <div class="search-bar">
           <i class="fas fa-search"></i>
