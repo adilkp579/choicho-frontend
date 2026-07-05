@@ -266,7 +266,7 @@
       flex-shrink: 0;
     }
     
-    /* CHAT VIEW - MINIMAL GAP BETWEEN MESSAGES AND INPUT */
+    /* CHAT VIEW - NO GAP BETWEEN MESSAGES AND INPUT */
     .chat-view {
       display: none;
       flex-direction: column;
@@ -281,10 +281,11 @@
     .messages-container {
       flex: 1;
       overflow-y: auto;
-      padding: 0.5rem 0.8rem 0.1rem 0.8rem;
+      padding: 0.5rem 0.8rem;
+      padding-bottom: 0.2rem;
       display: flex;
       flex-direction: column;
-      gap: 0.15rem;
+      gap: 0.2rem;
       background: #000;
       width: 100%;
       min-height: 0;
@@ -312,7 +313,7 @@
       align-self: flex-start;
     }
     .message-bubble {
-      padding: 0.4rem 0.7rem;
+      padding: 0.45rem 0.7rem;
       border-radius: 1.2rem;
       font-size: 0.85rem;
       line-height: 1.3;
@@ -347,13 +348,13 @@
       cursor: pointer;
     }
     
-    /* CHAT INPUT - MINIMAL GAP, DIRECTLY ATTACHED */
+    /* CHAT INPUT - NO GAP, DIRECTLY ATTACHED TO MESSAGES */
     .chat-input-area {
       display: none;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.3rem 0.8rem;
-      padding-bottom: max(0.3rem, env(safe-area-inset-bottom, 0.3rem));
+      gap: 0.4rem;
+      padding: 0.4rem 0.8rem;
+      padding-bottom: max(0.4rem, env(safe-area-inset-bottom, 0.4rem));
       background: #000;
       border-top: 1px solid rgba(255,255,255,0.06);
       width: 100%;
@@ -361,8 +362,8 @@
     }
     .chat-input-area.show { display: flex; }
     .camera-btn-s, .mic-btn-s {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.1);
@@ -372,11 +373,11 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
     }
     .chat-input {
       flex: 1;
-      padding: 0.45rem 0.9rem;
+      padding: 0.5rem 0.9rem;
       border-radius: 1.5rem;
       border: 1px solid rgba(255,255,255,0.12);
       background: #0a0a0a;
@@ -387,8 +388,8 @@
     }
     .chat-input:focus { border-color: #FFFC00; }
     .send-btn {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: #FFFC00;
       border: none;
@@ -398,7 +399,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
     }
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(10px); }
@@ -670,7 +671,7 @@
         <div id="chatList"></div>
       </div>
       
-      <!-- CHAT VIEW - Messages and input with minimal gap -->
+      <!-- CHAT VIEW - Messages and input directly attached -->
       <div class="chat-view" id="chatView">
         <div class="messages-container" id="messagesContainer">
           <div class="empty-chat">Select a chat to start messaging</div>
@@ -678,7 +679,7 @@
       </div>
     </div>
     
-    <!-- Chat Input Area - Minimal gap, directly attached -->
+    <!-- Chat Input Area - Directly attached to messages -->
     <div class="chat-input-area" id="chatInputArea">
       <button class="camera-btn-s" id="cameraBtn" onclick="document.getElementById('imageInput').click()">
         <i class="fas fa-camera"></i>
