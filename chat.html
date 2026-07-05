@@ -69,10 +69,14 @@
       transition: all 0.2s;
     }
     .call-btn:active { transform: scale(0.95); }
+    
+    /* Search bar - minimal, uses main.css */
     .search-bar-container {
-      padding: 0.3rem 1rem 0.5rem;
+      padding: 0.5rem 1rem 0.7rem;
       background: #000;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
+    
     .chat-list-full {
       display: flex;
       flex-direction: column;
@@ -469,41 +473,6 @@
       .scrollable-content { padding-left: 5.5rem; }
       .chat-list-full, .chat-view { max-width: 550px; margin: 0 auto; width: 100%; }
     }
-    /* search bar fix - ensure consistent style */
-    .search-bar {
-      display: flex;
-      width: 100%;
-      max-width: 100%;
-      align-items: center;
-      background: #0a0a0a;
-      border-radius: 2rem;
-      padding: 0.2rem 0.8rem;
-      border: 1px solid rgba(255,255,255,0.08);
-      transition: border 0.2s;
-    }
-    .search-bar:focus-within {
-      border-color: #FFFC00;
-    }
-    .search-bar i {
-      color: #666;
-      margin-right: 0.5rem;
-      font-size: 0.8rem;
-    }
-    .search-bar input {
-      background: transparent;
-      border: none;
-      color: #fff;
-      padding: 0.5rem 0;
-      width: 100%;
-      font-size: 0.8rem;
-      outline: none;
-    }
-    .search-bar input::placeholder {
-      color: #555;
-    }
-    .search-bar input:focus {
-      outline: none;
-    }
   </style>
 </head>
 <body>
@@ -511,12 +480,10 @@
     <div class="scrollable-content">
       <!-- Top Icons: left heart, center title, right settings -->
       <div class="top-icons" id="topIcons">
-        <!-- Left side: heart icon linking to heart.html -->
         <a href="heart.html" class="corner-btn" title="Likes">
           <i class="fas fa-heart"></i>
         </a>
         <span class="top-brand">Chats</span>
-        <!-- Right side: settings icon -->
         <a href="settings.html" class="corner-btn" title="Settings">
           <i class="fas fa-cog"></i>
         </a>
@@ -543,7 +510,7 @@
         </div>
       </div>
       
-      <!-- Search Bar -->
+      <!-- Search Bar - using main.css styles -->
       <div class="search-bar-container" id="searchBarContainer">
         <div class="search-bar">
           <i class="fas fa-search"></i>
@@ -582,7 +549,7 @@
       </button>
     </div>
     
-    <!-- New Chat Modal (kept for potential use) -->
+    <!-- New Chat Modal -->
     <div class="new-chat-overlay" id="newChatOverlay">
       <div class="new-chat-modal">
         <div class="new-chat-tabs">
@@ -633,7 +600,7 @@
     let allUsers = [];
     let pendingRequests = [];
     let activeTab = 'users';
-    let chatListData = []; // store chat data for filtering
+    let chatListData = [];
     
     // Load chats list
     async function loadChats() {
@@ -658,7 +625,6 @@
         chatListData = chats;
         renderChatList(chats);
         document.getElementById('chatCount').textContent = chats.length ? `(${chats.length})` : '';
-        // Re-apply search filter after render
         applySearchFilter();
       });
     }
@@ -688,7 +654,7 @@
       `).join('');
     }
     
-    // Filter function using chatListData
+    // SEARCH FILTER
     window.filterChats = function() {
       applySearchFilter();
     };
@@ -696,14 +662,15 @@
     function applySearchFilter() {
       const search = document.getElementById('searchInput').value.toLowerCase().trim();
       const items = document.querySelectorAll('#chatList .user-list-item');
+      
       if (!search) {
         items.forEach(item => item.style.display = 'flex');
         return;
       }
+      
       items.forEach(item => {
         const nameEl = item.querySelector('.user-name');
         const name = nameEl ? nameEl.textContent.toLowerCase() : '';
-        // also check last message
         const msgEl = item.querySelector('.user-last-msg');
         const msg = msgEl ? msgEl.textContent.toLowerCase() : '';
         const match = name.includes(search) || msg.includes(search);
@@ -716,10 +683,8 @@
       currentPartner = partner;
       currentChatId = [currentUserId, partner.replace('@','')].sort().join('_');
       
-      // Mark as read
       await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
       
-      // Update UI
       document.getElementById('topIcons').style.display = 'none';
       document.getElementById('chatHeader').classList.add('show');
       document.getElementById('chatListFull').classList.add('hidden');
@@ -729,7 +694,6 @@
       document.getElementById('floatingNav').style.display = 'none';
       document.getElementById('partnerName').textContent = cleanUsername(partner);
       
-      // Load messages
       if (unsubMessages) unsubMessages();
       const q = query(collection(db, 'chats', currentChatId, 'messages'), orderBy('createdAt', 'asc'));
       unsubMessages = onSnapshot(q, (snapshot) => {
@@ -808,7 +772,7 @@
       e.target.value = '';
     };
     
-    // Voice recording (simplified)
+    // Voice recording
     window.toggleVoice = function() {
       showToast('Voice message coming soon! 🎤');
     };
@@ -826,7 +790,6 @@
       document.getElementById('chatInputArea').classList.remove('show');
       document.getElementById('floatingNav').style.display = 'flex';
       document.getElementById('messagesContainer').innerHTML = '<div class="empty-chat">Select a chat to start messaging</div>';
-      // Re-apply search filter when returning
       applySearchFilter();
     };
     
@@ -840,7 +803,6 @@
     
     // ========== NEW CHAT MODAL FUNCTIONS ==========
     
-    // Load all users and requests
     async function loadAllUsers() {
       allUsers = [];
       const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(100));
@@ -881,7 +843,6 @@
       }
     }
     
-    // Open new chat modal (kept but not triggered by default)
     window.closeNewChat = function() {
       document.getElementById('newChatOverlay').classList.remove('show');
     };
@@ -930,7 +891,6 @@
           </div>
         `).join('');
       } else {
-        // Requests tab
         if (pendingRequests.length === 0) {
           container.innerHTML = '<div class="empty-state"><i class="fas fa-envelope-open"></i><p>No pending requests</p></div>';
           return;
@@ -958,18 +918,15 @@
       }
     }
     
-    // Start chat with user (create chat if doesn't exist)
     window.startChatWith = async function(username) {
       closeNewChat();
       const partnerId = username.replace('@', '');
       const chatId = [currentUserId, partnerId].sort().join('_');
       
-      // Check if chat exists
       const chatRef = doc(db, 'chats', chatId);
       const chatSnap = await getDoc(chatRef);
       
       if (!chatSnap.exists()) {
-        // Create new chat
         await setDoc(chatRef, {
           users: [currentUserId, partnerId],
           lastMessage: 'Chat started',
@@ -978,11 +935,9 @@
         });
       }
       
-      // Open the chat
       await openChat(username);
     };
     
-    // Accept chat request
     window.acceptRequest = async function(requestId, fromUser) {
       await deleteDoc(doc(db, 'message_requests', requestId));
       await startChatWith(fromUser);
@@ -991,7 +946,6 @@
       showToast(`Accepted request from ${cleanUsername(fromUser)}`);
     };
     
-    // Decline request
     window.declineRequest = async function(requestId) {
       await deleteDoc(doc(db, 'message_requests', requestId));
       await loadRequests();
@@ -999,7 +953,6 @@
       showToast('Request declined');
     };
     
-    // Send chat request
     window.sendChatRequest = async function(username) {
       try {
         const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
@@ -1020,7 +973,6 @@
       }
     };
     
-    // Close modal on outside click
     document.getElementById('newChatOverlay').addEventListener('click', (e) => {
       if (e.target === document.getElementById('newChatOverlay')) closeNewChat();
     });
@@ -1029,7 +981,6 @@
       if (e.key === 'Enter') sendMessage();
     });
     
-    // Initialize
     loadChats();
     loadAllUsers();
     loadRequests();
