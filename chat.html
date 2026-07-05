@@ -448,8 +448,6 @@
       box-shadow: 0 4px 15px rgba(255,252,0,0.3);
       transition: all 0.3s ease;
       position: relative;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
     }
     .fab-main:active {
       transform: scale(0.9);
@@ -581,6 +579,17 @@
       overflow-y: auto;
       padding: 0.3rem 0;
     }
+    .new-chat-panel-list::-webkit-scrollbar {
+      width: 3px;
+    }
+    .new-chat-panel-list::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+    }
+    .new-chat-panel-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
     .new-chat-panel-item {
       display: flex;
       align-items: center;
@@ -654,14 +663,18 @@
       color: #555;
       font-size: 0.8rem;
     }
+    
+    /* Loading indicator for panel */
     .panel-loading {
       text-align: center;
       padding: 1rem;
-      color: #666;
+      color: #555;
       font-size: 0.7rem;
     }
     .panel-loading i {
       animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 0.5rem;
     }
     @keyframes spin {
       from { transform: rotate(0deg); }
@@ -789,21 +802,6 @@
     .chat-view.show ~ .new-chat-panel {
       display: none !important;
     }
-    
-    /* Mobile touch fix */
-    @media (max-width: 480px) {
-      .fab-main {
-        width: 52px;
-        height: 52px;
-        font-size: 1.3rem;
-      }
-      .new-chat-panel {
-        width: calc(100vw - 20px);
-        right: 10px;
-        bottom: 140px;
-        max-height: 50vh;
-      }
-    }
   </style>
 </head>
 <body>
@@ -875,7 +873,7 @@
     
     <!-- Floating Action Button - New Chat -->
     <div class="fab-container" id="fabContainer">
-      <button class="fab-main" id="fabMain">
+      <button class="fab-main" id="fabMain" onclick="toggleNewChatPanel()">
         <i class="fas fa-plus"></i>
         <span class="badge" id="fabBadge" style="display:none;">0</span>
       </button>
@@ -899,9 +897,7 @@
       <div class="new-chat-panel-search">
         <input type="text" id="panelSearchInput" placeholder="Search users..." oninput="filterPanelUsers()">
       </div>
-      <div class="new-chat-panel-list" id="newChatPanelList">
-        <div class="panel-loading"><i class="fas fa-spinner"></i> Loading users...</div>
-      </div>
+      <div class="new-chat-panel-list" id="newChatPanelList"></div>
     </div>
     
     <!-- Chat Input Area -->
@@ -1005,12 +1001,14 @@
     let chatListData = [];
     let isMuted = false;
     let isPanelOpen = false;
-    let panelLoading = false;
-    let lastUserDoc = null;
-    let allUsersLoaded = false;
-    let panelSearchTerm = '';
     
-    // Load chats list
+    // ========== INFINITE SCROLL VARIABLES ==========
+    let lastVisible = null;
+    let isLoadingUsers = false;
+    let allUsersLoaded = false;
+    const PAGE_SIZE = 50;
+    
+    // ========== LOAD CHATS ==========
     async function loadChats() {
       const q = query(collection(db, 'chats'), orderBy('lastTime', 'desc'));
       onSnapshot(q, (snapshot) => {
@@ -1019,4 +1017,551 @@
           const data = doc.data();
           const ids = doc.id.split('_');
           if (ids.includes(currentUserId)) {
-            const partnerId = ids.find
+            const partnerId = ids.find(i => i !== currentUserId);
+            if (partnerId && data.lastMessage !== undefined) {
+              chats.push({
+                partnerId: '@' + partnerId,
+                lastMsg: data.lastMessage || 'No messages',
+                lastTime: data.lastTime?.toDate() || new Date(),
+                unread: data[`unread_${currentUserId}`] || 0
+              });
+            }
+          }
+        });
+        chatListData = chats;
+        renderChatList(chats);
+        document.getElementById('chatCount').textContent = chats.length ? `(${chats.length})` : '';
+        applySearchFilter();
+      });
+    }
+    
+    function renderChatList(chats) {
+      const container = document.getElementById('chatList');
+      if (!chats.length) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-comment-slash"></i><p>No messages yet</p><p style="font-size:0.65rem;margin-top:0.5rem;">Tap + to start a chat</p></div>';
+        return;
+      }
+      container.innerHTML = chats.map(c => `
+        <div class="user-list-item ${currentPartner === c.partnerId ? 'active' : ''}" data-partner="${c.partnerId}" onclick="openChat('${c.partnerId}')">
+          <div class="user-avatar" onclick="event.stopPropagation();window.location.href='profile.html?user=${encodeURIComponent(c.partnerId)}'">
+            ${getAvatarHTML(c.partnerId)}
+          </div>
+          <div class="user-info">
+            <div class="user-name-row">
+              <span class="user-name">${cleanUsername(c.partnerId)}</span>
+              <span class="user-time">${timeAgo(c.lastTime)}</span>
+            </div>
+            <div class="user-msg-row">
+              <span class="user-last-msg ${c.unread > 0 ? 'unread-msg' : ''}">${c.lastMsg.substring(0, 40)}</span>
+              ${c.unread > 0 ? `<div class="unread-count">${c.unread}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // ========== SEARCH FILTER ==========
+    window.filterChats = function() {
+      applySearchFilter();
+    };
+    
+    function applySearchFilter() {
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const items = document.querySelectorAll('#chatList .user-list-item');
+      
+      if (!search) {
+        items.forEach(item => item.style.display = 'flex');
+        return;
+      }
+      
+      items.forEach(item => {
+        const nameEl = item.querySelector('.user-name');
+        const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+        const msgEl = item.querySelector('.user-last-msg');
+        const msg = msgEl ? msgEl.textContent.toLowerCase() : '';
+        const match = name.includes(search) || msg.includes(search);
+        item.style.display = match ? 'flex' : 'none';
+      });
+    }
+    
+    // ========== OPEN CHAT ==========
+    window.openChat = async function(partner) {
+      currentPartner = partner;
+      currentChatId = [currentUserId, partner.replace('@','')].sort().join('_');
+      
+      await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
+      
+      document.getElementById('topIcons').style.display = 'none';
+      document.getElementById('chatHeader').classList.add('show');
+      document.getElementById('chatListFull').classList.add('hidden');
+      document.getElementById('searchBarContainer').classList.add('hidden');
+      document.getElementById('chatView').classList.add('show');
+      document.getElementById('chatInputArea').classList.add('show');
+      document.getElementById('floatingNav').style.display = 'none';
+      document.getElementById('partnerName').textContent = cleanUsername(partner);
+      
+      document.getElementById('fabContainer').style.display = 'none';
+      closeNewChatPanel();
+      
+      const avatarContainer = document.getElementById('partnerAvatar');
+      avatarContainer.innerHTML = getAvatarHTML(partner);
+      
+      if (unsubMessages) unsubMessages();
+      const q = query(collection(db, 'chats', currentChatId, 'messages'), orderBy('createdAt', 'asc'));
+      unsubMessages = onSnapshot(q, (snapshot) => {
+        const container = document.getElementById('messagesContainer');
+        if (snapshot.empty) {
+          container.innerHTML = '<div class="empty-chat">Send a message to start chatting!</div>';
+          return;
+        }
+        container.innerHTML = '';
+        snapshot.forEach(doc => {
+          const msg = doc.data();
+          const isSent = msg.sender === currentUserId;
+          const div = document.createElement('div');
+          div.className = `message-wrapper ${isSent ? 'sent' : 'received'}`;
+          let time = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+          if (msg.imageUrl) {
+            div.innerHTML = `<div class="message-bubble"><img src="${msg.imageUrl}" class="message-image" onclick="window.open('${msg.imageUrl}')"><div class="message-time">${time}</div></div>`;
+          } else {
+            div.innerHTML = `<div class="message-bubble">${escapeHTML(msg.text || '')}<div class="message-time">${time}</div></div>`;
+          }
+          container.appendChild(div);
+        });
+        container.scrollTop = container.scrollHeight;
+      });
+    };
+    
+    function escapeHTML(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+    
+    // ========== SEND MESSAGE ==========
+    window.sendMessage = async function() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text || !currentChatId) return;
+      input.value = '';
+      try {
+        const chatRef = doc(db, 'chats', currentChatId);
+        await setDoc(chatRef, {
+          lastMessage: text,
+          lastTime: serverTimestamp(),
+          [`unread_${currentPartner?.replace('@','')}`]: increment(1)
+        }, { merge: true });
+        await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
+          text: text,
+          sender: currentUserId,
+          createdAt: serverTimestamp()
+        });
+      } catch(e) { showToast('Failed to send'); }
+    };
+    
+    window.sendImage = async function(e) {
+      const file = e.target.files[0];
+      if (!file || !currentChatId) return;
+      const reader = new FileReader();
+      reader.onload = async function(ev) {
+        try {
+          const chatRef = doc(db, 'chats', currentChatId);
+          await setDoc(chatRef, {
+            lastMessage: '📷 Photo',
+            lastTime: serverTimestamp(),
+            [`unread_${currentPartner?.replace('@','')}`]: increment(1)
+          }, { merge: true });
+          await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
+            imageUrl: ev.target.result,
+            sender: currentUserId,
+            createdAt: serverTimestamp()
+          });
+        } catch(e) { showToast('Failed to send image'); }
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    };
+    
+    window.toggleVoice = function() {
+      showToast('Voice message coming soon! 🎤');
+    };
+    
+    // ========== GO BACK ==========
+    window.goBack = function() {
+      if (unsubMessages) unsubMessages();
+      currentPartner = null;
+      currentChatId = null;
+      document.getElementById('topIcons').style.display = 'flex';
+      document.getElementById('chatHeader').classList.remove('show');
+      document.getElementById('chatListFull').classList.remove('hidden');
+      document.getElementById('searchBarContainer').classList.remove('hidden');
+      document.getElementById('chatView').classList.remove('show');
+      document.getElementById('chatInputArea').classList.remove('show');
+      document.getElementById('floatingNav').style.display = 'flex';
+      document.getElementById('fabContainer').style.display = 'flex';
+      document.getElementById('messagesContainer').innerHTML = '<div class="empty-chat">Select a chat to start messaging</div>';
+      applySearchFilter();
+    };
+    
+    window.goToPartnerProfile = function() {
+      if (currentPartner) window.location.href = `profile.html?user=${encodeURIComponent(currentPartner)}`;
+    };
+    
+    window.startCall = function(type) {
+      showToast(`📞 ${type} call coming soon!`);
+    };
+    
+    // ========== FLOATING ACTION BUTTON FUNCTIONS ==========
+    
+    window.toggleNewChatPanel = function() {
+      if (isPanelOpen) {
+        closeNewChatPanel();
+      } else {
+        openNewChatPanel();
+      }
+    };
+    
+    function openNewChatPanel() {
+      isPanelOpen = true;
+      document.getElementById('newChatPanel').classList.add('show');
+      document.getElementById('fabMain').innerHTML = '<i class="fas fa-times"></i>';
+      // Reset infinite scroll state when opening
+      lastVisible = null;
+      allUsersLoaded = false;
+      allUsers = [];
+      loadPanelUsers();
+    }
+    
+    window.closeNewChatPanel = function() {
+      isPanelOpen = false;
+      document.getElementById('newChatPanel').classList.remove('show');
+      document.getElementById('fabMain').innerHTML = '<i class="fas fa-plus"></i>';
+    };
+    
+    window.switchPanelTab = function(tab) {
+      activePanelTab = tab;
+      document.querySelectorAll('.new-chat-panel-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tab);
+      });
+      if (tab === 'users') {
+        // Reset and reload users
+        lastVisible = null;
+        allUsersLoaded = false;
+        allUsers = [];
+        loadPanelUsers();
+      } else {
+        renderPanelList();
+      }
+    };
+    
+    window.filterPanelUsers = function() {
+      renderPanelList();
+    };
+    
+    // ========== LOAD USERS WITH INFINITE SCROLL ==========
+    async function loadPanelUsers() {
+      if (activePanelTab !== 'users') return;
+      if (isLoadingUsers || allUsersLoaded) return;
+      
+      isLoadingUsers = true;
+      
+      const container = document.getElementById('newChatPanelList');
+      
+      try {
+        let q;
+        if (lastVisible) {
+          q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), startAfter(lastVisible), limit(PAGE_SIZE));
+        } else {
+          q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(PAGE_SIZE));
+        }
+        
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+          allUsersLoaded = true;
+          isLoadingUsers = false;
+          if (allUsers.length === 0) {
+            container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
+          }
+          return;
+        }
+        
+        const newUsers = [];
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.username && data.username !== currentUser.username) {
+            newUsers.push({
+              id: doc.id,
+              username: data.username,
+              name: data.name || cleanUsername(data.username),
+              avatar: data.avatar
+            });
+          }
+        });
+        
+        lastVisible = snapshot.docs[snapshot.docs.length - 1];
+        allUsers = [...allUsers, ...newUsers];
+        
+        // If less than PAGE_SIZE, all loaded
+        if (newUsers.length < PAGE_SIZE) {
+          allUsersLoaded = true;
+        }
+        
+        renderPanelList();
+        
+      } catch (error) {
+        console.error('Error loading users:', error);
+        container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-exclamation-triangle"></i><p>Error loading users</p></div>';
+      } finally {
+        isLoadingUsers = false;
+      }
+    }
+    
+    // ========== PANEL SCROLL HANDLER FOR INFINITE SCROLL ==========
+    function setupPanelScroll() {
+      const list = document.getElementById('newChatPanelList');
+      list.addEventListener('scroll', function() {
+        if (activePanelTab !== 'users') return;
+        if (isLoadingUsers || allUsersLoaded) return;
+        
+        const scrollTop = this.scrollTop;
+        const scrollHeight = this.scrollHeight;
+        const clientHeight = this.clientHeight;
+        
+        if (scrollTop + clientHeight >= scrollHeight - 100) {
+          loadPanelUsers();
+        }
+      });
+    }
+    
+    // ========== LOAD REQUESTS ==========
+    async function loadRequests() {
+      pendingRequests = [];
+      const q = query(collection(db, 'message_requests'), where('toId', '==', currentUserId), where('status', '==', 'pending'));
+      const snapshot = await getDocs(q);
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        pendingRequests.push({
+          id: doc.id,
+          from: data.from,
+          fromName: data.fromName,
+          fromAvatar: data.fromAvatar,
+          fromId: data.fromId
+        });
+      });
+      
+      const badge = document.getElementById('fabBadge');
+      const panelBadge = document.getElementById('panelRequestBadge');
+      if (pendingRequests.length > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = pendingRequests.length;
+        panelBadge.style.display = 'inline';
+        panelBadge.textContent = pendingRequests.length;
+      } else {
+        badge.style.display = 'none';
+        panelBadge.style.display = 'none';
+      }
+    }
+    
+    // ========== RENDER PANEL LIST ==========
+    function renderPanelList() {
+      const container = document.getElementById('newChatPanelList');
+      const searchTerm = document.getElementById('panelSearchInput').value.toLowerCase();
+      
+      if (activePanelTab === 'users') {
+        let filtered = allUsers;
+        if (searchTerm) {
+          filtered = allUsers.filter(u => 
+            u.username.toLowerCase().includes(searchTerm) || 
+            (u.name || '').toLowerCase().includes(searchTerm)
+          );
+        }
+        
+        if (filtered.length === 0 && !isLoadingUsers) {
+          container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
+          return;
+        }
+        
+        let html = filtered.map(u => `
+          <div class="new-chat-panel-item" onclick="startChatFromPanel('${u.username}')">
+            <div class="new-chat-panel-avatar">
+              ${u.avatar ? `<img src="${u.avatar}">` : '<i class="fas fa-user"></i>'}
+            </div>
+            <div class="new-chat-panel-info">
+              <div class="new-chat-panel-name">${u.name || cleanUsername(u.username)}</div>
+              <div class="new-chat-panel-sub">${u.username}</div>
+            </div>
+            <button class="new-chat-panel-action" onclick="event.stopPropagation();startChatFromPanel('${u.username}')">
+              <i class="fas fa-comment"></i> Chat
+            </button>
+          </div>
+        `).join('');
+        
+        // Add loading indicator if more users are loading
+        if (!allUsersLoaded && !isLoadingUsers) {
+          html += `<div class="panel-loading" id="panelLoadMore"><i class="fas fa-spinner"></i> Loading more users...</div>`;
+        } else if (isLoadingUsers) {
+          html += `<div class="panel-loading"><i class="fas fa-spinner"></i> Loading...</div>`;
+        } else if (allUsersLoaded && allUsers.length === 0) {
+          html = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
+        }
+        
+        container.innerHTML = html;
+        
+        // Remove loading indicator after a moment if all loaded
+        if (!allUsersLoaded && !isLoadingUsers && filtered.length > 0) {
+          const loadMore = document.getElementById('panelLoadMore');
+          if (loadMore) {
+            setTimeout(() => {
+              if (loadMore) loadMore.style.display = 'none';
+            }, 2000);
+          }
+        }
+        
+      } else {
+        if (pendingRequests.length === 0) {
+          container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-envelope-open"></i><p>No pending requests</p></div>';
+          return;
+        }
+        
+        container.innerHTML = pendingRequests.map(r => `
+          <div class="new-chat-panel-item">
+            <div class="new-chat-panel-avatar" onclick="window.location.href='profile.html?user=${encodeURIComponent(r.from)}'">
+              ${r.fromAvatar ? `<img src="${r.fromAvatar}">` : '<i class="fas fa-user"></i>'}
+            </div>
+            <div class="new-chat-panel-info" onclick="window.location.href='profile.html?user=${encodeURIComponent(r.from)}'">
+              <div class="new-chat-panel-name">${r.fromName || cleanUsername(r.from)}</div>
+              <div class="new-chat-panel-sub">${r.from}</div>
+            </div>
+            <div style="display:flex;gap:0.3rem;">
+              <button class="new-chat-panel-action accept" onclick="event.stopPropagation();acceptRequestFromPanel('${r.id}', '${r.from}')">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="new-chat-panel-action decline" onclick="event.stopPropagation();declineRequestFromPanel('${r.id}')">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+    
+    // ========== CHAT ACTIONS FROM PANEL ==========
+    window.startChatFromPanel = async function(username) {
+      closeNewChatPanel();
+      const partnerId = username.replace('@', '');
+      const chatId = [currentUserId, partnerId].sort().join('_');
+      
+      const chatRef = doc(db, 'chats', chatId);
+      const chatSnap = await getDoc(chatRef);
+      
+      if (!chatSnap.exists()) {
+        await setDoc(chatRef, {
+          users: [currentUserId, partnerId],
+          lastMessage: 'Chat started',
+          lastTime: serverTimestamp(),
+          [`unread_${partnerId}`]: 1
+        });
+      }
+      
+      await openChat(username);
+    };
+    
+    window.acceptRequestFromPanel = async function(requestId, fromUser) {
+      await deleteDoc(doc(db, 'message_requests', requestId));
+      await loadRequests();
+      renderPanelList();
+      showToast(`Accepted request from ${cleanUsername(fromUser)}`);
+    };
+    
+    window.declineRequestFromPanel = async function(requestId) {
+      await deleteDoc(doc(db, 'message_requests', requestId));
+      await loadRequests();
+      renderPanelList();
+      showToast('Request declined');
+    };
+    
+    // ========== CHAT SETTINGS ==========
+    window.openChatSettings = function() {
+      if (!currentPartner) {
+        showToast('No chat selected');
+        return;
+      }
+      document.getElementById('chatSettingsOverlay').classList.add('show');
+    };
+    
+    window.closeChatSettings = function() {
+      document.getElementById('chatSettingsOverlay').classList.remove('show');
+    };
+    
+    window.viewContact = function() {
+      closeChatSettings();
+      if (currentPartner) {
+        window.location.href = `profile.html?user=${encodeURIComponent(currentPartner)}`;
+      }
+    };
+    
+    window.toggleMute = function() {
+      isMuted = !isMuted;
+      const muteText = document.getElementById('muteText');
+      if (isMuted) {
+        muteText.textContent = 'Unmute Notifications';
+        showToast('Chat muted 🔕');
+      } else {
+        muteText.textContent = 'Mute Notifications';
+        showToast('Chat unmuted 🔔');
+      }
+    };
+    
+    window.clearChat = function() {
+      if (confirm('Clear all messages in this chat?')) {
+        closeChatSettings();
+        showToast('Chat cleared');
+      }
+    };
+    
+    window.blockUser = function() {
+      if (confirm('Block this user?')) {
+        closeChatSettings();
+        showToast('User blocked 🚫');
+        goBack();
+      }
+    };
+    
+    window.deleteChat = function() {
+      if (confirm('Delete this chat permanently?')) {
+        closeChatSettings();
+        showToast('Chat deleted');
+        goBack();
+      }
+    };
+    
+    // ========== EVENT LISTENERS ==========
+    document.getElementById('chatSettingsOverlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('chatSettingsOverlay')) closeChatSettings();
+    });
+    
+    document.getElementById('chatInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+    
+    // Close panel on outside click
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('newChatPanel');
+      const fab = document.getElementById('fabMain');
+      if (isPanelOpen && !panel.contains(e.target) && !fab.contains(e.target)) {
+        closeNewChatPanel();
+      }
+    });
+    
+    // ========== INITIALIZE ==========
+    loadChats();
+    loadRequests();
+    setupPanelScroll();
+    
+    // Initial load of users when panel is first opened
+    // Users will load when panel is opened via openNewChatPanel()
+  </script>
+</body>
+</html>
