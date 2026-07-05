@@ -17,11 +17,18 @@
       width: 100%;
       max-width: 100%;
       overflow-x: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
     
     .scrollable-content {
       width: 100%;
       max-width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
     
     .chat-header {
@@ -104,6 +111,7 @@
       position: relative;
       left: 0;
       right: 0;
+      flex-shrink: 0;
     }
     .search-bar {
       display: flex;
@@ -175,6 +183,7 @@
       justify-content: space-between;
       align-items: center;
       width: 100%;
+      flex-shrink: 0;
     }
     .user-list-item {
       display: flex;
@@ -185,6 +194,7 @@
       border-bottom: 1px solid rgba(255,255,255,0.02);
       transition: background 0.2s;
       width: 100%;
+      flex-shrink: 0;
     }
     .user-list-item:active { background: rgba(255,255,255,0.03); }
     .user-list-item.active { background: rgba(255,252,0,0.06); }
@@ -255,29 +265,46 @@
       justify-content: center;
       flex-shrink: 0;
     }
+    
+    /* CHAT VIEW - FIXED: No black space at bottom */
     .chat-view {
       display: none;
       flex-direction: column;
       flex: 1;
       min-height: 0;
       width: 100%;
+      height: 100%;
     }
-    .chat-view.show { display: flex; }
+    .chat-view.show { 
+      display: flex; 
+    }
     .messages-container {
       flex: 1;
       overflow-y: auto;
       padding: 0.8rem;
+      padding-bottom: 0.5rem;
       display: flex;
       flex-direction: column;
       gap: 0.2rem;
       background: #000;
       width: 100%;
+      min-height: 0;
     }
     .messages-container::-webkit-scrollbar { width: 0; }
+    .messages-container .empty-chat {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      font-size: 0.8rem;
+    }
+    /* Message wrapper - messages start from bottom */
     .message-wrapper {
       display: flex;
       max-width: 85%;
       animation: fadeInUp 0.25s;
+      flex-shrink: 0;
     }
     .message-wrapper.sent {
       align-self: flex-end;
@@ -320,14 +347,7 @@
       border-radius: 0.8rem;
       cursor: pointer;
     }
-    .empty-chat {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #333;
-      font-size: 0.8rem;
-    }
+    
     .chat-input-area {
       display: none;
       align-items: center;
@@ -337,6 +357,7 @@
       background: #000;
       border-top: 1px solid rgba(255,255,255,0.06);
       width: 100%;
+      flex-shrink: 0;
     }
     .chat-input-area.show { display: flex; }
     .camera-btn-s, .mic-btn-s {
@@ -590,6 +611,11 @@
       padding-left: 1rem;
       padding-right: 1rem;
     }
+    
+    /* Fix for floating nav */
+    .floating-nav {
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -627,7 +653,7 @@
         </div>
       </div>
       
-      <!-- SEARCH BAR - REDUCED HEIGHT -->
+      <!-- SEARCH BAR -->
       <div class="search-bar-container" id="searchBarContainer">
         <div class="search-bar">
           <i class="fas fa-search"></i>
@@ -643,7 +669,7 @@
         <div id="chatList"></div>
       </div>
       
-      <!-- Chat View -->
+      <!-- CHAT VIEW - Messages start from bottom, no black space -->
       <div class="chat-view" id="chatView">
         <div class="messages-container" id="messagesContainer">
           <div class="empty-chat">Select a chat to start messaging</div>
@@ -833,6 +859,7 @@
           }
           container.appendChild(div);
         });
+        // Scroll to bottom immediately after messages load
         container.scrollTop = container.scrollHeight;
       });
     };
@@ -862,6 +889,11 @@
           sender: currentUserId,
           createdAt: serverTimestamp()
         });
+        // Scroll to bottom after sending
+        const container = document.getElementById('messagesContainer');
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 50);
       } catch(e) { showToast('Failed to send'); }
     };
     
@@ -883,6 +915,10 @@
             sender: currentUserId,
             createdAt: serverTimestamp()
           });
+          const container = document.getElementById('messagesContainer');
+          setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+          }, 50);
         } catch(e) { showToast('Failed to send image'); }
       };
       reader.readAsDataURL(file);
