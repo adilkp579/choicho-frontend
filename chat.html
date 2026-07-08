@@ -845,6 +845,29 @@
     .chat-view.show ~ .new-chat-panel {
       display: none !important;
     }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      padding: 0.7rem 1.5rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      border: 1px solid rgba(255,255,255,0.08);
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -1130,8 +1153,10 @@
     // ========== OPEN CHAT ==========
     window.openChat = async function(partner) {
       currentPartner = partner;
-      currentChatId = [currentUserId, partner.replace('@','')].sort().join('_');
+      const partnerId = partner.replace('@','');
+      currentChatId = [currentUserId, partnerId].sort().join('_');
       
+      // Mark messages as read
       await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
       
       document.getElementById('topIcons').style.display = 'none';
@@ -1149,7 +1174,10 @@
       const avatarContainer = document.getElementById('partnerAvatar');
       avatarContainer.innerHTML = getAvatarHTML(partner);
       
+      // Unsubscribe from previous messages
       if (unsubMessages) unsubMessages();
+      
+      // Listen for messages
       const q = query(collection(db, 'chats', currentChatId, 'messages'), orderBy('createdAt', 'asc'));
       unsubMessages = onSnapshot(q, (snapshot) => {
         const container = document.getElementById('messagesContainer');
@@ -1172,6 +1200,9 @@
           container.appendChild(div);
         });
         container.scrollTop = container.scrollHeight;
+      }, (error) => {
+        console.error('Error loading messages:', error);
+        showToast('Error loading messages');
       });
     };
     
@@ -1186,41 +1217,72 @@
     window.sendMessage = async function() {
       const input = document.getElementById('chatInput');
       const text = input.value.trim();
-      if (!text || !currentChatId) return;
+      if (!text || !currentChatId) {
+        showToast('Please enter a message');
+        return;
+      }
+      
       input.value = '';
+      input.disabled = true;
+      
       try {
+        const partnerId = currentPartner.replace('@','');
         const chatRef = doc(db, 'chats', currentChatId);
+        
+        // Update chat document
         await setDoc(chatRef, {
           lastMessage: text,
           lastTime: serverTimestamp(),
-          [`unread_${currentPartner?.replace('@','')}`]: increment(1)
+          [`unread_${partnerId}`]: increment(1)
         }, { merge: true });
+        
+        // Add message
         await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
           text: text,
           sender: currentUserId,
           createdAt: serverTimestamp()
         });
-      } catch(e) { showToast('Failed to send'); }
+        
+      } catch(e) {
+        console.error('Send error:', e);
+        showToast('Failed to send message');
+        input.value = text; // Restore text
+      } finally {
+        input.disabled = false;
+        input.focus();
+      }
     };
     
     window.sendImage = async function(e) {
       const file = e.target.files[0];
-      if (!file || !currentChatId) return;
+      if (!file || !currentChatId) {
+        showToast('No image selected');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = async function(ev) {
         try {
+          const partnerId = currentPartner.replace('@','');
           const chatRef = doc(db, 'chats', currentChatId);
+          
           await setDoc(chatRef, {
             lastMessage: '📷 Photo',
             lastTime: serverTimestamp(),
-            [`unread_${currentPartner?.replace('@','')}`]: increment(1)
+            [`unread_${partnerId}`]: increment(1)
           }, { merge: true });
+          
           await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
             imageUrl: ev.target.result,
             sender: currentUserId,
             createdAt: serverTimestamp()
           });
-        } catch(e) { showToast('Failed to send image'); }
+          
+          showToast('Image sent');
+        } catch(e) {
+          console.error('Image send error:', e);
+          showToast('Failed to send image');
+        }
       };
       reader.readAsDataURL(file);
       e.target.value = '';
@@ -1232,7 +1294,10 @@
     
     // ========== GO BACK ==========
     window.goBack = function() {
-      if (unsubMessages) unsubMessages();
+      if (unsubMessages) {
+        unsubMessages();
+        unsubMessages = null;
+      }
       currentPartner = null;
       currentChatId = null;
       document.getElementById('topIcons').style.display = 'flex';
@@ -1269,7 +1334,6 @@
       isPanelOpen = true;
       document.getElementById('newChatPanel').classList.add('show');
       document.getElementById('fabMain').innerHTML = '<i class="fas fa-times"></i>';
-      // Reset infinite scroll state when opening
       lastVisible = null;
       allUsersLoaded = false;
       allUsers = [];
@@ -1288,7 +1352,6 @@
         t.classList.toggle('active', t.dataset.tab === tab);
       });
       if (tab === 'users') {
-        // Reset and reload users
         lastVisible = null;
         allUsersLoaded = false;
         allUsers = [];
@@ -1308,7 +1371,6 @@
       if (isLoadingUsers || allUsersLoaded) return;
       
       isLoadingUsers = true;
-      
       const container = document.getElementById('newChatPanelList');
       
       try {
@@ -1323,7 +1385,6 @@
         
         if (snapshot.empty) {
           allUsersLoaded = true;
-          isLoadingUsers = false;
           if (allUsers.length === 0) {
             container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
           }
@@ -1346,7 +1407,6 @@
         lastVisible = snapshot.docs[snapshot.docs.length - 1];
         allUsers = [...allUsers, ...newUsers];
         
-        // If less than PAGE_SIZE, all loaded
         if (newUsers.length < PAGE_SIZE) {
           allUsersLoaded = true;
         }
@@ -1361,7 +1421,7 @@
       }
     }
     
-    // ========== PANEL SCROLL HANDLER FOR INFINITE SCROLL ==========
+    // ========== PANEL SCROLL HANDLER ==========
     function setupPanelScroll() {
       const list = document.getElementById('newChatPanelList');
       list.addEventListener('scroll', function() {
@@ -1441,18 +1501,14 @@
           </div>
         `).join('');
         
-        // Add loading indicator if more users are loading
         if (!allUsersLoaded && !isLoadingUsers) {
           html += `<div class="panel-loading" id="panelLoadMore"><i class="fas fa-spinner"></i> Loading more users...</div>`;
         } else if (isLoadingUsers) {
           html += `<div class="panel-loading"><i class="fas fa-spinner"></i> Loading...</div>`;
-        } else if (allUsersLoaded && allUsers.length === 0) {
-          html = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
         }
         
         container.innerHTML = html;
         
-        // Remove loading indicator after a moment if all loaded
         if (!allUsersLoaded && !isLoadingUsers && filtered.length > 0) {
           const loadMore = document.getElementById('panelLoadMore');
           if (loadMore) {
@@ -1496,33 +1552,47 @@
       const partnerId = username.replace('@', '');
       const chatId = [currentUserId, partnerId].sort().join('_');
       
-      const chatRef = doc(db, 'chats', chatId);
-      const chatSnap = await getDoc(chatRef);
-      
-      if (!chatSnap.exists()) {
-        await setDoc(chatRef, {
-          users: [currentUserId, partnerId],
-          lastMessage: 'Chat started',
-          lastTime: serverTimestamp(),
-          [`unread_${partnerId}`]: 1
-        });
+      try {
+        const chatRef = doc(db, 'chats', chatId);
+        const chatSnap = await getDoc(chatRef);
+        
+        if (!chatSnap.exists()) {
+          await setDoc(chatRef, {
+            users: [currentUserId, partnerId],
+            lastMessage: 'Chat started',
+            lastTime: serverTimestamp(),
+            [`unread_${partnerId}`]: 1,
+            [`unread_${currentUserId}`]: 0
+          });
+        }
+        
+        await openChat(username);
+      } catch(e) {
+        console.error('Error starting chat:', e);
+        showToast('Failed to start chat');
       }
-      
-      await openChat(username);
     };
     
     window.acceptRequestFromPanel = async function(requestId, fromUser) {
-      await deleteDoc(doc(db, 'message_requests', requestId));
-      await loadRequests();
-      renderPanelList();
-      showToast(`Accepted request from ${cleanUsername(fromUser)}`);
+      try {
+        await deleteDoc(doc(db, 'message_requests', requestId));
+        await loadRequests();
+        renderPanelList();
+        showToast(`Accepted request from ${cleanUsername(fromUser)}`);
+      } catch(e) {
+        showToast('Failed to accept request');
+      }
     };
     
     window.declineRequestFromPanel = async function(requestId) {
-      await deleteDoc(doc(db, 'message_requests', requestId));
-      await loadRequests();
-      renderPanelList();
-      showToast('Request declined');
+      try {
+        await deleteDoc(doc(db, 'message_requests', requestId));
+        await loadRequests();
+        renderPanelList();
+        showToast('Request declined');
+      } catch(e) {
+        showToast('Failed to decline request');
+      }
     };
     
     // ========== CHAT SETTINGS ==========
@@ -1580,6 +1650,17 @@
       }
     };
     
+    // ========== TOAST FUNCTION ==========
+    window.showToast = function(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    };
+    
     // ========== EVENT LISTENERS ==========
     document.getElementById('chatSettingsOverlay').addEventListener('click', (e) => {
       if (e.target === document.getElementById('chatSettingsOverlay')) closeChatSettings();
@@ -1589,7 +1670,6 @@
       if (e.key === 'Enter') sendMessage();
     });
     
-    // Close panel on outside click
     document.addEventListener('click', function(e) {
       const panel = document.getElementById('newChatPanel');
       const fab = document.getElementById('fabMain');
@@ -1602,9 +1682,6 @@
     loadChats();
     loadRequests();
     setupPanelScroll();
-    
-    // Initial load of users when panel is first opened
-    // Users will load when panel is opened via openNewChatPanel()
   </script>
 </body>
 </html>
