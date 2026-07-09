@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>Chat · Choicho - Call Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>📞 Call Test</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,6 +53,7 @@
     .call-btn.video { background: #1a1a1a; color: #fff; border: 1px solid #333; }
     .call-btn.audio.in-call { background: #ef4444; color: #fff; animation: pulse 1.5s infinite; }
     .call-btn.video.in-call { background: #ef4444; color: #fff; animation: pulse 1.5s infinite; }
+    .call-btn:disabled { opacity: 0.3; cursor: not-allowed; }
     
     .debug-panel {
       background: rgba(255,255,255,0.03);
@@ -128,6 +129,24 @@
     .firebase-status.disconnected { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
     .firebase-status .spinner { animation: spin 1s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    
+    .user-list-item {
+      padding: 10px; margin: 5px 0; border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+      cursor: pointer; display: flex; align-items: center; gap: 10px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .user-list-item:hover { background: rgba(255,255,255,0.06); }
+    .user-list-item.selected { border-color: #FFFC00; background: rgba(255,252,0,0.06); }
+    .user-list-item .avatar-small {
+      width: 32px; height: 32px; border-radius: 50%; background: #1a1a1a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; flex-shrink: 0; color: #fff;
+    }
+    .user-list-item .info-small { flex: 1; }
+    .user-list-item .info-small .name { font-weight: 500; font-size: 0.85rem; }
+    .user-list-item .info-small .username { font-size: 0.65rem; color: #666; }
   </style>
 </head>
 <body>
@@ -156,10 +175,10 @@
     </div>
     
     <div class="call-buttons">
-      <button class="call-btn audio" id="audioCallBtn" onclick="startCall('audio')" disabled>
+      <button class="call-btn audio" id="audioCallBtn" onclick="startCall('audio')">
         <i class="fas fa-phone"></i> Audio Call
       </button>
-      <button class="call-btn video" id="videoCallBtn" onclick="startCall('video')" disabled>
+      <button class="call-btn video" id="videoCallBtn" onclick="startCall('video')">
         <i class="fas fa-video"></i> Video Call
       </button>
     </div>
@@ -209,31 +228,19 @@
       getDocs,
       limit,
       startAfter,
-      increment
+      increment,
+      runTransaction
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-    import { 
-      getAuth, 
-      signInAnonymously,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-    // ========== FIREBASE CONFIG ==========
-    // REPLACE WITH YOUR FIREBASE CONFIG
+    // ========== FIREBASE CONFIG - REPLACE WITH YOURS ==========
     const firebaseConfig = {
-     apiKey: "AIzaSyC2JA1K-fvsPUkWUfvSFhkC-ET8dpPOr0M",
-  authDomain: "mychat-a97bf.firebaseapp.com",
-  projectId: "mychat-a97bf",
-  storageBucket: "mychat-a97bf.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abc123"
+     
     };
 
     // ========== DEBUG LOGGING ==========
     const debugPanel = document.getElementById('debugPanel');
-    let debugCount = 0;
     
     function addDebugLog(message, type = 'info') {
-      debugCount++;
       const entry = document.createElement('div');
       const time = new Date().toLocaleTimeString();
       entry.className = `log-entry ${type}`;
@@ -243,7 +250,6 @@
       console.log(`[${type}] ${message}`);
     }
 
-    // ========== TOAST ==========
     function showToast(message) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
@@ -252,8 +258,19 @@
       toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
+    // ========== GENERATE USER ID ==========
+    function generateUserId() {
+      // Generate a random user ID stored in localStorage
+      let userId = localStorage.getItem('call_user_id');
+      if (!userId) {
+        userId = 'user_' + Math.random().toString(36).substring(2, 10);
+        localStorage.setItem('call_user_id', userId);
+      }
+      return userId;
+    }
+
     // ========== INIT FIREBASE ==========
-    let db, auth, currentUser, currentUserId;
+    let db, currentUserId, currentUser;
     let selectedPartner = null;
     let allUsers = [];
     let isCallActive = false;
@@ -264,60 +281,62 @@
     let isMutedCall = false;
     let unsubCallSignaling = null;
     let callDocRef = null;
+    let userDocRef = null;
 
     try {
       addDebugLog('Initializing Firebase...', 'info');
       const app = initializeApp(firebaseConfig);
       db = getFirestore(app);
-      auth = getAuth(app);
+      
+      // Generate user ID
+      currentUserId = generateUserId();
+      currentUser = { uid: currentUserId };
+      
+      document.getElementById('userId').textContent = `ID: ${currentUserId.substring(0, 8)}...`;
+      document.getElementById('userName').textContent = 'You';
+      document.getElementById('userUsername').textContent = `@${currentUserId.substring(0, 8)}`;
       
       document.getElementById('firebaseStatus').className = 'firebase-status connected';
       document.getElementById('firebaseStatus').innerHTML = '<i class="fas fa-check-circle"></i> Firebase Connected';
-      addDebugLog('✅ Firebase initialized successfully', 'success');
+      addDebugLog(`✅ Firebase initialized, User ID: ${currentUserId}`, 'success');
+      
+      // Create/update user document
+      userDocRef = doc(db, 'users', currentUserId);
+      setDoc(userDocRef, {
+        username: currentUserId,
+        name: 'You',
+        createdAt: serverTimestamp(),
+        online: true,
+        lastSeen: serverTimestamp()
+      }, { merge: true }).then(() => {
+        addDebugLog('✅ User document created/updated', 'success');
+      }).catch(e => {
+        addDebugLog(`⚠️ User doc error: ${e.message}`, 'warning');
+      });
+      
+      // Load users
+      loadUsers();
+      
+      // Set up presence
+      setupPresence();
+      
     } catch (error) {
       addDebugLog(`❌ Firebase init error: ${error.message}`, 'error');
       document.getElementById('firebaseStatus').className = 'firebase-status disconnected';
       document.getElementById('firebaseStatus').innerHTML = `<i class="fas fa-exclamation-circle"></i> Error: ${error.message}`;
     }
 
-    // ========== AUTH ==========
-    async function initAuth() {
-      try {
-        addDebugLog('Starting anonymous auth...', 'info');
-        const credential = await signInAnonymously(auth);
-        currentUser = credential.user;
-        currentUserId = currentUser.uid;
-        
-        document.getElementById('userId').textContent = `ID: ${currentUserId.substring(0, 8)}...`;
-        document.getElementById('userName').textContent = 'You';
-        document.getElementById('userUsername').textContent = `@user_${currentUserId.substring(0, 6)}`;
-        
-        addDebugLog(`✅ Authenticated as: ${currentUserId}`, 'success');
-        
-        // Create user document
-        try {
-          await setDoc(doc(db, 'users', currentUserId), {
-            username: `user_${currentUserId.substring(0, 6)}`,
-            name: 'You',
-            createdAt: serverTimestamp(),
-            online: true
-          }, { merge: true });
-          addDebugLog('✅ User document created/updated', 'success');
-        } catch (e) {
-          addDebugLog(`⚠️ User doc error: ${e.message}`, 'warning');
+    // ========== PRESENCE ==========
+    function setupPresence() {
+      // Update online status periodically
+      setInterval(() => {
+        if (userDocRef) {
+          updateDoc(userDocRef, {
+            online: true,
+            lastSeen: serverTimestamp()
+          }).catch(() => {});
         }
-        
-        // Enable call buttons
-        document.getElementById('audioCallBtn').disabled = false;
-        document.getElementById('videoCallBtn').disabled = false;
-        
-        // Load users
-        loadUsers();
-        
-      } catch (error) {
-        addDebugLog(`❌ Auth error: ${error.message}`, 'error');
-        showToast('Authentication failed: ' + error.message);
-      }
+      }, 10000);
     }
 
     // ========== LOAD USERS ==========
@@ -329,14 +348,16 @@
         
         const userList = document.getElementById('userList');
         userList.innerHTML = '';
+        allUsers = [];
         
         snapshot.forEach(doc => {
           const data = doc.data();
           if (doc.id !== currentUserId) {
             allUsers.push({
               id: doc.id,
-              username: data.username || `@${doc.id.substring(0, 6)}`,
-              name: data.name || 'User'
+              username: data.username || doc.id,
+              name: data.name || 'User',
+              online: data.online || false
             });
           }
         });
@@ -344,41 +365,63 @@
         addDebugLog(`✅ Loaded ${allUsers.length} users`, 'success');
         
         if (allUsers.length === 0) {
-          userList.innerHTML = '<div style="color:#555;padding:10px;text-align:center;font-size:0.8rem;">No other users found. Open this in another tab/window.</div>';
-          addDebugLog('⚠️ No other users found', 'warning');
+          userList.innerHTML = `
+            <div style="color:#555;padding:10px;text-align:center;font-size:0.8rem;">
+              <i class="fas fa-users" style="display:block;font-size:1.5rem;margin-bottom:8px;"></i>
+              No other users found.<br>
+              Open this in another tab/window to test calling.
+            </div>
+          `;
+          addDebugLog('⚠️ No other users found. Open another tab.', 'warning');
           return;
         }
         
-        allUsers.forEach((user, index) => {
+        allUsers.forEach(user => {
           const div = document.createElement('div');
-          div.style.cssText = `
-            padding: 10px; margin: 5px 0; border-radius: 8px;
-            background: rgba(255,255,255,0.03);
-            cursor: pointer; display: flex; align-items: center; gap: 10px;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-          `;
-          div.onmouseover = () => div.style.background = 'rgba(255,255,255,0.06)';
-          div.onmouseout = () => div.style.background = 'rgba(255,255,255,0.03)';
+          div.className = 'user-list-item';
+          div.dataset.userId = user.id;
           div.onclick = () => selectUser(user);
           
           div.innerHTML = `
-            <div style="width:32px;height:32px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;">
-              <i class="fas fa-user"></i>
+            <div class="avatar-small"><i class="fas fa-user"></i></div>
+            <div class="info-small">
+              <div class="name">${user.name}</div>
+              <div class="username">${user.username}</div>
             </div>
-            <div style="flex:1;">
-              <div style="font-weight:500;font-size:0.85rem;">${user.name}</div>
-              <div style="font-size:0.65rem;color:#666;">${user.username}</div>
+            <div style="font-size:0.65rem;color:${user.online ? '#4ade80' : '#555'};">
+              ${user.online ? '🟢 Online' : '⚫ Offline'}
             </div>
-            <div style="font-size:0.65rem;color:#555;">${index === 0 ? '👈 Click' : ''}</div>
           `;
           userList.appendChild(div);
         });
         
-        // Auto-select first user for testing
+        // Auto-select first user
         if (allUsers.length > 0) {
           selectUser(allUsers[0]);
         }
+        
+        // Set up real-time user updates
+        onSnapshot(collection(db, 'users'), (snapshot) => {
+          snapshot.docChanges().forEach(change => {
+            if (change.type === 'modified') {
+              const data = change.doc.data();
+              const userId = change.doc.id;
+              if (userId !== currentUserId) {
+                // Update online status in UI
+                const items = document.querySelectorAll('.user-list-item');
+                items.forEach(item => {
+                  if (item.dataset.userId === userId) {
+                    const statusEl = item.querySelector('div:last-child');
+                    if (statusEl) {
+                      statusEl.textContent = data.online ? '🟢 Online' : '⚫ Offline';
+                      statusEl.style.color = data.online ? '#4ade80' : '#555';
+                    }
+                  }
+                });
+              }
+            }
+          });
+        });
         
       } catch (error) {
         addDebugLog(`❌ Error loading users: ${error.message}`, 'error');
@@ -392,18 +435,12 @@
       addDebugLog(`📱 Selected user: ${user.name} (${user.id})`, 'info');
       showToast(`Selected: ${user.name}`);
       
-      // Highlight selected
-      document.querySelectorAll('#userList > div').forEach(el => {
-        el.style.borderColor = 'transparent';
-        el.style.background = 'rgba(255,255,255,0.03)';
+      document.querySelectorAll('.user-list-item').forEach(el => {
+        el.classList.remove('selected');
+        if (el.dataset.userId === user.id) {
+          el.classList.add('selected');
+        }
       });
-      // Find and highlight the selected user
-      const items = document.querySelectorAll('#userList > div');
-      const index = allUsers.findIndex(u => u.id === user.id);
-      if (items[index]) {
-        items[index].style.borderColor = '#FFFC00';
-        items[index].style.background = 'rgba(255,252,0,0.06)';
-      }
     }
 
     // ========== WEBRTC CONFIGURATION ==========
@@ -431,17 +468,14 @@
         return;
       }
       
-      if (!currentUserId) {
-        showToast('Please wait for authentication');
-        return;
-      }
-      
       addDebugLog(`📞 Starting ${type} call with ${selectedPartner.name}`, 'info');
       showToast(`Calling ${selectedPartner.name}...`);
       
       // Update buttons
-      document.getElementById('audioCallBtn').className = 'call-btn audio connecting';
-      document.getElementById('videoCallBtn').className = 'call-btn video connecting';
+      document.getElementById('audioCallBtn').className = 'call-btn audio';
+      document.getElementById('audioCallBtn').disabled = true;
+      document.getElementById('videoCallBtn').className = 'call-btn video';
+      document.getElementById('videoCallBtn').disabled = true;
       
       // Show overlay
       const overlay = document.getElementById('callOverlay');
@@ -696,7 +730,9 @@
       }
       
       document.getElementById('audioCallBtn').className = 'call-btn audio';
+      document.getElementById('audioCallBtn').disabled = false;
       document.getElementById('videoCallBtn').className = 'call-btn video';
+      document.getElementById('videoCallBtn').disabled = false;
       
       const muteBtn = document.getElementById('muteBtn');
       muteBtn.classList.remove('muted');
@@ -728,48 +764,21 @@
       }
     };
 
-    // ========== AUTH STATE ==========
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        addDebugLog('✅ Auth state: User authenticated', 'success');
-        currentUser = user;
-        currentUserId = user.uid;
-        document.getElementById('userId').textContent = `ID: ${currentUserId.substring(0, 8)}...`;
-        document.getElementById('userName').textContent = 'You';
-        document.getElementById('userUsername').textContent = `@user_${currentUserId.substring(0, 6)}`;
-        
-        // Enable buttons
-        document.getElementById('audioCallBtn').disabled = false;
-        document.getElementById('videoCallBtn').disabled = false;
-        
-        // Load users
-        loadUsers();
-      } else {
-        addDebugLog('⚠️ Auth state: No user, signing in anonymously...', 'warning');
-        signInAnonymously(auth).catch(e => {
-          addDebugLog(`❌ Auth error: ${e.message}`, 'error');
-        });
-      }
-    });
-
-    // ========== INIT ==========
-    addDebugLog('🚀 App initialized', 'info');
-    
-    // Check if Firebase is configured
-    if (firebaseConfig.apiKey === "AIzaSyBk8QfOjqKPkZQdXpXm3m7m7m7m7m7m7m") {
-      addDebugLog('⚠️⚠️⚠️ WARNING: Using default Firebase config!', 'error');
-      addDebugLog('Please replace with your Firebase config in the code.', 'error');
-      document.getElementById('firebaseStatus').className = 'firebase-status disconnected';
-      document.getElementById('firebaseStatus').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please configure Firebase';
-    }
-
-    // Make functions globally accessible
+    // ========== MAKE GLOBALLY AVAILABLE ==========
     window.startCall = window.startCall;
     window.endCall = window.endCall;
     window.toggleMute = window.toggleMute;
     window.selectUser = selectUser;
     window.showToast = showToast;
     window.addDebugLog = addDebugLog;
+
+    // ========== CHECK CONFIG ==========
+    if (firebaseConfig.apiKey === "AIzaSyBk8QfOjqKPkZQdXpXm3m7m7m7m7m7m7m") {
+      addDebugLog('⚠️⚠️⚠️ WARNING: Using default Firebase config!', 'error');
+      addDebugLog('Please replace with your Firebase config in the code.', 'error');
+      document.getElementById('firebaseStatus').className = 'firebase-status disconnected';
+      document.getElementById('firebaseStatus').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please configure Firebase';
+    }
   </script>
 </body>
 </html>
