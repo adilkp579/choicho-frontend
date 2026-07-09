@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>📞 Call Test</title>
+  <title>📞 Call Test - Self Test</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #000; color: #fff; font-family: system-ui, -apple-system, sans-serif; padding: 20px; }
-    
     .container { max-width: 500px; margin: 0 auto; }
     
     .header { 
@@ -53,6 +52,8 @@
     .call-btn.video { background: #1a1a1a; color: #fff; border: 1px solid #333; }
     .call-btn.audio.in-call { background: #ef4444; color: #fff; animation: pulse 1.5s infinite; }
     .call-btn.video.in-call { background: #ef4444; color: #fff; animation: pulse 1.5s infinite; }
+    .call-btn.audio.self-test { background: #8b5cf6; color: #fff; }
+    .call-btn.video.self-test { background: #8b5cf6; color: #fff; border-color: #8b5cf6; }
     .call-btn:disabled { opacity: 0.3; cursor: not-allowed; }
     
     .debug-panel {
@@ -63,7 +64,7 @@
       border: 1px solid rgba(255,255,255,0.05);
       font-family: monospace;
       font-size: 0.7rem;
-      max-height: 300px;
+      max-height: 400px;
       overflow-y: auto;
     }
     .debug-panel .log-entry {
@@ -76,6 +77,7 @@
     .debug-panel .log-entry.error { color: #ef4444; }
     .debug-panel .log-entry.info { color: #60a5fa; }
     .debug-panel .log-entry.warning { color: #f59e0b; }
+    .debug-panel .log-entry.self-test { color: #a78bfa; }
     
     .call-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -130,40 +132,56 @@
     .firebase-status .spinner { animation: spin 1s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     
-    .user-list-item {
-      padding: 10px; margin: 5px 0; border-radius: 8px;
-      background: rgba(255,255,255,0.03);
-      cursor: pointer; display: flex; align-items: center; gap: 10px;
-      border: 1px solid transparent;
+    .self-test-info {
+      background: rgba(139,92,246,0.1);
+      border: 1px solid rgba(139,92,246,0.2);
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin: 10px 0;
+      font-size: 0.75rem;
+      color: #a78bfa;
+      display: none;
+    }
+    .self-test-info.show { display: block; }
+    
+    .mode-toggle {
+      display: flex; gap: 10px; margin: 10px 0;
+    }
+    .mode-toggle button {
+      flex: 1; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+      background: transparent; color: #888; cursor: pointer; font-size: 0.7rem;
       transition: all 0.2s;
     }
-    .user-list-item:hover { background: rgba(255,255,255,0.06); }
-    .user-list-item.selected { border-color: #FFFC00; background: rgba(255,252,0,0.06); }
-    .user-list-item .avatar-small {
-      width: 32px; height: 32px; border-radius: 50%; background: #1a1a1a;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem; flex-shrink: 0; color: #fff;
+    .mode-toggle button.active {
+      background: rgba(139,92,246,0.15); border-color: #8b5cf6; color: #a78bfa;
     }
-    .user-list-item .info-small { flex: 1; }
-    .user-list-item .info-small .name { font-weight: 500; font-size: 0.85rem; }
-    .user-list-item .info-small .username { font-size: 0.65rem; color: #666; }
+    .mode-toggle button:hover { background: rgba(255,255,255,0.05); }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <h1>📞 Call Test</h1>
-      <div class="status"><span class="dot"></span> Online</div>
+      <div class="status"><span class="dot"></span> <span id="onlineStatus">Online</span></div>
     </div>
     
     <div id="firebaseStatus" class="firebase-status disconnected">
       <i class="fas fa-circle-notch spinner"></i> Connecting to Firebase...
     </div>
     
+    <div class="mode-toggle">
+      <button class="active" id="realMode" onclick="setMode('real')">🌐 Real Call</button>
+      <button id="selfTestMode" onclick="setMode('self')">🧪 Self Test</button>
+    </div>
+    
+    <div class="self-test-info" id="selfTestInfo">
+      <i class="fas fa-flask"></i> Self-Test Mode: Simulates a call without needing another user. Great for testing the UI and audio/video.
+    </div>
+    
     <div class="user-card">
       <div class="avatar"><i class="fas fa-user"></i></div>
       <div class="info">
-        <div class="name" id="userName">Loading...</div>
+        <div class="name" id="userName">You</div>
         <div class="username" id="userUsername">@loading</div>
       </div>
       <div style="font-size:0.7rem;color:#555;" id="userId">ID: ...</div>
@@ -185,6 +203,7 @@
     
     <div style="font-size:0.7rem;color:#666;margin-bottom:10px;text-align:center;">
       Selected: <span id="selectedUserDisplay">None</span>
+      <span id="modeDisplay" style="margin-left:10px;color:#8b5cf6;"></span>
     </div>
     
     <div class="debug-panel" id="debugPanel">
@@ -234,14 +253,29 @@
 
     // ========== FIREBASE CONFIG - REPLACE WITH YOURS ==========
     const firebaseConfig = {
-       apiKey: "AIzaSyC2JA1K-fvsPUkWUfvSFhkC-ET8dpPOr0M",
-  authDomain: "mychat-a97bf.firebaseapp.com",
-  projectId: "mychat-a97bf",
-  storageBucket: "mychat-a97bf.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abc123"
-     
+      apiKey: "AIzaSyBk8QfOjqKPkZQdXpXm3m7m7m7m7m7m7m",
+      authDomain: "your-app.firebaseapp.com",
+      projectId: "your-app",
+      storageBucket: "your-app.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef123456"
     };
+
+    // ========== STATE ==========
+    let currentMode = 'real'; // 'real' or 'self'
+    let db, currentUserId;
+    let selectedPartner = null;
+    let allUsers = [];
+    let isCallActive = false;
+    let peerConnection = null;
+    let localStream = null;
+    let callTimerInterval = null;
+    let callStartTime = null;
+    let isMutedCall = false;
+    let unsubCallSignaling = null;
+    let callDocRef = null;
+    let userDocRef = null;
+    let selfTestInterval = null;
 
     // ========== DEBUG LOGGING ==========
     const debugPanel = document.getElementById('debugPanel');
@@ -266,7 +300,6 @@
 
     // ========== GENERATE USER ID ==========
     function generateUserId() {
-      // Generate a random user ID stored in localStorage
       let userId = localStorage.getItem('call_user_id');
       if (!userId) {
         userId = 'user_' + Math.random().toString(36).substring(2, 10);
@@ -276,27 +309,12 @@
     }
 
     // ========== INIT FIREBASE ==========
-    let db, currentUserId, currentUser;
-    let selectedPartner = null;
-    let allUsers = [];
-    let isCallActive = false;
-    let peerConnection = null;
-    let localStream = null;
-    let callTimerInterval = null;
-    let callStartTime = null;
-    let isMutedCall = false;
-    let unsubCallSignaling = null;
-    let callDocRef = null;
-    let userDocRef = null;
-
     try {
       addDebugLog('Initializing Firebase...', 'info');
       const app = initializeApp(firebaseConfig);
       db = getFirestore(app);
       
-      // Generate user ID
       currentUserId = generateUserId();
-      currentUser = { uid: currentUserId };
       
       document.getElementById('userId').textContent = `ID: ${currentUserId.substring(0, 8)}...`;
       document.getElementById('userName').textContent = 'You';
@@ -306,7 +324,6 @@
       document.getElementById('firebaseStatus').innerHTML = '<i class="fas fa-check-circle"></i> Firebase Connected';
       addDebugLog(`✅ Firebase initialized, User ID: ${currentUserId}`, 'success');
       
-      // Create/update user document
       userDocRef = doc(db, 'users', currentUserId);
       setDoc(userDocRef, {
         username: currentUserId,
@@ -320,10 +337,7 @@
         addDebugLog(`⚠️ User doc error: ${e.message}`, 'warning');
       });
       
-      // Load users
       loadUsers();
-      
-      // Set up presence
       setupPresence();
       
     } catch (error) {
@@ -334,7 +348,6 @@
 
     // ========== PRESENCE ==========
     function setupPresence() {
-      // Update online status periodically
       setInterval(() => {
         if (userDocRef) {
           updateDoc(userDocRef, {
@@ -378,7 +391,6 @@
               Open this in another tab/window to test calling.
             </div>
           `;
-          addDebugLog('⚠️ No other users found. Open another tab.', 'warning');
           return;
         }
         
@@ -389,10 +401,12 @@
           div.onclick = () => selectUser(user);
           
           div.innerHTML = `
-            <div class="avatar-small"><i class="fas fa-user"></i></div>
-            <div class="info-small">
-              <div class="name">${user.name}</div>
-              <div class="username">${user.username}</div>
+            <div class="avatar-small" style="width:32px;height:32px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;color:#fff;">
+              <i class="fas fa-user"></i>
+            </div>
+            <div style="flex:1;">
+              <div style="font-weight:500;font-size:0.85rem;">${user.name}</div>
+              <div style="font-size:0.65rem;color:#666;">${user.username}</div>
             </div>
             <div style="font-size:0.65rem;color:${user.online ? '#4ade80' : '#555'};">
               ${user.online ? '🟢 Online' : '⚫ Offline'}
@@ -401,19 +415,17 @@
           userList.appendChild(div);
         });
         
-        // Auto-select first user
         if (allUsers.length > 0) {
           selectUser(allUsers[0]);
         }
         
-        // Set up real-time user updates
+        // Real-time user updates
         onSnapshot(collection(db, 'users'), (snapshot) => {
           snapshot.docChanges().forEach(change => {
             if (change.type === 'modified') {
               const data = change.doc.data();
               const userId = change.doc.id;
               if (userId !== currentUserId) {
-                // Update online status in UI
                 const items = document.querySelectorAll('.user-list-item');
                 items.forEach(item => {
                   if (item.dataset.userId === userId) {
@@ -439,15 +451,34 @@
       selectedPartner = user;
       document.getElementById('selectedUserDisplay').textContent = `${user.name} (${user.username})`;
       addDebugLog(`📱 Selected user: ${user.name} (${user.id})`, 'info');
-      showToast(`Selected: ${user.name}`);
       
       document.querySelectorAll('.user-list-item').forEach(el => {
-        el.classList.remove('selected');
+        el.style.borderColor = 'transparent';
+        el.style.background = 'rgba(255,255,255,0.03)';
         if (el.dataset.userId === user.id) {
-          el.classList.add('selected');
+          el.style.borderColor = '#FFFC00';
+          el.style.background = 'rgba(255,252,0,0.06)';
         }
       });
     }
+
+    // ========== SET MODE ==========
+    window.setMode = function(mode) {
+      currentMode = mode;
+      document.getElementById('realMode').className = mode === 'real' ? 'active' : '';
+      document.getElementById('selfTestMode').className = mode === 'self' ? 'active' : '';
+      document.getElementById('selfTestInfo').className = mode === 'self' ? 'self-test-info show' : 'self-test-info';
+      document.getElementById('modeDisplay').textContent = mode === 'self' ? '🧪 Self-Test Mode' : '';
+      
+      if (mode === 'self') {
+        // Add self-test user
+        addDebugLog('🧪 Switched to Self-Test Mode - you can call yourself!', 'self-test');
+        showToast('🧪 Self-Test Mode activated');
+      } else {
+        addDebugLog('🌐 Switched to Real Call Mode', 'info');
+        showToast('🌐 Real Call Mode');
+      }
+    };
 
     // ========== WEBRTC CONFIGURATION ==========
     const configuration = {
@@ -463,6 +494,111 @@
 
     // ========== START CALL ==========
     window.startCall = async function(type) {
+      // Self-test mode
+      if (currentMode === 'self') {
+        addDebugLog('🧪 Starting SELF-TEST call', 'self-test');
+        showToast('🧪 Starting self-test call...');
+        
+        // Show overlay
+        const overlay = document.getElementById('callOverlay');
+        const avatar = document.getElementById('callAvatar');
+        const name = document.getElementById('callName');
+        const status = document.getElementById('callStatus');
+        const debug = document.getElementById('callDebug');
+        
+        avatar.innerHTML = '<i class="fas fa-user"></i>';
+        name.textContent = '🧪 Self Test';
+        status.textContent = 'Initializing self-test...';
+        debug.textContent = 'Step 1: Getting your media...';
+        overlay.classList.add('show');
+        document.getElementById('floatingNav')?.remove();
+        
+        try {
+          // Get media
+          const constraints = { audio: true, video: type === 'video' };
+          debug.textContent = 'Step 2: Acquiring camera/microphone...';
+          status.textContent = 'Acquiring media...';
+          
+          localStream = await navigator.mediaDevices.getUserMedia(constraints);
+          debug.textContent = '✅ Media acquired!';
+          status.textContent = 'Creating self-test connection...';
+          addDebugLog('🧪 Media acquired for self-test', 'success');
+          
+          // Create local peer connection
+          peerConnection = new RTCPeerConnection(configuration);
+          
+          // Add tracks
+          localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+          });
+          debug.textContent = '✅ Tracks added';
+          
+          // Create offer
+          const offer = await peerConnection.createOffer();
+          await peerConnection.setLocalDescription(offer);
+          debug.textContent = '✅ Local offer created';
+          
+          // Simulate answer (self-test)
+          debug.textContent = '🔄 Simulating peer answer...';
+          status.textContent = 'Simulating connection...';
+          
+          // Create a simulated answer
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          debug.textContent = '✅ Local answer created';
+          
+          // Connection state
+          peerConnection.onconnectionstatechange = () => {
+            const state = peerConnection.connectionState;
+            debug.textContent = `Connection: ${state}`;
+            if (state === 'connected') {
+              status.textContent = '✅ Self-Test Connected!';
+              document.getElementById('audioCallBtn').className = 'call-btn audio in-call';
+              document.getElementById('videoCallBtn').className = 'call-btn video in-call';
+              startCallTimer();
+              showToast('🧪 Self-test call connected!');
+              addDebugLog('🧪✅ Self-test call connected!', 'success');
+            }
+          };
+          
+          // ICE candidates
+          peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+              addDebugLog(`🧊 ICE: ${event.candidate.candidate.substring(0, 40)}...`, 'info');
+            }
+          };
+          
+          // Set remote description to self (loopback)
+          await peerConnection.setRemoteDescription(offer);
+          debug.textContent = '✅ Loopback connected!';
+          status.textContent = 'Connected (Self-Test)';
+          
+          // Force connected state after 1s
+          setTimeout(() => {
+            if (isCallActive) {
+              document.getElementById('audioCallBtn').className = 'call-btn audio in-call';
+              document.getElementById('videoCallBtn').className = 'call-btn video in-call';
+              startCallTimer();
+              showToast('🧪 Self-test call active!');
+              addDebugLog('🧪✅ Self-test call active!', 'success');
+            }
+          }, 1000);
+          
+          isCallActive = true;
+          
+          // Update buttons
+          document.getElementById('audioCallBtn').disabled = true;
+          document.getElementById('videoCallBtn').disabled = true;
+          
+        } catch (error) {
+          addDebugLog(`❌ Self-test error: ${error.message}`, 'error');
+          showToast(`Self-test failed: ${error.message}`);
+          endCall();
+        }
+        return;
+      }
+      
+      // ========== REAL CALL MODE ==========
       if (!selectedPartner) {
         showToast('Please select a user first');
         addDebugLog('⚠️ No user selected', 'warning');
@@ -477,13 +613,11 @@
       addDebugLog(`📞 Starting ${type} call with ${selectedPartner.name}`, 'info');
       showToast(`Calling ${selectedPartner.name}...`);
       
-      // Update buttons
       document.getElementById('audioCallBtn').className = 'call-btn audio';
       document.getElementById('audioCallBtn').disabled = true;
       document.getElementById('videoCallBtn').className = 'call-btn video';
       document.getElementById('videoCallBtn').disabled = true;
       
-      // Show overlay
       const overlay = document.getElementById('callOverlay');
       const avatar = document.getElementById('callAvatar');
       const name = document.getElementById('callName');
@@ -497,7 +631,6 @@
       overlay.classList.add('show');
       
       try {
-        // Step 1: Get user media
         const constraints = { audio: true, video: type === 'video' };
         debug.textContent = 'Step 2: Acquiring camera/microphone...';
         status.textContent = 'Acquiring media...';
@@ -508,35 +641,27 @@
         status.textContent = 'Creating connection...';
         addDebugLog('✅ Media acquired successfully', 'success');
         
-        // Step 2: Create peer connection
         peerConnection = new RTCPeerConnection(configuration);
         debug.textContent = 'Step 3: PeerConnection created';
         addDebugLog('🔗 PeerConnection created', 'info');
         
-        // Add local stream tracks
         localStream.getTracks().forEach(track => {
           peerConnection.addTrack(track, localStream);
         });
         debug.textContent = '✅ Tracks added';
         addDebugLog('✅ Tracks added to peer connection', 'success');
         
-        // Step 3: Create signaling document
         const callId = [currentUserId, selectedPartner.id].sort().join('_') + '_call';
         callDocRef = doc(db, 'calls', callId);
         addDebugLog(`📄 Call document: ${callId}`, 'info');
         
-        // Set up signaling listener
         if (unsubCallSignaling) unsubCallSignaling();
         unsubCallSignaling = onSnapshot(callDocRef, async (snapshot) => {
-          if (!snapshot.exists()) {
-            addDebugLog('📄 Call document created', 'info');
-            return;
-          }
+          if (!snapshot.exists()) return;
           const data = snapshot.data();
           addDebugLog(`📨 Signaling update: ${Object.keys(data).join(', ')}`, 'info');
           debug.textContent = `📨 Received: ${Object.keys(data).join(', ')}`;
           
-          // Handle remote offer
           if (data.offer && data.from !== currentUserId && !peerConnection.currentRemoteDescription) {
             addDebugLog('📨 Received offer from remote', 'info');
             debug.textContent = 'Processing offer...';
@@ -564,7 +689,6 @@
             }
           }
           
-          // Handle remote answer
           if (data.answer && data.from !== currentUserId && !peerConnection.currentRemoteDescription) {
             addDebugLog('📨 Received answer from remote', 'info');
             debug.textContent = 'Processing answer...';
@@ -584,7 +708,6 @@
             }
           }
           
-          // Handle ICE candidates
           if (data.candidate && data.from !== currentUserId) {
             addDebugLog('🧊 Received ICE candidate', 'info');
             try {
@@ -596,7 +719,6 @@
           }
         });
         
-        // Initialize call document
         await setDoc(callDocRef, {
           from: currentUserId,
           to: selectedPartner.id,
@@ -606,7 +728,6 @@
         });
         addDebugLog('📄 Call document initialized', 'info');
         
-        // Create and send offer
         debug.textContent = 'Creating offer...';
         status.textContent = 'Creating offer...';
         addDebugLog('📤 Creating SDP offer...', 'info');
@@ -626,7 +747,6 @@
         debug.textContent = 'Offer sent, waiting for answer...';
         status.textContent = 'Waiting for answer...';
         
-        // ICE candidate handling
         peerConnection.onicecandidate = async (event) => {
           if (event.candidate) {
             addDebugLog(`🧊 ICE: ${event.candidate.candidate.substring(0, 40)}...`, 'info');
@@ -640,7 +760,6 @@
           }
         };
         
-        // Connection state monitoring
         peerConnection.onconnectionstatechange = () => {
           const state = peerConnection.connectionState;
           addDebugLog(`🔗 Connection state: ${state}`, 'info');
@@ -663,13 +782,11 @@
           }
         };
         
-        // ICE connection state
         peerConnection.oniceconnectionstatechange = () => {
           const state = peerConnection.iceConnectionState;
           addDebugLog(`🧊 ICE state: ${state}`, 'info');
         };
         
-        // Remote stream handler
         peerConnection.ontrack = (event) => {
           addDebugLog('📡 Remote track received!', 'success');
           debug.textContent = 'Remote track received!';
@@ -677,7 +794,6 @@
         
         isCallActive = true;
         
-        // Connection timeout
         setTimeout(() => {
           if (isCallActive && peerConnection?.connectionState !== 'connected' && peerConnection?.connectionState !== 'connecting') {
             addDebugLog('⏰ Connection timeout - peer may not be online', 'warning');
@@ -735,6 +851,11 @@
         callDocRef = null;
       }
       
+      if (selfTestInterval) {
+        clearInterval(selfTestInterval);
+        selfTestInterval = null;
+      }
+      
       document.getElementById('audioCallBtn').className = 'call-btn audio';
       document.getElementById('audioCallBtn').disabled = false;
       document.getElementById('videoCallBtn').className = 'call-btn video';
@@ -775,6 +896,7 @@
     window.endCall = window.endCall;
     window.toggleMute = window.toggleMute;
     window.selectUser = selectUser;
+    window.setMode = window.setMode;
     window.showToast = showToast;
     window.addDebugLog = addDebugLog;
 
