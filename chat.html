@@ -1188,12 +1188,66 @@
     let isMutedCall = false;
     let localStream = null;
     let peerConnection = null;
+    let iceServers = [];
     
     // ========== INFINITE SCROLL VARIABLES ==========
     let lastVisible = null;
     let isLoadingUsers = false;
     let allUsersLoaded = false;
     const PAGE_SIZE = 50;
+    
+    // ========== FETCH TURN CREDENTIALS ==========
+    async function fetchTurnCredentials() {
+      try {
+        // In production, replace with your actual backend endpoint
+        const response = await fetch('https://your-backend.com/api/turn-credentials', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await currentUser.getIdToken()}`
+          },
+          body: JSON.stringify({
+            userId: currentUserId,
+            secret: 'your-secret-key' // This would be securely managed on the backend
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch TURN credentials');
+        }
+        
+        const data = await response.json();
+        
+        // Store the received ICE servers
+        iceServers = data.iceServers || [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ];
+        
+        return iceServers;
+      } catch (error) {
+        console.warn('Failed to fetch TURN credentials, using fallback STUN servers:', error);
+        // Fallback to STUN only
+        iceServers = [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ];
+        return iceServers;
+      }
+    }
+    
+    // ========== CREATE PEER CONNECTION ==========
+    function createPeerConnection() {
+      const configuration = {
+        iceServers: iceServers.length > 0 ? iceServers : [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ],
+        iceCandidatePoolSize: 10
+      };
+      
+      return new RTCPeerConnection(configuration);
+    }
     
     // ========== LOAD CHATS ==========
     async function loadChats() {
@@ -1436,14 +1490,6 @@
     };
     
     // ========== CALL FUNCTIONS ==========
-    const configuration = {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' }
-      ]
-    };
-    
     window.startCall = async function(type) {
       if (!currentPartner) {
         showToast('Please select a chat first');
@@ -1455,11 +1501,16 @@
         return;
       }
       
+      // Ensure TURN credentials are loaded
+      if (iceServers.length === 0) {
+        showToast('Loading call configuration...');
+        await fetchTurnCredentials();
+      }
+      
       callType = type;
       isCallActive = true;
       
       try {
-        // Get user media
         const constraints = {
           audio: true,
           video: type === 'video'
@@ -1467,22 +1518,20 @@
         
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
-        // Create peer connection
-        peerConnection = new RTCPeerConnection(configuration);
+        // Create peer connection with the fetched ICE servers
+        peerConnection = createPeerConnection();
         
-        // Add local stream to peer connection
         localStream.getTracks().forEach(track => {
           peerConnection.addTrack(track, localStream);
         });
         
-        // Create offer
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
         
-        // Show call overlay
         showCallOverlay(type);
         
-        // Simulate call connection (in production, this would use signaling)
+        // In production, send the offer to the other peer via signaling
+        // For now, simulate connection
         setTimeout(() => {
           if (isCallActive) {
             document.getElementById('callStatus').textContent = 'Connected';
@@ -1490,20 +1539,18 @@
           }
         }, 2000);
         
-        // Handle ICE candidates
         peerConnection.onicecandidate = (event) => {
           if (event.candidate) {
             console.log('ICE candidate:', event.candidate);
+            // In production, send candidate to other peer via signaling
           }
         };
         
-        // Handle remote stream
         peerConnection.ontrack = (event) => {
-          // In production, display remote stream
           console.log('Remote track received');
+          // In production, display remote stream
         };
         
-        // Connection state changes
         peerConnection.onconnectionstatechange = () => {
           console.log('Connection state:', peerConnection.connectionState);
           if (peerConnection.connectionState === 'failed' || 
@@ -1513,7 +1560,6 @@
           }
         };
         
-        // Update button states
         document.getElementById('audioCallBtn').classList.add('in-call');
         document.getElementById('videoCallBtn').classList.add('in-call');
         
@@ -1560,23 +1606,19 @@
       document.getElementById('callOverlay').classList.remove('show');
       document.getElementById('floatingNav').style.display = 'flex';
       
-      // Clean up peer connection
       if (peerConnection) {
         peerConnection.close();
         peerConnection = null;
       }
       
-      // Clean up local stream
       if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
         localStream = null;
       }
       
-      // Reset button states
       document.getElementById('audioCallBtn').classList.remove('in-call');
       document.getElementById('videoCallBtn').classList.remove('in-call');
       
-      // Reset mute button
       const muteBtn = document.getElementById('muteBtn');
       muteBtn.classList.remove('muted');
       muteBtn.querySelector('i').className = 'fas fa-microphone';
@@ -1956,6 +1998,9 @@
     });
     
     // ========== INITIALIZE ==========
+    // Fetch TURN credentials on load
+    await fetchTurnCredentials();
+    
     loadChats();
     loadRequests();
     setupPanelScroll();
