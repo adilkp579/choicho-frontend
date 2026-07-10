@@ -1118,7 +1118,7 @@
             <span class="item-text">Search in Conversation</span>
             <span class="item-sub">›</span>
           </div>
-          <div class="chat-settings-item" onclick="toggleMute()">
+          <div class="chat-settings-item" onclick="toggleMuteSetting()">
             <i class="fas fa-bell"></i>
             <span class="item-text" id="muteText">Mute Notifications</span>
             <span class="item-sub">›</span>
@@ -1164,7 +1164,7 @@
 
   <script type="module">
     import { db } from './js/firebase-config.js';
-    import { showToast as toastFn, timeAgo, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
+    import { timeAgo, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
     import { getCurrentUser } from './js/auth.js';
     import { collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, increment, serverTimestamp, where, getDocs, deleteDoc, limit, startAfter } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     
@@ -1179,7 +1179,7 @@
     let pendingRequests = [];
     let activePanelTab = 'users';
     let chatListData = [];
-    let isMuted = false;
+    let isMutedSetting = false;
     let isPanelOpen = false;
     let isCallActive = false;
     let callType = null;
@@ -1188,6 +1188,21 @@
     let isMutedCall = false;
     let localStream = null;
     let peerConnection = null;
+    
+    // ========== TOAST FUNCTION ==========
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+    
+    // Make showToast globally available
+    window.showToast = showToast;
     
     // ========== INFINITE SCROLL VARIABLES ==========
     let lastVisible = null;
@@ -1199,14 +1214,14 @@
     // Replace this with your actual Railway backend URL
     const BACKEND_URL = 'https://choicho-backend-production.up.railway.app';
     
-    // ========== CALL FUNCTIONS (UPDATED FOR DYNAMIC TURN FETCH) ==========
+    // ========== CALL FUNCTIONS ==========
     
     // Default STUN configuration (Fallback ആയി ഉപയോഗിക്കാൻ)
     let configuration = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' }
       ]
     };
     
@@ -1242,12 +1257,10 @@
           
           if (response.ok) {
             const turnData = await response.json();
-            // ബാക്ക്എൻഡിൽ നിന്ന് ലഭിക്കുന്ന ICE Servers (STUN/TURN) കോൺഫിഗറേഷനിലേക്ക് മാറ്റുന്നു
             if (turnData && turnData.iceServers) {
               configuration.iceServers = turnData.iceServers;
               console.log('Secure TURN credentials loaded successfully.');
             } else if (turnData && turnData.turn && turnData.turn.url) {
-              // Alternative format
               configuration.iceServers = [
                 { urls: turnData.turn.url },
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -1296,7 +1309,6 @@
         peerConnection.onicecandidate = (event) => {
           if (event.candidate) {
             console.log('ICE candidate generated:', event.candidate);
-            // ഇവിടെ നിങ്ങളുടെ Signaling സെർവർ (Firestore) വഴി കാൻഡിഡേറ്റ്സ് കൈമാറാം
           }
         };
         
@@ -1407,29 +1419,34 @@
     
     // ========== LOAD CHATS ==========
     async function loadChats() {
-      const q = query(collection(db, 'chats'), orderBy('lastTime', 'desc'));
-      onSnapshot(q, (snapshot) => {
-        const chats = [];
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const ids = doc.id.split('_');
-          if (ids.includes(currentUserId)) {
-            const partnerId = ids.find(i => i !== currentUserId);
-            if (partnerId && data.lastMessage !== undefined) {
-              chats.push({
-                partnerId: '@' + partnerId,
-                lastMsg: data.lastMessage || 'No messages',
-                lastTime: data.lastTime?.toDate() || new Date(),
-                unread: data[`unread_${currentUserId}`] || 0
-              });
+      try {
+        const q = query(collection(db, 'chats'), orderBy('lastTime', 'desc'));
+        onSnapshot(q, (snapshot) => {
+          const chats = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const ids = doc.id.split('_');
+            if (ids.includes(currentUserId)) {
+              const partnerId = ids.find(i => i !== currentUserId);
+              if (partnerId && data.lastMessage !== undefined) {
+                chats.push({
+                  partnerId: '@' + partnerId,
+                  lastMsg: data.lastMessage || 'No messages',
+                  lastTime: data.lastTime?.toDate() || new Date(),
+                  unread: data[`unread_${currentUserId}`] || 0
+                });
+              }
             }
-          }
+          });
+          chatListData = chats;
+          renderChatList(chats);
+          document.getElementById('chatCount').textContent = chats.length ? `(${chats.length})` : '';
+          applySearchFilter();
         });
-        chatListData = chats;
-        renderChatList(chats);
-        document.getElementById('chatCount').textContent = chats.length ? `(${chats.length})` : '';
-        applySearchFilter();
-      });
+      } catch (error) {
+        console.error('Error loading chats:', error);
+        showToast('Error loading chats');
+      }
     }
     
     function renderChatList(chats) {
@@ -1487,7 +1504,11 @@
       const partnerId = partner.replace('@','');
       currentChatId = [currentUserId, partnerId].sort().join('_');
       
-      await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
+      try {
+        await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
+      } catch (error) {
+        console.error('Error updating read status:', error);
+      }
       
       document.getElementById('topIcons').style.display = 'none';
       document.getElementById('chatHeader').classList.add('show');
@@ -1506,32 +1527,34 @@
       
       if (unsubMessages) unsubMessages();
       
-      const q = query(collection(db, 'chats', currentChatId, 'messages'), orderBy('createdAt', 'asc'));
-      unsubMessages = onSnapshot(q, (snapshot) => {
-        const container = document.getElementById('messagesContainer');
-        if (snapshot.empty) {
-          container.innerHTML = '<div class="empty-chat">Send a message to start chatting!</div>';
-          return;
-        }
-        container.innerHTML = '';
-        snapshot.forEach(doc => {
-          const msg = doc.data();
-          const isSent = msg.sender === currentUserId;
-          const div = document.createElement('div');
-          div.className = `message-wrapper ${isSent ? 'sent' : 'received'}`;
-          let time = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
-          if (msg.imageUrl) {
-            div.innerHTML = `<div class="message-bubble"><img src="${msg.imageUrl}" class="message-image" onclick="window.open('${msg.imageUrl}')"><div class="message-time">${time}</div></div>`;
-          } else {
-            div.innerHTML = `<div class="message-bubble">${escapeHTML(msg.text || '')}<div class="message-time">${time}</div></div>`;
+      try {
+        const q = query(collection(db, 'chats', currentChatId, 'messages'), orderBy('createdAt', 'asc'));
+        unsubMessages = onSnapshot(q, (snapshot) => {
+          const container = document.getElementById('messagesContainer');
+          if (snapshot.empty) {
+            container.innerHTML = '<div class="empty-chat">Send a message to start chatting!</div>';
+            return;
           }
-          container.appendChild(div);
+          container.innerHTML = '';
+          snapshot.forEach(doc => {
+            const msg = doc.data();
+            const isSent = msg.sender === currentUserId;
+            const div = document.createElement('div');
+            div.className = `message-wrapper ${isSent ? 'sent' : 'received'}`;
+            let time = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+            if (msg.imageUrl) {
+              div.innerHTML = `<div class="message-bubble"><img src="${msg.imageUrl}" class="message-image" onclick="window.open('${msg.imageUrl}')"><div class="message-time">${time}</div></div>`;
+            } else {
+              div.innerHTML = `<div class="message-bubble">${escapeHTML(msg.text || '')}<div class="message-time">${time}</div></div>`;
+            }
+            container.appendChild(div);
+          });
+          container.scrollTop = container.scrollHeight;
         });
-        container.scrollTop = container.scrollHeight;
-      }, (error) => {
+      } catch (error) {
         console.error('Error loading messages:', error);
         showToast('Error loading messages');
-      });
+      }
     };
     
     function escapeHTML(str) {
@@ -1545,8 +1568,14 @@
     window.sendMessage = async function() {
       const input = document.getElementById('chatInput');
       const text = input.value.trim();
-      if (!text || !currentChatId) {
+      
+      if (!text) {
         showToast('Please enter a message');
+        return;
+      }
+      
+      if (!currentChatId) {
+        showToast('No chat selected');
         return;
       }
       
@@ -1569,8 +1598,8 @@
           createdAt: serverTimestamp()
         });
         
-      } catch(e) {
-        console.error('Send error:', e);
+      } catch(error) {
+        console.error('Send error:', error);
         showToast('Failed to send message');
         input.value = text;
       } finally {
@@ -1605,8 +1634,8 @@
           });
           
           showToast('Image sent');
-        } catch(e) {
-          console.error('Image send error:', e);
+        } catch(error) {
+          console.error('Image send error:', error);
           showToast('Failed to send image');
         }
       };
@@ -1764,30 +1793,34 @@
     
     // ========== LOAD REQUESTS ==========
     async function loadRequests() {
-      pendingRequests = [];
-      const q = query(collection(db, 'message_requests'), where('toId', '==', currentUserId), where('status', '==', 'pending'));
-      const snapshot = await getDocs(q);
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        pendingRequests.push({
-          id: doc.id,
-          from: data.from,
-          fromName: data.fromName,
-          fromAvatar: data.fromAvatar,
-          fromId: data.fromId
+      try {
+        pendingRequests = [];
+        const q = query(collection(db, 'message_requests'), where('toId', '==', currentUserId), where('status', '==', 'pending'));
+        const snapshot = await getDocs(q);
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          pendingRequests.push({
+            id: doc.id,
+            from: data.from,
+            fromName: data.fromName,
+            fromAvatar: data.fromAvatar,
+            fromId: data.fromId
+          });
         });
-      });
-      
-      const badge = document.getElementById('fabBadge');
-      const panelBadge = document.getElementById('panelRequestBadge');
-      if (pendingRequests.length > 0) {
-        badge.style.display = 'flex';
-        badge.textContent = pendingRequests.length;
-        panelBadge.style.display = 'inline';
-        panelBadge.textContent = pendingRequests.length;
-      } else {
-        badge.style.display = 'none';
-        panelBadge.style.display = 'none';
+        
+        const badge = document.getElementById('fabBadge');
+        const panelBadge = document.getElementById('panelRequestBadge');
+        if (pendingRequests.length > 0) {
+          badge.style.display = 'flex';
+          badge.textContent = pendingRequests.length;
+          panelBadge.style.display = 'inline';
+          panelBadge.textContent = pendingRequests.length;
+        } else {
+          badge.style.display = 'none';
+          panelBadge.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error loading requests:', error);
       }
     }
     
@@ -1882,8 +1915,8 @@
         }
         
         await openChat(username);
-      } catch(e) {
-        console.error('Error starting chat:', e);
+      } catch(error) {
+        console.error('Error starting chat:', error);
         showToast('Failed to start chat');
       }
     };
@@ -1894,7 +1927,8 @@
         await loadRequests();
         renderPanelList();
         showToast(`Accepted request from ${cleanUsername(fromUser)}`);
-      } catch(e) {
+      } catch(error) {
+        console.error('Error accepting request:', error);
         showToast('Failed to accept request');
       }
     };
@@ -1905,7 +1939,8 @@
         await loadRequests();
         renderPanelList();
         showToast('Request declined');
-      } catch(e) {
+      } catch(error) {
+        console.error('Error declining request:', error);
         showToast('Failed to decline request');
       }
     };
@@ -1930,10 +1965,10 @@
       }
     };
     
-    window.toggleMute = function() {
-      isMuted = !isMuted;
+    window.toggleMuteSetting = function() {
+      isMutedSetting = !isMutedSetting;
       const muteText = document.getElementById('muteText');
-      if (isMuted) {
+      if (isMutedSetting) {
         muteText.textContent = 'Unmute Notifications';
         showToast('Chat muted 🔕');
       } else {
@@ -1965,30 +2000,22 @@
       }
     };
     
-    // ========== TOAST FUNCTION ==========
-    window.showToast = function(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.classList.add('show');
-      clearTimeout(toast._timeout);
-      toast._timeout = setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2500);
-    };
-    
     // ========== EVENT LISTENERS ==========
     document.getElementById('chatSettingsOverlay').addEventListener('click', (e) => {
       if (e.target === document.getElementById('chatSettingsOverlay')) closeChatSettings();
     });
     
     document.getElementById('chatInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendMessage();
+      }
     });
     
     document.addEventListener('click', function(e) {
       const panel = document.getElementById('newChatPanel');
       const fab = document.getElementById('fabMain');
-      if (isPanelOpen && !panel.contains(e.target) && !fab.contains(e.target)) {
+      if (isPanelOpen && panel && fab && !panel.contains(e.target) && !fab.contains(e.target)) {
         closeNewChatPanel();
       }
     });
