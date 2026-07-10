@@ -1164,7 +1164,7 @@
 
   <script type="module">
     import { db } from './js/firebase-config.js';
-    import { showToast, timeAgo, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
+    import { showToast as toastFn, timeAgo, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
     import { getCurrentUser } from './js/auth.js';
     import { collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, increment, serverTimestamp, where, getDocs, deleteDoc, limit, startAfter } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     
@@ -1188,7 +1188,6 @@
     let isMutedCall = false;
     let localStream = null;
     let peerConnection = null;
-    let iceServers = [];
     
     // ========== INFINITE SCROLL VARIABLES ==========
     let lastVisible = null;
@@ -1196,58 +1195,215 @@
     let allUsersLoaded = false;
     const PAGE_SIZE = 50;
     
-    // ========== FETCH TURN CREDENTIALS ==========
-    async function fetchTurnCredentials() {
+    // ========== RAILWAY BACKEND CONFIGURATION ==========
+    // Replace this with your actual Railway backend URL
+    const BACKEND_URL = 'https://your-railway-app.railway.app';
+    
+    // ========== CALL FUNCTIONS (UPDATED FOR DYNAMIC TURN FETCH) ==========
+    
+    // Default STUN configuration (Fallback ആയി ഉപയോഗിക്കാൻ)
+    let configuration = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' }
+      ]
+    };
+    
+    window.startCall = async function(type) {
+      if (!currentPartner) {
+        showToast('Please select a chat first');
+        return;
+      }
+      
+      if (isCallActive) {
+        showToast('Call already in progress');
+        return;
+      }
+      
+      callType = type;
+      isCallActive = true;
+      
       try {
-        // In production, replace with your actual backend endpoint
-        const response = await fetch('https://choicho-backend-production.up.railway.app/api/turn-credentials', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${await currentUser.getIdToken()}`
-          },
-          body: JSON.stringify({
-            userId: currentUserId,
-            secret: 'your-secret-key' // This would be securely managed on the backend
-          })
+        // 1. ബാക്ക്എൻഡിൽ നിന്ന് സുരക്ഷിതമായി TURN ക്രെഡൻഷ്യലുകൾ ഫെച്ച് ചെയ്യുന്നു
+        showToast('Fetching secure connection settings...');
+        
+        // Firebase Auth token എടുക്കുന്നു
+        const idToken = await currentUser.getIdToken();
+        
+        try {
+          const response = await fetch(`${BACKEND_URL}/turn`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${idToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const turnData = await response.json();
+            // ബാക്ക്എൻഡിൽ നിന്ന് ലഭിക്കുന്ന ICE Servers (STUN/TURN) കോൺഫിഗറേഷനിലേക്ക് മാറ്റുന്നു
+            if (turnData && turnData.iceServers) {
+              configuration.iceServers = turnData.iceServers;
+              console.log('Secure TURN credentials loaded successfully.');
+            } else if (turnData && turnData.turn && turnData.turn.url) {
+              // Alternative format
+              configuration.iceServers = [
+                { urls: turnData.turn.url },
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+              ];
+            }
+          } else {
+            console.warn('Failed to fetch TURN credentials, using fallback STUN.');
+          }
+        } catch (fetchError) {
+          console.error('Backend fetch error, falling back to STUN:', fetchError);
+        }
+
+        // 2. ക്യാമറ, മൈക്രോഫോൺ പെർമിഷൻ എടുക്കുന്നു
+        const constraints = {
+          audio: true,
+          video: type === 'video'
+        };
+        
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // 3. ലഭിച്ച പുതിയ സുരക്ഷിതമായ കോൺഫിഗറേഷൻ ഉപയോഗിച്ച് Peer Connection നിർമ്മിക്കുന്നു
+        peerConnection = new RTCPeerConnection(configuration);
+        
+        // Local stream ട്രാക്കുകൾ കണക്ഷനിലേക്ക് ചേർക്കുന്നു
+        localStream.getTracks().forEach(track => {
+          peerConnection.addTrack(track, localStream);
         });
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch TURN credentials');
-        }
+        // WebRTC Offer ക്രിയേറ്റ് ചെയ്യുന്നു
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
         
-        const data = await response.json();
+        // Call Overlay സ്ക്രീനിൽ കാണിക്കുന്നു
+        showCallOverlay(type);
         
-        // Store the received ICE servers
-        iceServers = data.iceServers || [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ];
+        // കണക്ഷൻ സ്റ്റാറ്റസ് അപ്ഡേറ്റ് ചെയ്യുന്നു
+        setTimeout(() => {
+          if (isCallActive) {
+            document.getElementById('callStatus').textContent = 'Connected';
+            startCallTimer();
+          }
+        }, 2000);
         
-        return iceServers;
+        // Handle ICE candidates
+        peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            console.log('ICE candidate generated:', event.candidate);
+            // ഇവിടെ നിങ്ങളുടെ Signaling സെർവർ (Firestore) വഴി കാൻഡിഡേറ്റ്സ് കൈമാറാം
+          }
+        };
+        
+        // Handle remote stream
+        peerConnection.ontrack = (event) => {
+          console.log('Remote track received');
+        };
+        
+        // Connection state മാറ്റങ്ങൾ നിരീക്ഷിക്കുന്നു
+        peerConnection.onconnectionstatechange = () => {
+          console.log('Connection state:', peerConnection.connectionState);
+          if (peerConnection.connectionState === 'failed' || 
+              peerConnection.connectionState === 'disconnected' ||
+              peerConnection.connectionState === 'closed') {
+            endCall();
+          }
+        };
+        
+        // ബട്ടണുകളുടെ സ്റ്റൈൽ മാറ്റുന്നു
+        document.getElementById('audioCallBtn').classList.add('in-call');
+        document.getElementById('videoCallBtn').classList.add('in-call');
+        
+        showToast(`${type} call started`);
+        
       } catch (error) {
-        console.warn('Failed to fetch TURN credentials, using fallback STUN servers:', error);
-        // Fallback to STUN only
-        iceServers = [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ];
-        return iceServers;
+        console.error('Call error:', error);
+        isCallActive = false;
+        showToast(`Failed to start ${type} call: ${error.message}`);
+        endCall();
       }
+    };
+    
+    function showCallOverlay(type) {
+      const overlay = document.getElementById('callOverlay');
+      const avatar = document.getElementById('callAvatar');
+      const name = document.getElementById('callName');
+      const status = document.getElementById('callStatus');
+      
+      avatar.innerHTML = currentPartner ? getAvatarHTML(currentPartner) : '<i class="fas fa-user"></i>';
+      name.textContent = currentPartner ? cleanUsername(currentPartner) : 'Unknown';
+      status.textContent = type === 'audio' ? 'Audio calling...' : 'Video calling...';
+      
+      overlay.classList.add('show');
+      document.getElementById('floatingNav').style.display = 'none';
     }
     
-    // ========== CREATE PEER CONNECTION ==========
-    function createPeerConnection() {
-      const configuration = {
-        iceServers: iceServers.length > 0 ? iceServers : [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ],
-        iceCandidatePoolSize: 10
-      };
-      
-      return new RTCPeerConnection(configuration);
+    function startCallTimer() {
+      callSeconds = 0;
+      clearInterval(callTimerInterval);
+      callTimerInterval = setInterval(() => {
+        callSeconds++;
+        const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+        const secs = String(callSeconds % 60).padStart(2, '0');
+        document.getElementById('callTimer').textContent = `${mins}:${secs}`;
+      }, 1000);
     }
+    
+    window.endCall = function() {
+      isCallActive = false;
+      clearInterval(callTimerInterval);
+      callSeconds = 0;
+      document.getElementById('callTimer').textContent = '00:00';
+      document.getElementById('callOverlay').classList.remove('show');
+      document.getElementById('floatingNav').style.display = 'flex';
+      
+      if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+      }
+      
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+      }
+      
+      document.getElementById('audioCallBtn').classList.remove('in-call');
+      document.getElementById('videoCallBtn').classList.remove('in-call');
+      
+      const muteBtn = document.getElementById('muteBtn');
+      muteBtn.classList.remove('muted');
+      muteBtn.querySelector('i').className = 'fas fa-microphone';
+      isMutedCall = false;
+      
+      document.getElementById('callStatus').textContent = 'Connecting...';
+      showToast('Call ended');
+    };
+    
+    window.toggleMute = function() {
+      if (!localStream) return;
+      
+      isMutedCall = !isMutedCall;
+      const muteBtn = document.getElementById('muteBtn');
+      
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled = !isMutedCall;
+      });
+      
+      if (isMutedCall) {
+        muteBtn.classList.add('muted');
+        muteBtn.querySelector('i').className = 'fas fa-microphone-slash';
+        showToast('Microphone muted');
+      } else {
+        muteBtn.classList.remove('muted');
+        muteBtn.querySelector('i').className = 'fas fa-microphone';
+        showToast('Microphone unmuted');
+      }
+    };
     
     // ========== LOAD CHATS ==========
     async function loadChats() {
@@ -1487,166 +1643,6 @@
     
     window.goToPartnerProfile = function() {
       if (currentPartner) window.location.href = `profile.html?user=${encodeURIComponent(currentPartner)}`;
-    };
-    
-    // ========== CALL FUNCTIONS ==========
-    window.startCall = async function(type) {
-      if (!currentPartner) {
-        showToast('Please select a chat first');
-        return;
-      }
-      
-      if (isCallActive) {
-        showToast('Call already in progress');
-        return;
-      }
-      
-      // Ensure TURN credentials are loaded
-      if (iceServers.length === 0) {
-        showToast('Loading call configuration...');
-        await fetchTurnCredentials();
-      }
-      
-      callType = type;
-      isCallActive = true;
-      
-      try {
-        const constraints = {
-          audio: true,
-          video: type === 'video'
-        };
-        
-        localStream = await navigator.mediaDevices.getUserMedia(constraints);
-        
-        // Create peer connection with the fetched ICE servers
-        peerConnection = createPeerConnection();
-        
-        localStream.getTracks().forEach(track => {
-          peerConnection.addTrack(track, localStream);
-        });
-        
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        
-        showCallOverlay(type);
-        
-        // In production, send the offer to the other peer via signaling
-        // For now, simulate connection
-        setTimeout(() => {
-          if (isCallActive) {
-            document.getElementById('callStatus').textContent = 'Connected';
-            startCallTimer();
-          }
-        }, 2000);
-        
-        peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            console.log('ICE candidate:', event.candidate);
-            // In production, send candidate to other peer via signaling
-          }
-        };
-        
-        peerConnection.ontrack = (event) => {
-          console.log('Remote track received');
-          // In production, display remote stream
-        };
-        
-        peerConnection.onconnectionstatechange = () => {
-          console.log('Connection state:', peerConnection.connectionState);
-          if (peerConnection.connectionState === 'failed' || 
-              peerConnection.connectionState === 'disconnected' ||
-              peerConnection.connectionState === 'closed') {
-            endCall();
-          }
-        };
-        
-        document.getElementById('audioCallBtn').classList.add('in-call');
-        document.getElementById('videoCallBtn').classList.add('in-call');
-        
-        showToast(`${type} call started`);
-        
-      } catch (error) {
-        console.error('Call error:', error);
-        isCallActive = false;
-        showToast(`Failed to start ${type} call: ${error.message}`);
-        endCall();
-      }
-    };
-    
-    function showCallOverlay(type) {
-      const overlay = document.getElementById('callOverlay');
-      const avatar = document.getElementById('callAvatar');
-      const name = document.getElementById('callName');
-      const status = document.getElementById('callStatus');
-      
-      avatar.innerHTML = currentPartner ? getAvatarHTML(currentPartner) : '<i class="fas fa-user"></i>';
-      name.textContent = currentPartner ? cleanUsername(currentPartner) : 'Unknown';
-      status.textContent = type === 'audio' ? 'Audio calling...' : 'Video calling...';
-      
-      overlay.classList.add('show');
-      document.getElementById('floatingNav').style.display = 'none';
-    }
-    
-    function startCallTimer() {
-      callSeconds = 0;
-      clearInterval(callTimerInterval);
-      callTimerInterval = setInterval(() => {
-        callSeconds++;
-        const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-        const secs = String(callSeconds % 60).padStart(2, '0');
-        document.getElementById('callTimer').textContent = `${mins}:${secs}`;
-      }, 1000);
-    }
-    
-    window.endCall = function() {
-      isCallActive = false;
-      clearInterval(callTimerInterval);
-      callSeconds = 0;
-      document.getElementById('callTimer').textContent = '00:00';
-      document.getElementById('callOverlay').classList.remove('show');
-      document.getElementById('floatingNav').style.display = 'flex';
-      
-      if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
-      }
-      
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-      }
-      
-      document.getElementById('audioCallBtn').classList.remove('in-call');
-      document.getElementById('videoCallBtn').classList.remove('in-call');
-      
-      const muteBtn = document.getElementById('muteBtn');
-      muteBtn.classList.remove('muted');
-      muteBtn.querySelector('i').className = 'fas fa-microphone';
-      isMutedCall = false;
-      
-      document.getElementById('callStatus').textContent = 'Connecting...';
-      showToast('Call ended');
-    };
-    
-    window.toggleMute = function() {
-      if (!localStream) return;
-      
-      isMutedCall = !isMutedCall;
-      const muteBtn = document.getElementById('muteBtn');
-      
-      localStream.getAudioTracks().forEach(track => {
-        track.enabled = !isMutedCall;
-      });
-      
-      if (isMutedCall) {
-        muteBtn.classList.add('muted');
-        muteBtn.querySelector('i').className = 'fas fa-microphone-slash';
-        showToast('Microphone muted');
-      } else {
-        muteBtn.classList.remove('muted');
-        muteBtn.querySelector('i').className = 'fas fa-microphone';
-        showToast('Microphone unmuted');
-      }
     };
     
     // ========== FLOATING ACTION BUTTON FUNCTIONS ==========
@@ -1998,9 +1994,6 @@
     });
     
     // ========== INITIALIZE ==========
-    // Fetch TURN credentials on load
-    await fetchTurnCredentials();
-    
     loadChats();
     loadRequests();
     setupPanelScroll();
