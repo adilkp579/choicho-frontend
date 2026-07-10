@@ -1504,6 +1504,11 @@
       const partnerId = partner.replace('@','');
       currentChatId = [currentUserId, partnerId].sort().join('_');
       
+      // 🔍 DEBUG LOG - Check chat ID when opening
+      console.log("🔍 Listening Chat:", currentChatId);
+      console.log("🔍 Partner:", currentPartner);
+      console.log("🔍 Current User:", currentUserId);
+      
       try {
         await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
       } catch (error) {
@@ -1579,6 +1584,13 @@
         return;
       }
       
+      // 🔍 DEBUG LOGS - Check values before sending
+      console.log("📤 Sending Message - Debug Info:");
+      console.log("📤 Current Chat ID:", currentChatId);
+      console.log("📤 Current User ID:", currentUserId);
+      console.log("📤 Current Partner:", currentPartner);
+      console.log("📤 Message Text:", text);
+      
       input.value = '';
       input.disabled = true;
       
@@ -1586,20 +1598,27 @@
         const partnerId = currentPartner.replace('@','');
         const chatRef = doc(db, 'chats', currentChatId);
         
+        console.log("📤 Chat Ref Path:", chatRef.path);
+        
         await setDoc(chatRef, {
           lastMessage: text,
           lastTime: serverTimestamp(),
           [`unread_${partnerId}`]: increment(1)
         }, { merge: true });
         
-        await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
+        console.log("📤 Chat document updated successfully");
+        
+        const messageRef = await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
           text: text,
           sender: currentUserId,
           createdAt: serverTimestamp()
         });
         
+        console.log("📤 Message added with ID:", messageRef.id);
+        console.log("📤 Message sent successfully!");
+        
       } catch(error) {
-        console.error('Send error:', error);
+        console.error("❌ Send error:", error);
         showToast('Failed to send message');
         input.value = text;
       } finally {
