@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="CSS/main.css">
   <style>
+    /* ... (all existing styles remain the same) ... */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -482,7 +483,6 @@
       font-size: 0.9rem !important;
     }
     
-    /* Call Overlay */
     .call-overlay {
       position: fixed;
       top: 0;
@@ -574,7 +574,6 @@
       color: #fff;
     }
     
-    /* ========== ULTRA GLASSMORPHISM ========== */
     .new-chat-panel {
       position: fixed;
       bottom: 150px;
@@ -1172,7 +1171,10 @@
     
     const currentUser = getCurrentUser();
     const currentUserId = currentUser.uid;
+    console.log("✅ Current User ID:", currentUserId);
+    
     let currentPartner = null;
+    let currentPartnerId = null;
     let currentChatId = null;
     let unsubMessages = null;
     let allUsers = [];
@@ -1201,7 +1203,6 @@
       }, 2500);
     }
     
-    // Make showToast globally available
     window.showToast = showToast;
     
     // ========== INFINITE SCROLL VARIABLES ==========
@@ -1211,12 +1212,9 @@
     const PAGE_SIZE = 50;
     
     // ========== RAILWAY BACKEND CONFIGURATION ==========
-    // Replace this with your actual Railway backend URL
     const BACKEND_URL = 'https://choicho-backend-production.up.railway.app';
     
     // ========== CALL FUNCTIONS ==========
-    
-    // Default STUN configuration (Fallback ആയി ഉപയോഗിക്കാൻ)
     let configuration = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -1240,10 +1238,7 @@
       isCallActive = true;
       
       try {
-        // 1. ബാക്ക്എൻഡിൽ നിന്ന് സുരക്ഷിതമായി TURN ക്രെഡൻഷ്യലുകൾ ഫെച്ച് ചെയ്യുന്നു
         showToast('Fetching secure connection settings...');
-        
-        // Firebase Auth token എടുക്കുന്നു
         const idToken = await currentUser.getIdToken();
         
         try {
@@ -1259,45 +1254,31 @@
             const turnData = await response.json();
             if (turnData && turnData.iceServers) {
               configuration.iceServers = turnData.iceServers;
-              console.log('Secure TURN credentials loaded successfully.');
-            } else if (turnData && turnData.turn && turnData.turn.url) {
-              configuration.iceServers = [
-                { urls: turnData.turn.url },
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-              ];
+              console.log('✅ Secure TURN credentials loaded successfully.');
             }
           } else {
-            console.warn('Failed to fetch TURN credentials, using fallback STUN.');
+            console.warn('⚠️ Failed to fetch TURN credentials, using fallback STUN.');
           }
         } catch (fetchError) {
-          console.error('Backend fetch error, falling back to STUN:', fetchError);
+          console.error('❌ Backend fetch error, falling back to STUN:', fetchError);
         }
 
-        // 2. ക്യാമറ, മൈക്രോഫോൺ പെർമിഷൻ എടുക്കുന്നു
         const constraints = {
           audio: true,
           video: type === 'video'
         };
         
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
-        
-        // 3. ലഭിച്ച പുതിയ സുരക്ഷിതമായ കോൺഫിഗറേഷൻ ഉപയോഗിച്ച് Peer Connection നിർമ്മിക്കുന്നു
         peerConnection = new RTCPeerConnection(configuration);
         
-        // Local stream ട്രാക്കുകൾ കണക്ഷനിലേക്ക് ചേർക്കുന്നു
         localStream.getTracks().forEach(track => {
           peerConnection.addTrack(track, localStream);
         });
         
-        // WebRTC Offer ക്രിയേറ്റ് ചെയ്യുന്നു
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
-        
-        // Call Overlay സ്ക്രീനിൽ കാണിക്കുന്നു
         showCallOverlay(type);
         
-        // കണക്ഷൻ സ്റ്റാറ്റസ് അപ്ഡേറ്റ് ചെയ്യുന്നു
         setTimeout(() => {
           if (isCallActive) {
             document.getElementById('callStatus').textContent = 'Connected';
@@ -1305,19 +1286,16 @@
           }
         }, 2000);
         
-        // Handle ICE candidates
         peerConnection.onicecandidate = (event) => {
           if (event.candidate) {
             console.log('ICE candidate generated:', event.candidate);
           }
         };
         
-        // Handle remote stream
         peerConnection.ontrack = (event) => {
           console.log('Remote track received');
         };
         
-        // Connection state മാറ്റങ്ങൾ നിരീക്ഷിക്കുന്നു
         peerConnection.onconnectionstatechange = () => {
           console.log('Connection state:', peerConnection.connectionState);
           if (peerConnection.connectionState === 'failed' || 
@@ -1327,14 +1305,12 @@
           }
         };
         
-        // ബട്ടണുകളുടെ സ്റ്റൈൽ മാറ്റുന്നു
         document.getElementById('audioCallBtn').classList.add('in-call');
         document.getElementById('videoCallBtn').classList.add('in-call');
-        
         showToast(`${type} call started`);
         
       } catch (error) {
-        console.error('Call error:', error);
+        console.error('❌ Call error:', error);
         isCallActive = false;
         showToast(`Failed to start ${type} call: ${error.message}`);
         endCall();
@@ -1425,15 +1401,19 @@
           const chats = [];
           snapshot.forEach(doc => {
             const data = doc.data();
-            const ids = doc.id.split('_');
-            if (ids.includes(currentUserId)) {
-              const partnerId = ids.find(i => i !== currentUserId);
-              if (partnerId && data.lastMessage !== undefined) {
+            const docId = doc.id;
+            console.log("📄 Chat Document:", docId, data);
+            
+            // Check if current user is in the chat
+            if (data.users && data.users.includes(currentUserId)) {
+              const partnerId = data.users.find(id => id !== currentUserId);
+              if (partnerId) {
                 chats.push({
-                  partnerId: '@' + partnerId,
+                  partnerId: partnerId,
                   lastMsg: data.lastMessage || 'No messages',
                   lastTime: data.lastTime?.toDate() || new Date(),
-                  unread: data[`unread_${currentUserId}`] || 0
+                  unread: data[`unread_${currentUserId}`] || 0,
+                  chatId: docId
                 });
               }
             }
@@ -1444,7 +1424,7 @@
           applySearchFilter();
         });
       } catch (error) {
-        console.error('Error loading chats:', error);
+        console.error('❌ Error loading chats:', error);
         showToast('Error loading chats');
       }
     }
@@ -1456,13 +1436,13 @@
         return;
       }
       container.innerHTML = chats.map(c => `
-        <div class="user-list-item ${currentPartner === c.partnerId ? 'active' : ''}" data-partner="${c.partnerId}" onclick="openChat('${c.partnerId}')">
+        <div class="user-list-item ${currentPartnerId === c.partnerId ? 'active' : ''}" data-partner="${c.partnerId}" onclick="openChat('${c.partnerId}', '${c.chatId}')">
           <div class="user-avatar" onclick="event.stopPropagation();window.location.href='profile.html?user=${encodeURIComponent(c.partnerId)}'">
-            ${getAvatarHTML(c.partnerId)}
+            ${getAvatarHTML('@' + c.partnerId)}
           </div>
           <div class="user-info">
             <div class="user-name-row">
-              <span class="user-name">${cleanUsername(c.partnerId)}</span>
+              <span class="user-name">${cleanUsername('@' + c.partnerId)}</span>
               <span class="user-time">${timeAgo(c.lastTime)}</span>
             </div>
             <div class="user-msg-row">
@@ -1499,17 +1479,28 @@
     }
     
     // ========== OPEN CHAT ==========
-    window.openChat = async function(partner) {
-      currentPartner = partner;
-      const partnerId = partner.replace('@','');
-      currentChatId = [currentUserId, partnerId].sort().join('_');
+    window.openChat = async function(partner, chatId) {
+      // Store partner ID (not username)
+      currentPartnerId = partner;
+      currentPartner = '@' + partner;
       
-      // 🔍 DEBUG LOG - Check chat ID when opening
-      console.log("🔍 Listening Chat:", currentChatId);
-      console.log("🔍 Partner:", currentPartner);
-      console.log("🔍 Current User:", currentUserId);
+      // Use the existing chat ID if provided, otherwise generate a new one
+      if (chatId) {
+        currentChatId = chatId;
+        console.log("✅ Using existing chat ID:", currentChatId);
+      } else {
+        // Generate chat ID using the same format as your database
+        currentChatId = [currentUserId, partner].sort().join('_');
+        console.log("🆕 Generated new chat ID:", currentChatId);
+      }
+      
+      console.log("🔍 Opening Chat - Debug Info:");
+      console.log("📤 Current Chat ID:", currentChatId);
+      console.log("📤 Current User ID:", currentUserId);
+      console.log("📤 Partner ID:", currentPartnerId);
       
       try {
+        // Mark messages as read
         await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
       } catch (error) {
         console.error('Error updating read status:', error);
@@ -1522,17 +1513,18 @@
       document.getElementById('chatView').classList.add('show');
       document.getElementById('chatInputArea').classList.add('show');
       document.getElementById('floatingNav').style.display = 'none';
-      document.getElementById('partnerName').textContent = cleanUsername(partner);
+      document.getElementById('partnerName').textContent = cleanUsername(currentPartner);
       
       document.getElementById('fabContainer').style.display = 'none';
       closeNewChatPanel();
       
       const avatarContainer = document.getElementById('partnerAvatar');
-      avatarContainer.innerHTML = getAvatarHTML(partner);
+      avatarContainer.innerHTML = getAvatarHTML(currentPartner);
       
       if (unsubMessages) unsubMessages();
       
       try {
+        console.log("📡 Listening to messages at:", `chats/${currentChatId}/messages`);
         const q = query(collection(db, 'chats', currentChatId, 'messages'), orderBy('createdAt', 'asc'));
         unsubMessages = onSnapshot(q, (snapshot) => {
           const container = document.getElementById('messagesContainer');
@@ -1557,7 +1549,7 @@
           container.scrollTop = container.scrollHeight;
         });
       } catch (error) {
-        console.error('Error loading messages:', error);
+        console.error('❌ Error loading messages:', error);
         showToast('Error loading messages');
       }
     };
@@ -1584,27 +1576,38 @@
         return;
       }
       
-      // 🔍 DEBUG LOGS - Check values before sending
       console.log("📤 Sending Message - Debug Info:");
       console.log("📤 Current Chat ID:", currentChatId);
       console.log("📤 Current User ID:", currentUserId);
-      console.log("📤 Current Partner:", currentPartner);
+      console.log("📤 Partner ID:", currentPartnerId);
       console.log("📤 Message Text:", text);
       
       input.value = '';
       input.disabled = true;
       
       try {
-        const partnerId = currentPartner.replace('@','');
         const chatRef = doc(db, 'chats', currentChatId);
         
         console.log("📤 Chat Ref Path:", chatRef.path);
         
-        await setDoc(chatRef, {
-          lastMessage: text,
-          lastTime: serverTimestamp(),
-          [`unread_${partnerId}`]: increment(1)
-        }, { merge: true });
+        // First, check if the chat document exists
+        const chatSnap = await getDoc(chatRef);
+        if (!chatSnap.exists()) {
+          console.log("📤 Chat doesn't exist, creating...");
+          await setDoc(chatRef, {
+            users: [currentUserId, currentPartnerId],
+            lastMessage: text,
+            lastTime: serverTimestamp(),
+            [`unread_${currentPartnerId}`]: increment(1)
+          });
+        } else {
+          console.log("📤 Chat exists, updating...");
+          await setDoc(chatRef, {
+            lastMessage: text,
+            lastTime: serverTimestamp(),
+            [`unread_${currentPartnerId}`]: increment(1)
+          }, { merge: true });
+        }
         
         console.log("📤 Chat document updated successfully");
         
@@ -1615,11 +1618,11 @@
         });
         
         console.log("📤 Message added with ID:", messageRef.id);
-        console.log("📤 Message sent successfully!");
+        console.log("✅ Message sent successfully!");
         
       } catch(error) {
         console.error("❌ Send error:", error);
-        showToast('Failed to send message');
+        showToast('Failed to send message: ' + error.message);
         input.value = text;
       } finally {
         input.disabled = false;
@@ -1637,14 +1640,24 @@
       const reader = new FileReader();
       reader.onload = async function(ev) {
         try {
-          const partnerId = currentPartner.replace('@','');
           const chatRef = doc(db, 'chats', currentChatId);
           
-          await setDoc(chatRef, {
-            lastMessage: '📷 Photo',
-            lastTime: serverTimestamp(),
-            [`unread_${partnerId}`]: increment(1)
-          }, { merge: true });
+          // Check if chat exists
+          const chatSnap = await getDoc(chatRef);
+          if (!chatSnap.exists()) {
+            await setDoc(chatRef, {
+              users: [currentUserId, currentPartnerId],
+              lastMessage: '📷 Photo',
+              lastTime: serverTimestamp(),
+              [`unread_${currentPartnerId}`]: increment(1)
+            });
+          } else {
+            await setDoc(chatRef, {
+              lastMessage: '📷 Photo',
+              lastTime: serverTimestamp(),
+              [`unread_${currentPartnerId}`]: increment(1)
+            }, { merge: true });
+          }
           
           await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
             imageUrl: ev.target.result,
@@ -1654,7 +1667,7 @@
           
           showToast('Image sent');
         } catch(error) {
-          console.error('Image send error:', error);
+          console.error('❌ Image send error:', error);
           showToast('Failed to send image');
         }
       };
@@ -1676,6 +1689,7 @@
         endCall();
       }
       currentPartner = null;
+      currentPartnerId = null;
       currentChatId = null;
       document.getElementById('topIcons').style.display = 'flex';
       document.getElementById('chatHeader').classList.remove('show');
@@ -1767,11 +1781,12 @@
         const newUsers = [];
         snapshot.forEach(doc => {
           const data = doc.data();
-          if (data.username && data.username !== currentUser.username) {
+          const userId = doc.id;
+          if (userId !== currentUserId) {
             newUsers.push({
-              id: doc.id,
-              username: data.username,
-              name: data.name || cleanUsername(data.username),
+              id: userId,
+              username: data.username || userId,
+              name: data.name || cleanUsername(data.username || userId),
               avatar: data.avatar
             });
           }
@@ -1787,7 +1802,7 @@
         renderPanelList();
         
       } catch (error) {
-        console.error('Error loading users:', error);
+        console.error('❌ Error loading users:', error);
         container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-exclamation-triangle"></i><p>Error loading users</p></div>';
       } finally {
         isLoadingUsers = false;
@@ -1839,7 +1854,7 @@
           panelBadge.style.display = 'none';
         }
       } catch (error) {
-        console.error('Error loading requests:', error);
+        console.error('❌ Error loading requests:', error);
       }
     }
     
@@ -1863,7 +1878,7 @@
         }
         
         let html = filtered.map(u => `
-          <div class="new-chat-panel-item" onclick="startChatFromPanel('${u.username}')">
+          <div class="new-chat-panel-item" onclick="startChatFromPanel('${u.id}')">
             <div class="new-chat-panel-avatar">
               ${u.avatar ? `<img src="${u.avatar}">` : '<i class="fas fa-user"></i>'}
             </div>
@@ -1871,7 +1886,7 @@
               <div class="new-chat-panel-name">${u.name || cleanUsername(u.username)}</div>
               <div class="new-chat-panel-sub">${u.username}</div>
             </div>
-            <button class="new-chat-panel-action" onclick="event.stopPropagation();startChatFromPanel('${u.username}')">
+            <button class="new-chat-panel-action" onclick="event.stopPropagation();startChatFromPanel('${u.id}')">
               <i class="fas fa-comment"></i> Chat
             </button>
           </div>
@@ -1914,28 +1929,30 @@
     }
     
     // ========== CHAT ACTIONS FROM PANEL ==========
-    window.startChatFromPanel = async function(username) {
+    window.startChatFromPanel = async function(partnerUserId) {
       closeNewChatPanel();
-      const partnerId = username.replace('@', '');
-      const chatId = [currentUserId, partnerId].sort().join('_');
+      
+      // Generate chat ID using user IDs (not usernames)
+      const chatId = [currentUserId, partnerUserId].sort().join('_');
       
       try {
         const chatRef = doc(db, 'chats', chatId);
         const chatSnap = await getDoc(chatRef);
         
         if (!chatSnap.exists()) {
+          console.log("🆕 Creating new chat with ID:", chatId);
           await setDoc(chatRef, {
-            users: [currentUserId, partnerId],
+            users: [currentUserId, partnerUserId],
             lastMessage: 'Chat started',
             lastTime: serverTimestamp(),
-            [`unread_${partnerId}`]: 1,
+            [`unread_${partnerUserId}`]: 1,
             [`unread_${currentUserId}`]: 0
           });
         }
         
-        await openChat(username);
+        await openChat(partnerUserId, chatId);
       } catch(error) {
-        console.error('Error starting chat:', error);
+        console.error('❌ Error starting chat:', error);
         showToast('Failed to start chat');
       }
     };
@@ -1947,7 +1964,7 @@
         renderPanelList();
         showToast(`Accepted request from ${cleanUsername(fromUser)}`);
       } catch(error) {
-        console.error('Error accepting request:', error);
+        console.error('❌ Error accepting request:', error);
         showToast('Failed to accept request');
       }
     };
@@ -1959,7 +1976,7 @@
         renderPanelList();
         showToast('Request declined');
       } catch(error) {
-        console.error('Error declining request:', error);
+        console.error('❌ Error declining request:', error);
         showToast('Failed to decline request');
       }
     };
@@ -2040,6 +2057,8 @@
     });
     
     // ========== INITIALIZE ==========
+    console.log("🚀 App Initialized");
+    console.log("👤 Current User ID:", currentUserId);
     loadChats();
     loadRequests();
     setupPanelScroll();
