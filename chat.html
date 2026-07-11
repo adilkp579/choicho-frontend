@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="CSS/main.css">
   <style>
-    /* ... (all existing styles remain the same) ... */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -409,24 +408,6 @@
       border-radius: 0.8rem;
       cursor: pointer;
     }
-    .voice-message-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      padding: 0.2rem 0.5rem;
-      font-size: 0.7rem;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .voice-message-btn:hover {
-      opacity: 0.8;
-    }
-    .voice-message-btn.recording {
-      color: #ef4444;
-      animation: pulse 1s infinite;
-    }
     .voice-message-player {
       display: flex;
       align-items: center;
@@ -570,7 +551,6 @@
       font-size: 0.9rem !important;
     }
     
-    /* Call Overlay - Enhanced */
     .call-overlay {
       position: fixed;
       top: 0;
@@ -705,7 +685,6 @@
       background: #22c55e;
     }
     
-    /* Video call remote stream */
     .call-overlay .remote-video {
       width: 100%;
       max-width: 400px;
@@ -734,7 +713,6 @@
       display: block;
     }
     
-    /* Incoming call notification */
     .incoming-call {
       position: fixed;
       bottom: 100px;
@@ -1203,6 +1181,11 @@
       padding-right: 1rem;
     }
     
+    /* Hide navbar when chat is open */
+    .chat-view.show ~ .floating-nav {
+      display: none !important;
+    }
+    
     .chat-view.show ~ .fab-container {
       display: none;
     }
@@ -1425,6 +1408,7 @@
     
     <div class="toast" id="toast"></div>
     
+    <!-- Navbar -->
     <nav class="floating-nav" id="floatingNav">
       <div class="nav-center">
         <a href="index.html"><i class="fas fa-home"></i></a>
@@ -1504,53 +1488,6 @@
     let allUsersLoaded = false;
     const PAGE_SIZE = 50;
     
-    // ========== INITIALIZE USER DOCUMENT ==========
-    async function initializeUserDocument() {
-      try {
-        const userRef = doc(db, 'users', currentUserId);
-        const userSnap = await getDoc(userRef);
-        
-        let username = currentUser.displayName || currentUser.email || currentUserId;
-        if (username.includes('@')) {
-          username = username.split('@')[0];
-        }
-        username = username.replace(/[^a-zA-Z0-9_]/g, '');
-        
-        if (!username || username.length === 0) {
-          username = 'user_' + currentUserId.substring(0, 8);
-        }
-        
-        if (!userSnap.exists()) {
-          console.log("🆕 Creating new user document for:", currentUserId);
-          await setDoc(userRef, {
-            username: username,
-            name: currentUser.displayName || username,
-            email: currentUser.email || '',
-            avatar: '',
-            createdAt: serverTimestamp(),
-            lastSeen: serverTimestamp()
-          });
-          usernameCache[currentUserId] = username;
-          showToast('User profile created! ✅');
-        } else {
-          const data = userSnap.data();
-          if (!data.username) {
-            await updateDoc(userRef, {
-              username: username,
-              name: currentUser.displayName || username
-            });
-          }
-          usernameCache[currentUserId] = data.username || username;
-          console.log("✅ User document exists:", data);
-        }
-        
-        return true;
-      } catch (error) {
-        console.error("❌ Error initializing user document:", error);
-        return false;
-      }
-    }
-    
     // ========== GET USERNAME FROM USER ID ==========
     async function getUsernameFromId(userId) {
       if (usernameCache[userId]) {
@@ -1570,6 +1507,7 @@
             usernameCache[userId] = username;
             return username;
           }
+          // If user document doesn't exist, show user ID as fallback
           usernameCache[userId] = userId;
           return userId;
         } catch (error) {
@@ -2019,7 +1957,6 @@
       ]
     };
     
-    // Create a call document in Firestore for signaling
     async function createCallDocument(partnerId, type) {
       const callId = `${currentUserId}_${partnerId}_${Date.now()}`;
       const callRef = doc(db, 'calls', callId);
@@ -2036,7 +1973,6 @@
       return callRef;
     }
     
-    // Listen for incoming calls
     function listenForCalls() {
       const q = query(collection(db, 'calls'), where('to', '==', currentUserId), where('status', '==', 'calling'));
       unsubCall = onSnapshot(q, async (snapshot) => {
@@ -2044,7 +1980,6 @@
           const data = doc.data();
           console.log("📞 Incoming call from:", data.from);
           
-          // Show incoming call notification
           const callerUsername = await getUsernameFromId(data.from);
           showIncomingCall(data.from, callerUsername, data.type, doc.id);
         });
@@ -2061,14 +1996,12 @@
       const avatar = document.getElementById('incomingCallerAvatar');
       avatar.innerHTML = getAvatarHTML('@' + callerName);
       
-      // Store call ID for accept/decline
       incomingCall.dataset.callId = callId;
       incomingCall.dataset.fromId = fromId;
       incomingCall.dataset.callType = type;
       
       incomingCall.classList.add('show');
       
-      // Ring sound effect (visual)
       document.getElementById('audioCallBtn').classList.add('ringing');
       document.getElementById('videoCallBtn').classList.add('ringing');
     }
@@ -2083,14 +2016,12 @@
       document.getElementById('audioCallBtn').classList.remove('ringing');
       document.getElementById('videoCallBtn').classList.remove('ringing');
       
-      // Accept the call
       isCaller = false;
       callType = type;
       callDocumentId = callId;
       isCallActive = true;
       
       try {
-        // Get user media
         const constraints = {
           audio: true,
           video: type === 'video'
@@ -2098,7 +2029,6 @@
         
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
-        // Show local video if video call
         if (type === 'video') {
           const localVideo = document.getElementById('localVideo');
           localVideo.srcObject = localStream;
@@ -2112,7 +2042,6 @@
           peerConnection.addTrack(track, localStream);
         });
         
-        // Handle remote stream
         peerConnection.ontrack = (event) => {
           remoteStream = event.streams[0];
           if (type === 'video') {
@@ -2124,7 +2053,6 @@
           startCallTimer();
         };
         
-        // Listen for ICE candidates from the caller
         const callRef = doc(db, 'calls', callId);
         onSnapshot(callRef, async (snapshot) => {
           const data = snapshot.data();
@@ -2148,7 +2076,6 @@
           }
         });
         
-        // Send ICE candidates
         peerConnection.onicecandidate = async (event) => {
           if (event.candidate) {
             const callRef = doc(db, 'calls', callId);
@@ -2185,7 +2112,6 @@
       document.getElementById('audioCallBtn').classList.remove('ringing');
       document.getElementById('videoCallBtn').classList.remove('ringing');
       
-      // Delete the call document
       try {
         await deleteDoc(doc(db, 'calls', callId));
       } catch (e) {
@@ -2213,7 +2139,6 @@
       try {
         showToast('Fetching secure connection settings...');
         
-        // Fetch TURN credentials
         try {
           const idToken = await currentUser.getIdToken();
           const response = await fetch('https://your-railway-app.railway.app/turn', {
@@ -2235,11 +2160,9 @@
           console.warn('⚠️ Failed to fetch TURN credentials, using fallback STUN.');
         }
         
-        // Create call document
         const callRef = await createCallDocument(currentPartnerId, type);
         callDocumentId = callRef.id;
         
-        // Get user media
         const constraints = {
           audio: true,
           video: type === 'video'
@@ -2247,7 +2170,6 @@
         
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
-        // Show local video if video call
         if (type === 'video') {
           const localVideo = document.getElementById('localVideo');
           localVideo.srcObject = localStream;
@@ -2261,7 +2183,6 @@
           peerConnection.addTrack(track, localStream);
         });
         
-        // Handle remote stream
         peerConnection.ontrack = (event) => {
           remoteStream = event.streams[0];
           if (type === 'video') {
@@ -2273,17 +2194,14 @@
           startCallTimer();
         };
         
-        // Create offer
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
         
-        // Send offer to Firestore
         await updateDoc(callRef, {
           offer: offer,
           status: 'calling'
         });
         
-        // Listen for answer from receiver
         onSnapshot(callRef, async (snapshot) => {
           const data = snapshot.data();
           if (data && data.answer && !peerConnection.currentRemoteDescription) {
@@ -2305,7 +2223,6 @@
           }
         });
         
-        // Send ICE candidates
         peerConnection.onicecandidate = async (event) => {
           if (event.candidate) {
             await updateDoc(callRef, {
@@ -2383,7 +2300,6 @@
       document.getElementById('callOverlay').classList.remove('show');
       document.getElementById('floatingNav').style.display = 'flex';
       
-      // Update call status in Firestore
       if (callDocumentId) {
         try {
           await updateDoc(doc(db, 'calls', callDocumentId), {
@@ -2395,7 +2311,6 @@
         }
       }
       
-      // Reset video elements
       document.getElementById('remoteVideo').classList.remove('show');
       document.getElementById('remoteVideo').srcObject = null;
       document.getElementById('localVideo').classList.remove('show');
@@ -2484,9 +2399,7 @@
       }
     };
     
-    // Firestore arrayUnion helper
     const arrayUnion = (element) => {
-      // Simple helper for Firestore arrayUnion
       return element;
     };
     
@@ -2871,12 +2784,9 @@
     console.log("🚀 App Initialized");
     console.log("👤 Current User ID:", currentUserId);
     
-    await initializeUserDocument();
     loadChats();
     loadRequests();
     setupPanelScroll();
-    
-    // Start listening for incoming calls
     listenForCalls();
   </script>
 </body>
