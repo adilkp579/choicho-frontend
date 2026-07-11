@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="CSS/main.css">
   <style>
-    /* ... (all existing styles remain the same) ... */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -1191,6 +1190,9 @@
     let localStream = null;
     let peerConnection = null;
     
+    // ========== USERNAME CACHE ==========
+    let usernameCache = {};
+    
     // ========== TOAST FUNCTION ==========
     function showToast(message) {
       const toast = document.getElementById('toast');
@@ -1212,14 +1214,45 @@
     const PAGE_SIZE = 50;
     
     // ========== RAILWAY BACKEND CONFIGURATION ==========
-    const BACKEND_URL = 'https://choicho-backend-production.up.railway.app';
+    const BACKEND_URL = 'https://your-railway-app.railway.app';
+    
+    // ========== GET USERNAME FROM USER ID ==========
+    async function getUsernameFromId(userId) {
+      // Check cache first
+      if (usernameCache[userId]) {
+        return usernameCache[userId];
+      }
+      
+      try {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          const username = data.username || userId;
+          usernameCache[userId] = username;
+          return username;
+        }
+        return userId;
+      } catch (error) {
+        console.error('Error fetching username:', error);
+        return userId;
+      }
+    }
+    
+    // ========== GET USER DISPLAY NAME ==========
+    async function getUserDisplayName(userId) {
+      if (userId === currentUserId) {
+        return 'You';
+      }
+      const username = await getUsernameFromId(userId);
+      return cleanUsername('@' + username);
+    }
     
     // ========== CALL FUNCTIONS ==========
     let configuration = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' }
       ]
     };
     
@@ -1397,19 +1430,21 @@
     async function loadChats() {
       try {
         const q = query(collection(db, 'chats'), orderBy('lastTime', 'desc'));
-        onSnapshot(q, (snapshot) => {
+        onSnapshot(q, async (snapshot) => {
           const chats = [];
-          snapshot.forEach(doc => {
+          for (const doc of snapshot.docs) {
             const data = doc.data();
             const docId = doc.id;
-            console.log("📄 Chat Document:", docId, data);
             
             // Check if current user is in the chat
             if (data.users && data.users.includes(currentUserId)) {
               const partnerId = data.users.find(id => id !== currentUserId);
               if (partnerId) {
+                // Get partner username
+                const partnerUsername = await getUsernameFromId(partnerId);
                 chats.push({
                   partnerId: partnerId,
+                  partnerUsername: partnerUsername,
                   lastMsg: data.lastMessage || 'No messages',
                   lastTime: data.lastTime?.toDate() || new Date(),
                   unread: data[`unread_${currentUserId}`] || 0,
@@ -1417,7 +1452,7 @@
                 });
               }
             }
-          });
+          }
           chatListData = chats;
           renderChatList(chats);
           document.getElementById('chatCount').textContent = chats.length ? `(${chats.length})` : '';
@@ -1437,12 +1472,12 @@
       }
       container.innerHTML = chats.map(c => `
         <div class="user-list-item ${currentPartnerId === c.partnerId ? 'active' : ''}" data-partner="${c.partnerId}" onclick="openChat('${c.partnerId}', '${c.chatId}')">
-          <div class="user-avatar" onclick="event.stopPropagation();window.location.href='profile.html?user=${encodeURIComponent(c.partnerId)}'">
-            ${getAvatarHTML('@' + c.partnerId)}
+          <div class="user-avatar" onclick="event.stopPropagation();window.location.href='profile.html?user=${encodeURIComponent(c.partnerUsername)}'">
+            ${getAvatarHTML('@' + c.partnerUsername)}
           </div>
           <div class="user-info">
             <div class="user-name-row">
-              <span class="user-name">${cleanUsername('@' + c.partnerId)}</span>
+              <span class="user-name">${cleanUsername('@' + c.partnerUsername)}</span>
               <span class="user-time">${timeAgo(c.lastTime)}</span>
             </div>
             <div class="user-msg-row">
@@ -1479,18 +1514,16 @@
     }
     
     // ========== OPEN CHAT ==========
-    window.openChat = async function(partner, chatId) {
-      // Store partner ID (not username)
-      currentPartnerId = partner;
-      currentPartner = '@' + partner;
+    window.openChat = async function(partnerId, chatId) {
+      currentPartnerId = partnerId;
+      const partnerUsername = await getUsernameFromId(partnerId);
+      currentPartner = '@' + partnerUsername;
       
-      // Use the existing chat ID if provided, otherwise generate a new one
       if (chatId) {
         currentChatId = chatId;
         console.log("✅ Using existing chat ID:", currentChatId);
       } else {
-        // Generate chat ID using the same format as your database
-        currentChatId = [currentUserId, partner].sort().join('_');
+        currentChatId = [currentUserId, partnerId].sort().join('_');
         console.log("🆕 Generated new chat ID:", currentChatId);
       }
       
@@ -1498,9 +1531,9 @@
       console.log("📤 Current Chat ID:", currentChatId);
       console.log("📤 Current User ID:", currentUserId);
       console.log("📤 Partner ID:", currentPartnerId);
+      console.log("📤 Partner Username:", partnerUsername);
       
       try {
-        // Mark messages as read
         await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
       } catch (error) {
         console.error('Error updating read status:', error);
@@ -1513,13 +1546,13 @@
       document.getElementById('chatView').classList.add('show');
       document.getElementById('chatInputArea').classList.add('show');
       document.getElementById('floatingNav').style.display = 'none';
-      document.getElementById('partnerName').textContent = cleanUsername(currentPartner);
+      document.getElementById('partnerName').textContent = cleanUsername('@' + partnerUsername);
       
       document.getElementById('fabContainer').style.display = 'none';
       closeNewChatPanel();
       
       const avatarContainer = document.getElementById('partnerAvatar');
-      avatarContainer.innerHTML = getAvatarHTML(currentPartner);
+      avatarContainer.innerHTML = getAvatarHTML('@' + partnerUsername);
       
       if (unsubMessages) unsubMessages();
       
@@ -1590,7 +1623,6 @@
         
         console.log("📤 Chat Ref Path:", chatRef.path);
         
-        // First, check if the chat document exists
         const chatSnap = await getDoc(chatRef);
         if (!chatSnap.exists()) {
           console.log("📤 Chat doesn't exist, creating...");
@@ -1642,7 +1674,6 @@
         try {
           const chatRef = doc(db, 'chats', currentChatId);
           
-          // Check if chat exists
           const chatSnap = await getDoc(chatRef);
           if (!chatSnap.exists()) {
             await setDoc(chatRef, {
@@ -1779,18 +1810,20 @@
         }
         
         const newUsers = [];
-        snapshot.forEach(doc => {
+        for (const doc of snapshot.docs) {
           const data = doc.data();
           const userId = doc.id;
           if (userId !== currentUserId) {
+            const username = data.username || userId;
+            usernameCache[userId] = username;
             newUsers.push({
               id: userId,
-              username: data.username || userId,
-              name: data.name || cleanUsername(data.username || userId),
+              username: username,
+              name: data.name || cleanUsername(username),
               avatar: data.avatar
             });
           }
-        });
+        }
         
         lastVisible = snapshot.docs[snapshot.docs.length - 1];
         allUsers = [...allUsers, ...newUsers];
@@ -1884,7 +1917,7 @@
             </div>
             <div class="new-chat-panel-info">
               <div class="new-chat-panel-name">${u.name || cleanUsername(u.username)}</div>
-              <div class="new-chat-panel-sub">${u.username}</div>
+              <div class="new-chat-panel-sub">@${u.username}</div>
             </div>
             <button class="new-chat-panel-action" onclick="event.stopPropagation();startChatFromPanel('${u.id}')">
               <i class="fas fa-comment"></i> Chat
@@ -1932,7 +1965,6 @@
     window.startChatFromPanel = async function(partnerUserId) {
       closeNewChatPanel();
       
-      // Generate chat ID using user IDs (not usernames)
       const chatId = [currentUserId, partnerUserId].sort().join('_');
       
       try {
