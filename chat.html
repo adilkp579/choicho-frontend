@@ -1237,9 +1237,6 @@
     let allUsersLoaded = false;
     const PAGE_SIZE = 50;
     
-    // ========== RAILWAY BACKEND CONFIGURATION ==========
-    const BACKEND_URL = 'https://your-railway-app.railway.app';
-    
     // ========== GET USERNAME FROM USER ID ==========
     async function getUsernameFromId(userId) {
       // Check cache first
@@ -1258,12 +1255,10 @@
           const userDoc = await getDoc(doc(db, 'users', userId));
           if (userDoc.exists()) {
             const data = userDoc.data();
-            // Try multiple possible username fields
             const username = data.username || data.displayName || data.name || data.email || userId;
             usernameCache[userId] = username;
             return username;
           }
-          // If user document doesn't exist, try to get from auth
           usernameCache[userId] = userId;
           return userId;
         } catch (error) {
@@ -1290,7 +1285,6 @@
       
       try {
         const username = await getUsernameFromId(userId);
-        // Clean the username - remove @ if present, handle empty
         const cleanName = username ? cleanUsername('@' + username) : 'User';
         userDisplayNameCache[userId] = cleanName;
         return cleanName;
@@ -1300,195 +1294,41 @@
       }
     }
     
-    // ========== CALL FUNCTIONS ==========
-    let configuration = {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' }
-      ]
-    };
-    
-    window.startCall = async function(type) {
-      if (!currentPartner) {
-        showToast('Please select a chat first');
-        return;
-      }
+    // ========== ENSURE CHAT EXISTS ==========
+    async function ensureChatExists(chatId, userId1, userId2) {
+      const chatRef = doc(db, 'chats', chatId);
+      const chatSnap = await getDoc(chatRef);
       
-      if (isCallActive) {
-        showToast('Call already in progress');
-        return;
-      }
-      
-      callType = type;
-      isCallActive = true;
-      
-      try {
-        showToast('Fetching secure connection settings...');
-        const idToken = await currentUser.getIdToken();
-        
-        try {
-          const response = await fetch(`${BACKEND_URL}/turn`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${idToken}`,
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (response.ok) {
-            const turnData = await response.json();
-            if (turnData && turnData.iceServers) {
-              configuration.iceServers = turnData.iceServers;
-              console.log('✅ Secure TURN credentials loaded successfully.');
-            }
-          } else {
-            console.warn('⚠️ Failed to fetch TURN credentials, using fallback STUN.');
-          }
-        } catch (fetchError) {
-          console.error('❌ Backend fetch error, falling back to STUN:', fetchError);
-        }
-
-        const constraints = {
-          audio: true,
-          video: type === 'video'
-        };
-        
-        localStream = await navigator.mediaDevices.getUserMedia(constraints);
-        peerConnection = new RTCPeerConnection(configuration);
-        
-        localStream.getTracks().forEach(track => {
-          peerConnection.addTrack(track, localStream);
+      if (!chatSnap.exists()) {
+        console.log("🆕 Creating new chat with ID:", chatId);
+        await setDoc(chatRef, {
+          users: [userId1, userId2],
+          createdAt: serverTimestamp(),
+          lastMessage: '',
+          lastTime: serverTimestamp(),
+          [`unread_${userId1}`]: 0,
+          [`unread_${userId2}`]: 0
         });
-        
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        showCallOverlay(type);
-        
-        setTimeout(() => {
-          if (isCallActive) {
-            document.getElementById('callStatus').textContent = 'Connected';
-            startCallTimer();
-          }
-        }, 2000);
-        
-        peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            console.log('ICE candidate generated:', event.candidate);
-          }
-        };
-        
-        peerConnection.ontrack = (event) => {
-          console.log('Remote track received');
-        };
-        
-        peerConnection.onconnectionstatechange = () => {
-          console.log('Connection state:', peerConnection.connectionState);
-          if (peerConnection.connectionState === 'failed' || 
-              peerConnection.connectionState === 'disconnected' ||
-              peerConnection.connectionState === 'closed') {
-            endCall();
-          }
-        };
-        
-        document.getElementById('audioCallBtn').classList.add('in-call');
-        document.getElementById('videoCallBtn').classList.add('in-call');
-        showToast(`${type} call started`);
-        
-      } catch (error) {
-        console.error('❌ Call error:', error);
-        isCallActive = false;
-        showToast(`Failed to start ${type} call: ${error.message}`);
-        endCall();
+        return { exists: false, chatRef };
       }
-    };
-    
-    function showCallOverlay(type) {
-      const overlay = document.getElementById('callOverlay');
-      const avatar = document.getElementById('callAvatar');
-      const name = document.getElementById('callName');
-      const status = document.getElementById('callStatus');
       
-      avatar.innerHTML = currentPartner ? getAvatarHTML(currentPartner) : '<i class="fas fa-user"></i>';
-      name.textContent = currentPartner ? cleanUsername(currentPartner) : 'Unknown';
-      status.textContent = type === 'audio' ? 'Audio calling...' : 'Video calling...';
-      
-      overlay.classList.add('show');
-      document.getElementById('floatingNav').style.display = 'none';
+      return { exists: true, chatRef };
     }
-    
-    function startCallTimer() {
-      callSeconds = 0;
-      clearInterval(callTimerInterval);
-      callTimerInterval = setInterval(() => {
-        callSeconds++;
-        const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-        const secs = String(callSeconds % 60).padStart(2, '0');
-        document.getElementById('callTimer').textContent = `${mins}:${secs}`;
-      }, 1000);
-    }
-    
-    window.endCall = function() {
-      isCallActive = false;
-      clearInterval(callTimerInterval);
-      callSeconds = 0;
-      document.getElementById('callTimer').textContent = '00:00';
-      document.getElementById('callOverlay').classList.remove('show');
-      document.getElementById('floatingNav').style.display = 'flex';
-      
-      if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
-      }
-      
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-      }
-      
-      document.getElementById('audioCallBtn').classList.remove('in-call');
-      document.getElementById('videoCallBtn').classList.remove('in-call');
-      
-      const muteBtn = document.getElementById('muteBtn');
-      muteBtn.classList.remove('muted');
-      muteBtn.querySelector('i').className = 'fas fa-microphone';
-      isMutedCall = false;
-      
-      document.getElementById('callStatus').textContent = 'Connecting...';
-      showToast('Call ended');
-    };
-    
-    window.toggleMute = function() {
-      if (!localStream) return;
-      
-      isMutedCall = !isMutedCall;
-      const muteBtn = document.getElementById('muteBtn');
-      
-      localStream.getAudioTracks().forEach(track => {
-        track.enabled = !isMutedCall;
-      });
-      
-      if (isMutedCall) {
-        muteBtn.classList.add('muted');
-        muteBtn.querySelector('i').className = 'fas fa-microphone-slash';
-        showToast('Microphone muted');
-      } else {
-        muteBtn.classList.remove('muted');
-        muteBtn.querySelector('i').className = 'fas fa-microphone';
-        showToast('Microphone unmuted');
-      }
-    };
     
     // ========== LOAD CHATS ==========
     async function loadChats() {
       try {
+        console.log("📡 Loading chats for user:", currentUserId);
         const q = query(collection(db, 'chats'), orderBy('lastTime', 'desc'));
         onSnapshot(q, async (snapshot) => {
+          console.log("📡 Chats snapshot received, size:", snapshot.size);
           const chats = [];
           for (const doc of snapshot.docs) {
             const data = doc.data();
             const docId = doc.id;
+            console.log("📄 Chat document:", docId, data);
             
+            // Check if current user is in the chat's users array
             if (data.users && data.users.includes(currentUserId)) {
               const partnerId = data.users.find(id => id !== currentUserId);
               if (partnerId) {
@@ -1501,13 +1341,19 @@
                   unread: data[`unread_${currentUserId}`] || 0,
                   chatId: docId
                 });
+                console.log("✅ Chat added:", { partnerId, partnerUsername });
               }
+            } else {
+              console.log("⏭️ Skipping chat - user not in users array:", docId);
             }
           }
           chatListData = chats;
           renderChatList(chats);
           document.getElementById('chatCount').textContent = chats.length ? `(${chats.length})` : '';
           applySearchFilter();
+        }, (error) => {
+          console.error("❌ Error in chat listener:", error);
+          showToast('Error loading chats: ' + error.message);
         });
       } catch (error) {
         console.error('❌ Error loading chats:', error);
@@ -1566,51 +1412,56 @@
     
     // ========== OPEN CHAT ==========
     window.openChat = async function(partnerId, chatId) {
-      currentPartnerId = partnerId;
-      const partnerUsername = await getUsernameFromId(partnerId);
-      currentPartner = '@' + (partnerUsername || partnerId);
-      
-      if (chatId) {
-        currentChatId = chatId;
-        console.log("✅ Using existing chat ID:", currentChatId);
-      } else {
-        currentChatId = [currentUserId, partnerId].sort().join('_');
-        console.log("🆕 Generated new chat ID:", currentChatId);
-      }
-      
-      console.log("🔍 Opening Chat - Debug Info:");
-      console.log("📤 Current Chat ID:", currentChatId);
-      console.log("📤 Current User ID:", currentUserId);
-      console.log("📤 Partner ID:", currentPartnerId);
-      console.log("📤 Partner Username:", partnerUsername);
-      
       try {
-        await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
-      } catch (error) {
-        console.error('Error updating read status:', error);
-      }
-      
-      document.getElementById('topIcons').style.display = 'none';
-      document.getElementById('chatHeader').classList.add('show');
-      document.getElementById('chatListFull').classList.add('hidden');
-      document.getElementById('searchBarContainer').classList.add('hidden');
-      document.getElementById('chatView').classList.add('show');
-      document.getElementById('chatInputArea').classList.add('show');
-      document.getElementById('floatingNav').style.display = 'none';
-      document.getElementById('partnerName').textContent = cleanUsername('@' + (partnerUsername || partnerId));
-      
-      document.getElementById('fabContainer').style.display = 'none';
-      closeNewChatPanel();
-      
-      const avatarContainer = document.getElementById('partnerAvatar');
-      avatarContainer.innerHTML = getAvatarHTML('@' + (partnerUsername || partnerId));
-      
-      if (unsubMessages) unsubMessages();
-      
-      try {
+        console.log("🔍 Opening chat with partner:", partnerId);
+        currentPartnerId = partnerId;
+        const partnerUsername = await getUsernameFromId(partnerId);
+        currentPartner = '@' + (partnerUsername || partnerId);
+        
+        if (chatId) {
+          currentChatId = chatId;
+          console.log("✅ Using existing chat ID:", currentChatId);
+        } else {
+          currentChatId = [currentUserId, partnerId].sort().join('_');
+          console.log("🆕 Generated new chat ID:", currentChatId);
+          // Ensure chat exists
+          await ensureChatExists(currentChatId, currentUserId, partnerId);
+        }
+        
+        console.log("🔍 Opening Chat - Debug Info:");
+        console.log("📤 Current Chat ID:", currentChatId);
+        console.log("📤 Current User ID:", currentUserId);
+        console.log("📤 Partner ID:", currentPartnerId);
+        console.log("📤 Partner Username:", partnerUsername);
+        
+        // Mark messages as read
+        try {
+          await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 });
+        } catch (error) {
+          console.log('Note: Could not update read status (chat may not exist yet)');
+        }
+        
+        document.getElementById('topIcons').style.display = 'none';
+        document.getElementById('chatHeader').classList.add('show');
+        document.getElementById('chatListFull').classList.add('hidden');
+        document.getElementById('searchBarContainer').classList.add('hidden');
+        document.getElementById('chatView').classList.add('show');
+        document.getElementById('chatInputArea').classList.add('show');
+        document.getElementById('floatingNav').style.display = 'none';
+        document.getElementById('partnerName').textContent = cleanUsername('@' + (partnerUsername || partnerId));
+        
+        document.getElementById('fabContainer').style.display = 'none';
+        closeNewChatPanel();
+        
+        const avatarContainer = document.getElementById('partnerAvatar');
+        avatarContainer.innerHTML = getAvatarHTML('@' + (partnerUsername || partnerId));
+        
+        if (unsubMessages) unsubMessages();
+        
         console.log("📡 Listening to messages at:", `chats/${currentChatId}/messages`);
         const q = query(collection(db, 'chats', currentChatId, 'messages'), orderBy('createdAt', 'asc'));
         unsubMessages = onSnapshot(q, async (snapshot) => {
+          console.log("📡 Messages snapshot received, size:", snapshot.size);
           const container = document.getElementById('messagesContainer');
           if (snapshot.empty) {
             container.innerHTML = '<div class="empty-chat">Send a message to start chatting!</div>';
@@ -1620,6 +1471,7 @@
           
           for (const doc of snapshot.docs) {
             const msg = doc.data();
+            console.log("💬 Message:", msg);
             const isSent = msg.sender === currentUserId;
             const senderDisplayName = await getUserDisplayName(msg.sender);
             
@@ -1628,7 +1480,6 @@
             
             let time = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
             
-            // Build message HTML with sender name
             let messageHTML = `
               <div class="message-content">
                 <div class="message-sender-name">${senderDisplayName}</div>
@@ -1655,10 +1506,14 @@
             container.appendChild(div);
           }
           container.scrollTop = container.scrollHeight;
+        }, (error) => {
+          console.error("❌ Error in messages listener:", error);
+          showToast('Error loading messages: ' + error.message);
         });
+        
       } catch (error) {
-        console.error('❌ Error loading messages:', error);
-        showToast('Error loading messages');
+        console.error('❌ Error opening chat:', error);
+        showToast('Error opening chat: ' + error.message);
       }
     };
     
@@ -1690,36 +1545,26 @@
       console.log("📤 Partner ID:", currentPartnerId);
       console.log("📤 Message Text:", text);
       
-      // Disable input
       input.value = '';
       input.disabled = true;
       
       try {
+        // Ensure chat exists
+        await ensureChatExists(currentChatId, currentUserId, currentPartnerId);
+        
         const chatRef = doc(db, 'chats', currentChatId);
         console.log("📤 Chat Ref Path:", chatRef.path);
         
-        // Check if chat exists
-        const chatSnap = await getDoc(chatRef);
-        if (!chatSnap.exists()) {
-          console.log("📤 Chat doesn't exist, creating...");
-          await setDoc(chatRef, {
-            users: [currentUserId, currentPartnerId],
-            lastMessage: text,
-            lastTime: serverTimestamp(),
-            [`unread_${currentPartnerId}`]: increment(1)
-          });
-        } else {
-          console.log("📤 Chat exists, updating...");
-          await setDoc(chatRef, {
-            lastMessage: text,
-            lastTime: serverTimestamp(),
-            [`unread_${currentPartnerId}`]: increment(1)
-          }, { merge: true });
-        }
+        // Update chat document
+        await setDoc(chatRef, {
+          lastMessage: text,
+          lastTime: serverTimestamp(),
+          [`unread_${currentPartnerId}`]: increment(1)
+        }, { merge: true });
         
         console.log("📤 Chat document updated successfully");
         
-        // Add message
+        // Add message to subcollection
         const messageRef = await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
           text: text,
           sender: currentUserId,
@@ -1728,6 +1573,7 @@
         
         console.log("📤 Message added with ID:", messageRef.id);
         console.log("✅ Message sent successfully!");
+        showToast('Message sent!');
         
       } catch(error) {
         console.error("❌ Send error:", error);
@@ -1749,23 +1595,14 @@
       const reader = new FileReader();
       reader.onload = async function(ev) {
         try {
-          const chatRef = doc(db, 'chats', currentChatId);
+          await ensureChatExists(currentChatId, currentUserId, currentPartnerId);
           
-          const chatSnap = await getDoc(chatRef);
-          if (!chatSnap.exists()) {
-            await setDoc(chatRef, {
-              users: [currentUserId, currentPartnerId],
-              lastMessage: '📷 Photo',
-              lastTime: serverTimestamp(),
-              [`unread_${currentPartnerId}`]: increment(1)
-            });
-          } else {
-            await setDoc(chatRef, {
-              lastMessage: '📷 Photo',
-              lastTime: serverTimestamp(),
-              [`unread_${currentPartnerId}`]: increment(1)
-            }, { merge: true });
-          }
+          const chatRef = doc(db, 'chats', currentChatId);
+          await setDoc(chatRef, {
+            lastMessage: '📷 Photo',
+            lastTime: serverTimestamp(),
+            [`unread_${currentPartnerId}`]: increment(1)
+          }, { merge: true });
           
           await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
             imageUrl: ev.target.result,
@@ -2045,24 +1882,11 @@
       const chatId = [currentUserId, partnerUserId].sort().join('_');
       
       try {
-        const chatRef = doc(db, 'chats', chatId);
-        const chatSnap = await getDoc(chatRef);
-        
-        if (!chatSnap.exists()) {
-          console.log("🆕 Creating new chat with ID:", chatId);
-          await setDoc(chatRef, {
-            users: [currentUserId, partnerUserId],
-            lastMessage: 'Chat started',
-            lastTime: serverTimestamp(),
-            [`unread_${partnerUserId}`]: 1,
-            [`unread_${currentUserId}`]: 0
-          });
-        }
-        
+        await ensureChatExists(chatId, currentUserId, partnerUserId);
         await openChat(partnerUserId, chatId);
       } catch(error) {
         console.error('❌ Error starting chat:', error);
-        showToast('Failed to start chat');
+        showToast('Failed to start chat: ' + error.message);
       }
     };
     
@@ -2142,6 +1966,109 @@
         closeChatSettings();
         showToast('Chat deleted');
         goBack();
+      }
+    };
+    
+    // ========== CALL FUNCTIONS ==========
+    let configuration = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' }
+      ]
+    };
+    
+    window.startCall = async function(type) {
+      if (!currentPartner) {
+        showToast('Please select a chat first');
+        return;
+      }
+      
+      if (isCallActive) {
+        showToast('Call already in progress');
+        return;
+      }
+      
+      callType = type;
+      isCallActive = true;
+      
+      try {
+        showToast('Fetching secure connection settings...');
+        const idToken = await currentUser.getIdToken();
+        
+        try {
+          const response = await fetch(`${BACKEND_URL}/turn`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${idToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const turnData = await response.json();
+            if (turnData && turnData.iceServers) {
+              configuration.iceServers = turnData.iceServers;
+              console.log('✅ Secure TURN credentials loaded successfully.');
+            }
+          } else {
+            console.warn('⚠️ Failed to fetch TURN credentials, using fallback STUN.');
+          }
+        } catch (fetchError) {
+          console.error('❌ Backend fetch error, falling back to STUN:', fetchError);
+        }
+
+        const constraints = {
+          audio: true,
+          video: type === 'video'
+        };
+        
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        peerConnection = new RTCPeerConnection(configuration);
+        
+        localStream.getTracks().forEach(track => {
+          peerConnection.addTrack(track, localStream);
+        });
+        
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        showCallOverlay(type);
+        
+        setTimeout(() => {
+          if (isCallActive) {
+            document.getElementById('callStatus').textContent = 'Connected';
+            startCallTimer();
+          }
+        }, 2000);
+        
+        peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            console.log('ICE candidate generated:', event.candidate);
+          }
+        };
+        
+        peerConnection.ontrack = (event) => {
+          console.log('Remote track received');
+        };
+        
+        peerConnection.onconnectionstatechange = () => {
+          console.log('Connection state:', peerConnection.connectionState);
+          if (peerConnection.connectionState === 'failed' || 
+              peerConnection.connectionState === 'disconnected' ||
+              peerConnection.connectionState === 'closed') {
+            endCall();
+          }
+        };
+        
+        document.getElementById('audioCallBtn').classList.add('in-call');
+        document.getElementById('videoCallBtn').classList.add('in-call');
+        showToast(`${type} call started`);
+        
+      } catch (error) {
+        console.error('❌ Call error:', error);
+        isCallActive = false;
+        showToast(`Failed to start ${type} call: ${error.message}`);
+        endCall();
       }
     };
     
