@@ -1215,6 +1215,7 @@
     // ========== USERNAME CACHE ==========
     let usernameCache = {};
     let userDisplayNameCache = {};
+    let userFetchPromises = {};
     
     // ========== TOAST FUNCTION ==========
     function showToast(message) {
@@ -1241,24 +1242,40 @@
     
     // ========== GET USERNAME FROM USER ID ==========
     async function getUsernameFromId(userId) {
+      // Check cache first
       if (usernameCache[userId]) {
         return usernameCache[userId];
       }
       
-      try {
-        const userDoc = await getDoc(doc(db, 'users', userId));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          const username = data.username || userId;
-          usernameCache[userId] = username;
-          return username;
-        }
-        usernameCache[userId] = userId;
-        return userId;
-      } catch (error) {
-        console.error('Error fetching username:', error);
-        return userId;
+      // Check if there's already a fetch in progress
+      if (userFetchPromises[userId]) {
+        return await userFetchPromises[userId];
       }
+      
+      // Create a new fetch promise
+      userFetchPromises[userId] = (async () => {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', userId));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            // Try multiple possible username fields
+            const username = data.username || data.displayName || data.name || data.email || userId;
+            usernameCache[userId] = username;
+            return username;
+          }
+          // If user document doesn't exist, try to get from auth
+          usernameCache[userId] = userId;
+          return userId;
+        } catch (error) {
+          console.error('Error fetching username for', userId, ':', error);
+          usernameCache[userId] = userId;
+          return userId;
+        } finally {
+          delete userFetchPromises[userId];
+        }
+      })();
+      
+      return await userFetchPromises[userId];
     }
     
     // ========== GET USER DISPLAY NAME ==========
@@ -1266,13 +1283,21 @@
       if (userId === currentUserId) {
         return 'You';
       }
+      
       if (userDisplayNameCache[userId]) {
         return userDisplayNameCache[userId];
       }
-      const username = await getUsernameFromId(userId);
-      const displayName = cleanUsername('@' + username);
-      userDisplayNameCache[userId] = displayName;
-      return displayName;
+      
+      try {
+        const username = await getUsernameFromId(userId);
+        // Clean the username - remove @ if present, handle empty
+        const cleanName = username ? cleanUsername('@' + username) : 'User';
+        userDisplayNameCache[userId] = cleanName;
+        return cleanName;
+      } catch (error) {
+        console.error('Error getting display name for', userId, ':', error);
+        return 'User';
+      }
     }
     
     // ========== CALL FUNCTIONS ==========
@@ -1498,12 +1523,12 @@
       }
       container.innerHTML = chats.map(c => `
         <div class="user-list-item ${currentPartnerId === c.partnerId ? 'active' : ''}" data-partner="${c.partnerId}" onclick="openChat('${c.partnerId}', '${c.chatId}')">
-          <div class="user-avatar" onclick="event.stopPropagation();window.location.href='profile.html?user=${encodeURIComponent(c.partnerUsername)}'">
-            ${getAvatarHTML('@' + c.partnerUsername)}
+          <div class="user-avatar" onclick="event.stopPropagation();window.location.href='profile.html?user=${encodeURIComponent(c.partnerUsername || c.partnerId)}'">
+            ${getAvatarHTML('@' + (c.partnerUsername || c.partnerId))}
           </div>
           <div class="user-info">
             <div class="user-name-row">
-              <span class="user-name">${cleanUsername('@' + c.partnerUsername)}</span>
+              <span class="user-name">${cleanUsername('@' + (c.partnerUsername || c.partnerId))}</span>
               <span class="user-time">${timeAgo(c.lastTime)}</span>
             </div>
             <div class="user-msg-row">
@@ -1543,7 +1568,7 @@
     window.openChat = async function(partnerId, chatId) {
       currentPartnerId = partnerId;
       const partnerUsername = await getUsernameFromId(partnerId);
-      currentPartner = '@' + partnerUsername;
+      currentPartner = '@' + (partnerUsername || partnerId);
       
       if (chatId) {
         currentChatId = chatId;
@@ -1572,13 +1597,13 @@
       document.getElementById('chatView').classList.add('show');
       document.getElementById('chatInputArea').classList.add('show');
       document.getElementById('floatingNav').style.display = 'none';
-      document.getElementById('partnerName').textContent = cleanUsername('@' + partnerUsername);
+      document.getElementById('partnerName').textContent = cleanUsername('@' + (partnerUsername || partnerId));
       
       document.getElementById('fabContainer').style.display = 'none';
       closeNewChatPanel();
       
       const avatarContainer = document.getElementById('partnerAvatar');
-      avatarContainer.innerHTML = getAvatarHTML('@' + partnerUsername);
+      avatarContainer.innerHTML = getAvatarHTML('@' + (partnerUsername || partnerId));
       
       if (unsubMessages) unsubMessages();
       
@@ -1866,7 +1891,7 @@
           const data = doc.data();
           const userId = doc.id;
           if (userId !== currentUserId) {
-            const username = data.username || userId;
+            const username = data.username || data.displayName || data.name || userId;
             usernameCache[userId] = username;
             newUsers.push({
               id: userId,
@@ -1952,7 +1977,7 @@
         let filtered = allUsers;
         if (searchTerm) {
           filtered = allUsers.filter(u => 
-            u.username.toLowerCase().includes(searchTerm) || 
+            (u.username || '').toLowerCase().includes(searchTerm) || 
             (u.name || '').toLowerCase().includes(searchTerm)
           );
         }
@@ -1968,8 +1993,8 @@
               ${u.avatar ? `<img src="${u.avatar}">` : '<i class="fas fa-user"></i>'}
             </div>
             <div class="new-chat-panel-info">
-              <div class="new-chat-panel-name">${u.name || cleanUsername(u.username)}</div>
-              <div class="new-chat-panel-sub">@${u.username}</div>
+              <div class="new-chat-panel-name">${u.name || cleanUsername(u.username || u.id)}</div>
+              <div class="new-chat-panel-sub">@${u.username || u.id}</div>
             </div>
             <button class="new-chat-panel-action" onclick="event.stopPropagation();startChatFromPanel('${u.id}')">
               <i class="fas fa-comment"></i> Chat
