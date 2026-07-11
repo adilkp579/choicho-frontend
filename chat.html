@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="CSS/main.css">
   <style>
+    /* ... (all styles remain exactly the same as before) ... */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -1423,6 +1424,7 @@
   </div>
 
   <script type="module">
+    // ... (all JavaScript remains exactly the same, but I'll highlight the key change in endCall)
     import { db } from './js/firebase-config.js';
     import { timeAgo, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
     import { getCurrentUser } from './js/auth.js';
@@ -1507,7 +1509,6 @@
             usernameCache[userId] = username;
             return username;
           }
-          // If user document doesn't exist, show user ID as fallback
           usernameCache[userId] = userId;
           return userId;
         } catch (error) {
@@ -2292,13 +2293,21 @@
       }, 1000);
     }
     
+    // ========== END CALL - FIXED TO HIDE NAVBAR ==========
     window.endCall = async function() {
       isCallActive = false;
       clearInterval(callTimerInterval);
       callSeconds = 0;
       document.getElementById('callTimer').textContent = '00:00';
       document.getElementById('callOverlay').classList.remove('show');
-      document.getElementById('floatingNav').style.display = 'flex';
+      
+      // ✅ FIX: Hide navbar when call ends and chat is still open
+      const chatView = document.getElementById('chatView');
+      if (chatView && chatView.classList.contains('show')) {
+        document.getElementById('floatingNav').style.display = 'none';
+      } else {
+        document.getElementById('floatingNav').style.display = 'flex';
+      }
       
       if (callDocumentId) {
         try {
