@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="CSS/main.css">
   <style>
+    /* ... (all existing styles) ... */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -112,6 +113,7 @@
       cursor: pointer;
       border: none;
       transition: all 0.2s;
+      position: relative;
     }
     .call-btn:active { transform: scale(0.95); }
     .call-btn.in-call {
@@ -122,6 +124,20 @@
       0% { transform: scale(1); }
       50% { transform: scale(1.1); }
       100% { transform: scale(1); }
+    }
+    .call-btn .call-dot {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 10px;
+      height: 10px;
+      background: #4ade80;
+      border-radius: 50%;
+      border: 2px solid #000;
+      display: none;
+    }
+    .call-btn.in-call .call-dot {
+      display: block;
     }
     
     .chat-settings-btn {
@@ -391,6 +407,38 @@
       border-radius: 0.8rem;
       cursor: pointer;
     }
+    .voice-message-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .voice-message-btn:hover {
+      opacity: 0.8;
+    }
+    .voice-message-btn.recording {
+      color: #ef4444;
+      animation: pulse 1s infinite;
+    }
+    .voice-message-player {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.2rem 0.5rem;
+    }
+    .voice-message-player audio {
+      height: 30px;
+      max-width: 150px;
+    }
+    .voice-message-player audio::-webkit-media-controls-panel {
+      background: rgba(255,255,255,0.1);
+    }
+    
     .empty-chat {
       flex: 1;
       display: flex;
@@ -422,6 +470,15 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .camera-btn-s:hover, .mic-btn-s:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .mic-btn-s.recording {
+      background: #ef4444;
+      border-color: #ef4444;
+      animation: pulse 1s infinite;
     }
     .chat-input {
       flex: 1;
@@ -447,6 +504,13 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .send-btn:hover {
+      transform: scale(1.05);
+    }
+    .send-btn:active {
+      transform: scale(0.95);
     }
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(10px); }
@@ -504,6 +568,7 @@
       font-size: 0.9rem !important;
     }
     
+    /* Call Overlay - Enhanced */
     .call-overlay {
       position: fixed;
       top: 0;
@@ -533,12 +598,24 @@
       color: #fff;
       margin-bottom: 1.5rem;
       border: 2px solid rgba(255,255,255,0.1);
+      position: relative;
+      overflow: hidden;
     }
     .call-overlay .call-avatar img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       border-radius: 50%;
+    }
+    .call-overlay .call-avatar .call-avatar-status {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #4ade80;
+      border: 2px solid #000;
     }
     .call-overlay .call-name {
       color: #fff;
@@ -549,7 +626,7 @@
     .call-overlay .call-status {
       color: rgba(255,255,255,0.5);
       font-size: 0.9rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
     }
     .call-overlay .call-timer {
       color: #fff;
@@ -593,6 +670,57 @@
     .call-overlay .call-action-btn.mute-call.muted {
       background: #ef4444;
       color: #fff;
+    }
+    .call-overlay .call-action-btn.video-toggle {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    .call-overlay .call-action-btn.video-toggle:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .call-overlay .call-action-btn.video-toggle.video-off {
+      background: #ef4444;
+      color: #fff;
+    }
+    .call-overlay .call-action-btn.speaker-toggle {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    .call-overlay .call-action-btn.speaker-toggle:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .call-overlay .call-action-btn.speaker-toggle.speaker-on {
+      background: #FFFC00;
+      color: #000;
+    }
+    
+    /* Video call remote stream */
+    .call-overlay .remote-video {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+      border-radius: 1rem;
+      background: #111;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .call-overlay .remote-video.show {
+      display: block;
+    }
+    .call-overlay .local-video {
+      position: absolute;
+      bottom: 100px;
+      right: 20px;
+      width: 120px;
+      height: 160px;
+      border-radius: 0.8rem;
+      background: #111;
+      border: 2px solid rgba(255,255,255,0.2);
+      object-fit: cover;
+      display: none;
+    }
+    .call-overlay .local-video.show {
+      display: block;
     }
     
     .new-chat-panel {
@@ -1019,9 +1147,11 @@
         <div class="call-btns">
           <button class="call-btn" id="audioCallBtn" onclick="startCall('audio')" title="Audio Call">
             <i class="fas fa-phone"></i>
+            <span class="call-dot"></span>
           </button>
           <button class="call-btn" id="videoCallBtn" onclick="startCall('video')" title="Video Call">
             <i class="fas fa-video"></i>
+            <span class="call-dot"></span>
           </button>
           <button class="chat-settings-btn" onclick="openChatSettings()">
             <i class="fas fa-ellipsis-v"></i>
@@ -1089,7 +1219,7 @@
       </button>
       <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="sendImage(event)">
       <input type="text" class="chat-input" id="chatInput" placeholder="Message...">
-      <button class="mic-btn-s" id="micBtn" onclick="toggleVoice()">
+      <button class="mic-btn-s" id="micBtn" onclick="toggleVoiceRecording()">
         <i class="fas fa-microphone"></i>
       </button>
       <button class="send-btn" onclick="sendMessage()">
@@ -1099,6 +1229,8 @@
     
     <!-- Call Overlay -->
     <div class="call-overlay" id="callOverlay">
+      <video class="remote-video" id="remoteVideo" autoplay playsinline></video>
+      <video class="local-video" id="localVideo" autoplay playsinline muted></video>
       <div class="call-avatar" id="callAvatar">
         <i class="fas fa-user"></i>
       </div>
@@ -1111,6 +1243,12 @@
         </button>
         <button class="call-action-btn end-call" onclick="endCall()">
           <i class="fas fa-phone-slash"></i>
+        </button>
+        <button class="call-action-btn speaker-toggle" id="speakerBtn" onclick="toggleSpeaker()">
+          <i class="fas fa-volume-up"></i>
+        </button>
+        <button class="call-action-btn video-toggle" id="videoToggleBtn" onclick="toggleVideo()" style="display:none;">
+          <i class="fas fa-video"></i>
         </button>
       </div>
     </div>
@@ -1204,13 +1342,21 @@
     let chatListData = [];
     let isMutedSetting = false;
     let isPanelOpen = false;
+    
+    // ========== CALL VARIABLES ==========
     let isCallActive = false;
     let callType = null;
     let callTimerInterval = null;
     let callSeconds = 0;
     let isMutedCall = false;
+    let isSpeakerOn = false;
+    let isVideoOn = true;
     let localStream = null;
+    let remoteStream = null;
     let peerConnection = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
     
     // ========== USERNAME CACHE ==========
     let usernameCache = {};
@@ -1226,7 +1372,7 @@
       clearTimeout(toast._timeout);
       toast._timeout = setTimeout(() => {
         toast.classList.remove('show');
-      }, 2500);
+      }, 2000);
     }
     
     window.showToast = showToast;
@@ -1237,19 +1383,63 @@
     let allUsersLoaded = false;
     const PAGE_SIZE = 50;
     
+    // ========== INITIALIZE USER DOCUMENT ==========
+    async function initializeUserDocument() {
+      try {
+        const userRef = doc(db, 'users', currentUserId);
+        const userSnap = await getDoc(userRef);
+        
+        let username = currentUser.displayName || currentUser.email || currentUserId;
+        if (username.includes('@')) {
+          username = username.split('@')[0];
+        }
+        username = username.replace(/[^a-zA-Z0-9_]/g, '');
+        
+        if (!username || username.length === 0) {
+          username = 'user_' + currentUserId.substring(0, 8);
+        }
+        
+        if (!userSnap.exists()) {
+          console.log("🆕 Creating new user document for:", currentUserId);
+          await setDoc(userRef, {
+            username: username,
+            name: currentUser.displayName || username,
+            email: currentUser.email || '',
+            avatar: '',
+            createdAt: serverTimestamp(),
+            lastSeen: serverTimestamp()
+          });
+          usernameCache[currentUserId] = username;
+          showToast('User profile created! ✅');
+        } else {
+          const data = userSnap.data();
+          if (!data.username) {
+            await updateDoc(userRef, {
+              username: username,
+              name: currentUser.displayName || username
+            });
+          }
+          usernameCache[currentUserId] = data.username || username;
+          console.log("✅ User document exists:", data);
+        }
+        
+        return true;
+      } catch (error) {
+        console.error("❌ Error initializing user document:", error);
+        return false;
+      }
+    }
+    
     // ========== GET USERNAME FROM USER ID ==========
     async function getUsernameFromId(userId) {
-      // Check cache first
       if (usernameCache[userId]) {
         return usernameCache[userId];
       }
       
-      // Check if there's already a fetch in progress
       if (userFetchPromises[userId]) {
         return await userFetchPromises[userId];
       }
       
-      // Create a new fetch promise
       userFetchPromises[userId] = (async () => {
         try {
           const userDoc = await getDoc(doc(db, 'users', userId));
@@ -1296,23 +1486,28 @@
     
     // ========== ENSURE CHAT EXISTS ==========
     async function ensureChatExists(chatId, userId1, userId2) {
-      const chatRef = doc(db, 'chats', chatId);
-      const chatSnap = await getDoc(chatRef);
-      
-      if (!chatSnap.exists()) {
-        console.log("🆕 Creating new chat with ID:", chatId);
-        await setDoc(chatRef, {
-          users: [userId1, userId2],
-          createdAt: serverTimestamp(),
-          lastMessage: '',
-          lastTime: serverTimestamp(),
-          [`unread_${userId1}`]: 0,
-          [`unread_${userId2}`]: 0
-        });
-        return { exists: false, chatRef };
+      try {
+        const chatRef = doc(db, 'chats', chatId);
+        const chatSnap = await getDoc(chatRef);
+        
+        if (!chatSnap.exists()) {
+          console.log("🆕 Creating new chat with ID:", chatId);
+          await setDoc(chatRef, {
+            users: [userId1, userId2],
+            createdAt: serverTimestamp(),
+            lastMessage: '',
+            lastTime: serverTimestamp(),
+            [`unread_${userId1}`]: 0,
+            [`unread_${userId2}`]: 0
+          });
+          return { exists: false, chatRef };
+        }
+        
+        return { exists: true, chatRef };
+      } catch (error) {
+        console.error("❌ Error ensuring chat exists:", error);
+        throw error;
       }
-      
-      return { exists: true, chatRef };
     }
     
     // ========== LOAD CHATS ==========
@@ -1326,9 +1521,7 @@
           for (const doc of snapshot.docs) {
             const data = doc.data();
             const docId = doc.id;
-            console.log("📄 Chat document:", docId, data);
             
-            // Check if current user is in the chat's users array
             if (data.users && data.users.includes(currentUserId)) {
               const partnerId = data.users.find(id => id !== currentUserId);
               if (partnerId) {
@@ -1341,10 +1534,7 @@
                   unread: data[`unread_${currentUserId}`] || 0,
                   chatId: docId
                 });
-                console.log("✅ Chat added:", { partnerId, partnerUsername });
               }
-            } else {
-              console.log("⏭️ Skipping chat - user not in users array:", docId);
             }
           }
           chatListData = chats;
@@ -1424,7 +1614,6 @@
         } else {
           currentChatId = [currentUserId, partnerId].sort().join('_');
           console.log("🆕 Generated new chat ID:", currentChatId);
-          // Ensure chat exists
           await ensureChatExists(currentChatId, currentUserId, partnerId);
         }
         
@@ -1432,13 +1621,11 @@
         console.log("📤 Current Chat ID:", currentChatId);
         console.log("📤 Current User ID:", currentUserId);
         console.log("📤 Partner ID:", currentPartnerId);
-        console.log("📤 Partner Username:", partnerUsername);
         
-        // Mark messages as read
         try {
           await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 });
         } catch (error) {
-          console.log('Note: Could not update read status (chat may not exist yet)');
+          console.log('Note: Could not update read status');
         }
         
         document.getElementById('topIcons').style.display = 'none';
@@ -1489,6 +1676,18 @@
               messageHTML += `
                 <div class="message-bubble">
                   <img src="${msg.imageUrl}" class="message-image" onclick="window.open('${msg.imageUrl}')">
+                  <div class="message-time">${time}</div>
+                </div>
+              `;
+            } else if (msg.voiceUrl) {
+              messageHTML += `
+                <div class="message-bubble">
+                  <div class="voice-message-player">
+                    <i class="fas fa-play" onclick="this.classList.toggle('fa-play');this.classList.toggle('fa-pause');this.nextElementSibling.play()"></i>
+                    <audio controls style="height:30px;max-width:150px;">
+                      <source src="${msg.voiceUrl}" type="audio/webm">
+                    </audio>
+                  </div>
                   <div class="message-time">${time}</div>
                 </div>
               `;
@@ -1543,41 +1742,32 @@
       console.log("📤 Current Chat ID:", currentChatId);
       console.log("📤 Current User ID:", currentUserId);
       console.log("📤 Partner ID:", currentPartnerId);
-      console.log("📤 Message Text:", text);
       
       input.value = '';
       input.disabled = true;
       
       try {
-        // Ensure chat exists
         await ensureChatExists(currentChatId, currentUserId, currentPartnerId);
         
         const chatRef = doc(db, 'chats', currentChatId);
-        console.log("📤 Chat Ref Path:", chatRef.path);
-        
-        // Update chat document
         await setDoc(chatRef, {
           lastMessage: text,
           lastTime: serverTimestamp(),
           [`unread_${currentPartnerId}`]: increment(1)
         }, { merge: true });
         
-        console.log("📤 Chat document updated successfully");
-        
-        // Add message to subcollection
-        const messageRef = await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
+        await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
           text: text,
           sender: currentUserId,
           createdAt: serverTimestamp()
         });
         
-        console.log("📤 Message added with ID:", messageRef.id);
         console.log("✅ Message sent successfully!");
-        showToast('Message sent!');
+        showToast('✅ Sent');
         
       } catch(error) {
         console.error("❌ Send error:", error);
-        showToast('Failed to send message: ' + error.message);
+        showToast('❌ Failed to send');
         input.value = text;
       } finally {
         input.disabled = false;
@@ -1610,18 +1800,352 @@
             createdAt: serverTimestamp()
           });
           
-          showToast('Image sent');
+          showToast('📷 Sent');
         } catch(error) {
           console.error('❌ Image send error:', error);
-          showToast('Failed to send image');
+          showToast('❌ Failed to send image');
         }
       };
       reader.readAsDataURL(file);
       e.target.value = '';
     };
     
-    window.toggleVoice = function() {
-      showToast('Voice message coming soon! 🎤');
+    // ========== VOICE MESSAGE RECORDING ==========
+    let mediaRecorderInstance = null;
+    let recordedChunks = [];
+    let isRecordingVoice = false;
+    
+    window.toggleVoiceRecording = async function() {
+      if (isRecordingVoice) {
+        // Stop recording
+        if (mediaRecorderInstance && mediaRecorderInstance.state === 'recording') {
+          mediaRecorderInstance.stop();
+          document.getElementById('micBtn').classList.remove('recording');
+          document.getElementById('micBtn').innerHTML = '<i class="fas fa-microphone"></i>';
+          isRecordingVoice = false;
+          showToast('⏹️ Recording stopped');
+        }
+        return;
+      }
+      
+      if (!currentChatId) {
+        showToast('No chat selected');
+        return;
+      }
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorderInstance = new MediaRecorder(stream);
+        recordedChunks = [];
+        
+        mediaRecorderInstance.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+        
+        mediaRecorderInstance.onstop = async () => {
+          // Stop all tracks
+          stream.getTracks().forEach(track => track.stop());
+          
+          if (recordedChunks.length === 0) {
+            showToast('No voice recorded');
+            return;
+          }
+          
+          const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+          const reader = new FileReader();
+          reader.onload = async function(ev) {
+            try {
+              const voiceUrl = ev.target.result;
+              
+              await ensureChatExists(currentChatId, currentUserId, currentPartnerId);
+              
+              const chatRef = doc(db, 'chats', currentChatId);
+              await setDoc(chatRef, {
+                lastMessage: '🎤 Voice message',
+                lastTime: serverTimestamp(),
+                [`unread_${currentPartnerId}`]: increment(1)
+              }, { merge: true });
+              
+              await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
+                voiceUrl: voiceUrl,
+                sender: currentUserId,
+                createdAt: serverTimestamp()
+              });
+              
+              showToast('🎤 Voice message sent');
+            } catch(error) {
+              console.error('❌ Voice send error:', error);
+              showToast('❌ Failed to send voice');
+            }
+          };
+          reader.readAsDataURL(blob);
+        };
+        
+        mediaRecorderInstance.start();
+        isRecordingVoice = true;
+        document.getElementById('micBtn').classList.add('recording');
+        document.getElementById('micBtn').innerHTML = '<i class="fas fa-stop"></i>';
+        showToast('🔴 Recording... tap again to stop');
+        
+      } catch (error) {
+        console.error('❌ Recording error:', error);
+        showToast('❌ Cannot access microphone');
+      }
+    };
+    
+    // ========== CALL FUNCTIONS ==========
+    const BACKEND_URL = 'https://your-railway-app.railway.app';
+    let configuration = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' }
+      ]
+    };
+    
+    window.startCall = async function(type) {
+      if (!currentPartner) {
+        showToast('Please select a chat first');
+        return;
+      }
+      
+      if (isCallActive) {
+        showToast('Call already in progress');
+        return;
+      }
+      
+      callType = type;
+      isCallActive = true;
+      
+      try {
+        showToast('Fetching secure connection settings...');
+        const idToken = await currentUser.getIdToken();
+        
+        try {
+          const response = await fetch(`${BACKEND_URL}/turn`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${idToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const turnData = await response.json();
+            if (turnData && turnData.iceServers) {
+              configuration.iceServers = turnData.iceServers;
+              console.log('✅ Secure TURN credentials loaded successfully.');
+            }
+          } else {
+            console.warn('⚠️ Failed to fetch TURN credentials, using fallback STUN.');
+          }
+        } catch (fetchError) {
+          console.error('❌ Backend fetch error, falling back to STUN:', fetchError);
+        }
+
+        const constraints = {
+          audio: true,
+          video: type === 'video'
+        };
+        
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // Show local video if video call
+        if (type === 'video') {
+          const localVideo = document.getElementById('localVideo');
+          localVideo.srcObject = localStream;
+          localVideo.classList.add('show');
+          document.getElementById('videoToggleBtn').style.display = 'flex';
+        }
+        
+        peerConnection = new RTCPeerConnection(configuration);
+        
+        localStream.getTracks().forEach(track => {
+          peerConnection.addTrack(track, localStream);
+        });
+        
+        // Handle remote stream
+        peerConnection.ontrack = (event) => {
+          remoteStream = event.streams[0];
+          if (type === 'video') {
+            const remoteVideo = document.getElementById('remoteVideo');
+            remoteVideo.srcObject = remoteStream;
+            remoteVideo.classList.add('show');
+          }
+          document.getElementById('callStatus').textContent = 'Connected';
+          startCallTimer();
+        };
+        
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        showCallOverlay(type);
+        
+        // Simulate connection for demo
+        setTimeout(() => {
+          if (isCallActive && !remoteStream) {
+            document.getElementById('callStatus').textContent = 'Connected';
+            startCallTimer();
+          }
+        }, 3000);
+        
+        peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            console.log('ICE candidate generated:', event.candidate);
+          }
+        };
+        
+        peerConnection.onconnectionstatechange = () => {
+          console.log('Connection state:', peerConnection.connectionState);
+          if (peerConnection.connectionState === 'failed' || 
+              peerConnection.connectionState === 'disconnected' ||
+              peerConnection.connectionState === 'closed') {
+            endCall();
+          }
+        };
+        
+        document.getElementById('audioCallBtn').classList.add('in-call');
+        document.getElementById('videoCallBtn').classList.add('in-call');
+        showToast(`${type} call started`);
+        
+      } catch (error) {
+        console.error('❌ Call error:', error);
+        isCallActive = false;
+        showToast(`Failed to start ${type} call: ${error.message}`);
+        endCall();
+      }
+    };
+    
+    function showCallOverlay(type) {
+      const overlay = document.getElementById('callOverlay');
+      const avatar = document.getElementById('callAvatar');
+      const name = document.getElementById('callName');
+      const status = document.getElementById('callStatus');
+      const remoteVideo = document.getElementById('remoteVideo');
+      const localVideo = document.getElementById('localVideo');
+      
+      avatar.innerHTML = currentPartner ? getAvatarHTML(currentPartner) : '<i class="fas fa-user"></i>';
+      name.textContent = currentPartner ? cleanUsername(currentPartner) : 'Unknown';
+      status.textContent = type === 'audio' ? 'Audio calling...' : 'Video calling...';
+      
+      if (type === 'video') {
+        remoteVideo.classList.add('show');
+        localVideo.classList.add('show');
+      } else {
+        remoteVideo.classList.remove('show');
+        localVideo.classList.remove('show');
+      }
+      
+      overlay.classList.add('show');
+      document.getElementById('floatingNav').style.display = 'none';
+    }
+    
+    function startCallTimer() {
+      callSeconds = 0;
+      clearInterval(callTimerInterval);
+      callTimerInterval = setInterval(() => {
+        callSeconds++;
+        const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+        const secs = String(callSeconds % 60).padStart(2, '0');
+        document.getElementById('callTimer').textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+    
+    window.endCall = function() {
+      isCallActive = false;
+      clearInterval(callTimerInterval);
+      callSeconds = 0;
+      document.getElementById('callTimer').textContent = '00:00';
+      document.getElementById('callOverlay').classList.remove('show');
+      document.getElementById('floatingNav').style.display = 'flex';
+      
+      // Reset video elements
+      document.getElementById('remoteVideo').classList.remove('show');
+      document.getElementById('remoteVideo').srcObject = null;
+      document.getElementById('localVideo').classList.remove('show');
+      document.getElementById('localVideo').srcObject = null;
+      document.getElementById('videoToggleBtn').style.display = 'none';
+      
+      if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+      }
+      
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+      }
+      
+      remoteStream = null;
+      
+      document.getElementById('audioCallBtn').classList.remove('in-call');
+      document.getElementById('videoCallBtn').classList.remove('in-call');
+      
+      const muteBtn = document.getElementById('muteBtn');
+      muteBtn.classList.remove('muted');
+      muteBtn.querySelector('i').className = 'fas fa-microphone';
+      isMutedCall = false;
+      
+      document.getElementById('callStatus').textContent = 'Connecting...';
+      showToast('Call ended');
+    };
+    
+    window.toggleMute = function() {
+      if (!localStream) return;
+      
+      isMutedCall = !isMutedCall;
+      const muteBtn = document.getElementById('muteBtn');
+      
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled = !isMutedCall;
+      });
+      
+      if (isMutedCall) {
+        muteBtn.classList.add('muted');
+        muteBtn.querySelector('i').className = 'fas fa-microphone-slash';
+        showToast('Microphone muted');
+      } else {
+        muteBtn.classList.remove('muted');
+        muteBtn.querySelector('i').className = 'fas fa-microphone';
+        showToast('Microphone unmuted');
+      }
+    };
+    
+    window.toggleSpeaker = function() {
+      isSpeakerOn = !isSpeakerOn;
+      const speakerBtn = document.getElementById('speakerBtn');
+      
+      if (isSpeakerOn) {
+        speakerBtn.classList.add('speaker-on');
+        speakerBtn.querySelector('i').className = 'fas fa-volume-up';
+        showToast('Speaker on');
+      } else {
+        speakerBtn.classList.remove('speaker-on');
+        speakerBtn.querySelector('i').className = 'fas fa-volume-off';
+        showToast('Speaker off');
+      }
+    };
+    
+    window.toggleVideo = function() {
+      if (!localStream) return;
+      
+      isVideoOn = !isVideoOn;
+      const videoBtn = document.getElementById('videoToggleBtn');
+      
+      localStream.getVideoTracks().forEach(track => {
+        track.enabled = isVideoOn;
+      });
+      
+      if (isVideoOn) {
+        videoBtn.classList.remove('video-off');
+        videoBtn.querySelector('i').className = 'fas fa-video';
+        showToast('Video on');
+      } else {
+        videoBtn.classList.add('video-off');
+        videoBtn.querySelector('i').className = 'fas fa-video-slash';
+        showToast('Video off');
+      }
     };
     
     // ========== GO BACK ==========
@@ -1632,6 +2156,14 @@
       }
       if (isCallActive) {
         endCall();
+      }
+      if (isRecordingVoice) {
+        if (mediaRecorderInstance && mediaRecorderInstance.state === 'recording') {
+          mediaRecorderInstance.stop();
+        }
+        isRecordingVoice = false;
+        document.getElementById('micBtn').classList.remove('recording');
+        document.getElementById('micBtn').innerHTML = '<i class="fas fa-microphone"></i>';
       }
       currentPartner = null;
       currentPartnerId = null;
@@ -1969,109 +2501,6 @@
       }
     };
     
-    // ========== CALL FUNCTIONS ==========
-    let configuration = {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' }
-      ]
-    };
-    
-    window.startCall = async function(type) {
-      if (!currentPartner) {
-        showToast('Please select a chat first');
-        return;
-      }
-      
-      if (isCallActive) {
-        showToast('Call already in progress');
-        return;
-      }
-      
-      callType = type;
-      isCallActive = true;
-      
-      try {
-        showToast('Fetching secure connection settings...');
-        const idToken = await currentUser.getIdToken();
-        
-        try {
-          const response = await fetch(`${BACKEND_URL}/turn`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${idToken}`,
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (response.ok) {
-            const turnData = await response.json();
-            if (turnData && turnData.iceServers) {
-              configuration.iceServers = turnData.iceServers;
-              console.log('✅ Secure TURN credentials loaded successfully.');
-            }
-          } else {
-            console.warn('⚠️ Failed to fetch TURN credentials, using fallback STUN.');
-          }
-        } catch (fetchError) {
-          console.error('❌ Backend fetch error, falling back to STUN:', fetchError);
-        }
-
-        const constraints = {
-          audio: true,
-          video: type === 'video'
-        };
-        
-        localStream = await navigator.mediaDevices.getUserMedia(constraints);
-        peerConnection = new RTCPeerConnection(configuration);
-        
-        localStream.getTracks().forEach(track => {
-          peerConnection.addTrack(track, localStream);
-        });
-        
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        showCallOverlay(type);
-        
-        setTimeout(() => {
-          if (isCallActive) {
-            document.getElementById('callStatus').textContent = 'Connected';
-            startCallTimer();
-          }
-        }, 2000);
-        
-        peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            console.log('ICE candidate generated:', event.candidate);
-          }
-        };
-        
-        peerConnection.ontrack = (event) => {
-          console.log('Remote track received');
-        };
-        
-        peerConnection.onconnectionstatechange = () => {
-          console.log('Connection state:', peerConnection.connectionState);
-          if (peerConnection.connectionState === 'failed' || 
-              peerConnection.connectionState === 'disconnected' ||
-              peerConnection.connectionState === 'closed') {
-            endCall();
-          }
-        };
-        
-        document.getElementById('audioCallBtn').classList.add('in-call');
-        document.getElementById('videoCallBtn').classList.add('in-call');
-        showToast(`${type} call started`);
-        
-      } catch (error) {
-        console.error('❌ Call error:', error);
-        isCallActive = false;
-        showToast(`Failed to start ${type} call: ${error.message}`);
-        endCall();
-      }
-    };
-    
     // ========== EVENT LISTENERS ==========
     document.getElementById('chatSettingsOverlay').addEventListener('click', (e) => {
       if (e.target === document.getElementById('chatSettingsOverlay')) closeChatSettings();
@@ -2095,6 +2524,8 @@
     // ========== INITIALIZE ==========
     console.log("🚀 App Initialized");
     console.log("👤 Current User ID:", currentUserId);
+    
+    await initializeUserDocument();
     loadChats();
     loadRequests();
     setupPanelScroll();
