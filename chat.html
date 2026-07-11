@@ -1218,7 +1218,6 @@
     
     // ========== GET USERNAME FROM USER ID ==========
     async function getUsernameFromId(userId) {
-      // Check cache first
       if (usernameCache[userId]) {
         return usernameCache[userId];
       }
@@ -1231,6 +1230,7 @@
           usernameCache[userId] = username;
           return username;
         }
+        usernameCache[userId] = userId;
         return userId;
       } catch (error) {
         console.error('Error fetching username:', error);
@@ -1436,11 +1436,9 @@
             const data = doc.data();
             const docId = doc.id;
             
-            // Check if current user is in the chat
             if (data.users && data.users.includes(currentUserId)) {
               const partnerId = data.users.find(id => id !== currentUserId);
               if (partnerId) {
-                // Get partner username
                 const partnerUsername = await getUsernameFromId(partnerId);
                 chats.push({
                   partnerId: partnerId,
@@ -1615,14 +1613,15 @@
       console.log("📤 Partner ID:", currentPartnerId);
       console.log("📤 Message Text:", text);
       
+      // Disable input
       input.value = '';
       input.disabled = true;
       
       try {
         const chatRef = doc(db, 'chats', currentChatId);
-        
         console.log("📤 Chat Ref Path:", chatRef.path);
         
+        // Check if chat exists
         const chatSnap = await getDoc(chatRef);
         if (!chatSnap.exists()) {
           console.log("📤 Chat doesn't exist, creating...");
@@ -1643,6 +1642,7 @@
         
         console.log("📤 Chat document updated successfully");
         
+        // Add message
         const messageRef = await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
           text: text,
           sender: currentUserId,
