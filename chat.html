@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="CSS/main.css">
   <style>
+    /* ... (all existing styles remain the same) ... */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -462,7 +463,6 @@
       font-size: 0.8rem;
     }
     
-    /* ========== CHAT INPUT AREA - FULL TRANSPARENCY ========== */
     .chat-input-area {
       display: none;
       align-items: center;
@@ -1253,7 +1253,6 @@
       padding-right: 1rem;
     }
     
-    /* Hide navbar when chat is open */
     .chat-view.show ~ .floating-nav {
       display: none !important;
     }
@@ -1267,12 +1266,11 @@
   </style>
 </head>
 <body>
-  <!-- ... (rest of the HTML body remains exactly the same) ... -->
   <div class="page">
     <div class="scrollable-content">
       <!-- Top Icons -->
       <div class="top-icons" id="topIcons">
-        <a href="hart.html" class="corner-btn" title="Likes">
+        <a href="heart.html" class="corner-btn" title="Likes">
           <i class="fas fa-heart"></i>
         </a>
         <span class="top-brand">Chats</span>
@@ -1344,7 +1342,7 @@
       </button>
     </div>
     
-    <!-- New Chat Panel - 100% Transparent Glassmorphism -->
+    <!-- New Chat Panel -->
     <div class="new-chat-panel" id="newChatPanel">
       <div class="new-chat-panel-header">
         <h3>New Chat</h3>
@@ -1496,15 +1494,50 @@
   </div>
 
   <script type="module">
-    // ... (all JavaScript remains exactly the same as before) ...
-     import { db } from './js/firebase-config.js';
+    import { db } from './js/firebase-config.js';
     import { timeAgo, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
     import { getCurrentUser } from './js/auth.js';
     import { collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, increment, serverTimestamp, where, getDocs, deleteDoc, limit, startAfter } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     
-    if (!requireAuth()) window.location.replace('login.html');
+    // ========== ACCOUNT VALIDATION ==========
+    // Check if user is authenticated
+    if (!requireAuth()) {
+      console.log("⛔ User not authenticated, redirecting to login...");
+      window.location.replace('login.html');
+    }
     
+    // Get current user
     const currentUser = getCurrentUser();
+    if (!currentUser) {
+      console.log("⛔ No user found, redirecting to login...");
+      window.location.replace('login.html');
+    }
+    
+    // Validate user document exists in Firestore
+    async function validateUserAccount() {
+      try {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (!userSnap.exists()) {
+          console.log("⛔ User document not found in Firestore");
+          showToast('⚠️ User profile not found. Please complete your profile.');
+          // Redirect to profile completion page
+          setTimeout(() => {
+            window.location.href = 'profile.html?setup=true';
+          }, 2000);
+          return false;
+        }
+        
+        console.log("✅ User account validated successfully");
+        return true;
+      } catch (error) {
+        console.error("❌ Error validating user account:", error);
+        showToast('⚠️ Error validating account. Please try again.');
+        return false;
+      }
+    }
+    
     const currentUserId = currentUser.uid;
     console.log("✅ Current User ID:", currentUserId);
     
@@ -1518,7 +1551,7 @@
     let chatListData = [];
     let isMutedSetting = false;
     let isPanelOpen = false;
-    let messageDocs = {}; // Store message IDs for deletion
+    let messageDocs = {};
     
     // ========== CALL VARIABLES ==========
     let isCallActive = false;
@@ -1676,7 +1709,6 @@
       }
       
       try {
-        // Delete all messages in the chat
         const messagesRef = collection(db, 'chats', currentChatId, 'messages');
         const messagesSnap = await getDocs(messagesRef);
         
@@ -1686,7 +1718,6 @@
         });
         await batch.commit();
         
-        // Delete the chat document
         await deleteDoc(doc(db, 'chats', currentChatId));
         
         showToast('Chat deleted ✅');
@@ -1697,7 +1728,7 @@
       }
     };
     
-    // ========== CLEAR CHAT (Clear all messages but keep chat) ==========
+    // ========== CLEAR CHAT ==========
     window.clearChat = async function() {
       if (!currentChatId) {
         showToast('No chat selected');
@@ -1718,7 +1749,6 @@
         });
         await batch.commit();
         
-        // Update last message
         await updateDoc(doc(db, 'chats', currentChatId), {
           lastMessage: 'Chat cleared',
           lastTime: serverTimestamp()
@@ -1924,7 +1954,6 @@
               `;
             }
             
-            // Add delete button
             messageHTML += `
                 <button class="delete-msg-btn" onclick="event.stopPropagation();deleteMessage('${msgId}')">
                   <i class="fas fa-times"></i>
@@ -2121,9 +2150,6 @@
     };
     
     // ========== CALL FUNCTIONS ==========
-    // ... (all call functions remain the same as before)
-    // I'll include the full call functions but keep them concise
-    
     const configuration = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -2942,10 +2968,14 @@
     console.log("🚀 App Initialized");
     console.log("👤 Current User ID:", currentUserId);
     
-    loadChats();
-    loadRequests();
-    setupPanelScroll();
-    listenForCalls();
+    // Validate user account before loading
+    const isValid = await validateUserAccount();
+    if (isValid) {
+      loadChats();
+      loadRequests();
+      setupPanelScroll();
+      listenForCalls();
+    }
   </script>
 </body>
 </html>
