@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="CSS/main.css">
   <style>
-    /* ... (all existing styles remain the same) ... */
+    /* ====== GLASSMORPHISM STYLES (Preserved) ====== */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -131,9 +131,7 @@
       border: 2px solid #000;
       display: none;
     }
-    .call-btn.in-call .call-dot {
-      display: block;
-    }
+    .call-btn.in-call .call-dot { display: block; }
     .call-btn.ringing {
       animation: ring 0.8s infinite;
     }
@@ -197,9 +195,7 @@
       transition: color 0.25s;
       flex-shrink: 0;
     }
-    .search-bar:focus-within i {
-      color: #FFFC00;
-    }
+    .search-bar:focus-within i { color: #FFFC00; }
     .search-bar input {
       background: transparent;
       border: none;
@@ -305,10 +301,7 @@
       text-overflow: ellipsis;
       max-width: 180px;
     }
-    .user-last-msg.unread-msg {
-      color: #fff;
-      font-weight: 500;
-    }
+    .user-last-msg.unread-msg { color: #fff; font-weight: 500; }
     .unread-count {
       background: #FFFC00;
       color: #000;
@@ -350,12 +343,8 @@
       margin-bottom: 0.1rem;
       position: relative;
     }
-    .message-wrapper.sent {
-      align-self: flex-end;
-    }
-    .message-wrapper.received {
-      align-self: flex-start;
-    }
+    .message-wrapper.sent { align-self: flex-end; }
+    .message-wrapper.received { align-self: flex-start; }
     .message-wrapper .delete-msg-btn {
       position: absolute;
       top: -8px;
@@ -374,16 +363,9 @@
       z-index: 10;
     }
     .message-wrapper:hover .delete-msg-btn,
-    .message-wrapper:active .delete-msg-btn {
-      display: flex;
-    }
-    .message-wrapper.sent .delete-msg-btn {
-      right: -8px;
-    }
-    .message-wrapper.received .delete-msg-btn {
-      left: -8px;
-      right: auto;
-    }
+    .message-wrapper:active .delete-msg-btn { display: flex; }
+    .message-wrapper.sent .delete-msg-btn { right: -8px; }
+    .message-wrapper.received .delete-msg-btn { left: -8px; right: auto; }
     
     .message-sender-name {
       font-size: 0.6rem;
@@ -400,12 +382,8 @@
       display: flex;
       flex-direction: column;
     }
-    .message-wrapper.sent .message-content {
-      align-items: flex-end;
-    }
-    .message-wrapper.received .message-content {
-      align-items: flex-start;
-    }
+    .message-wrapper.sent .message-content { align-items: flex-end; }
+    .message-wrapper.received .message-content { align-items: flex-start; }
     .message-bubble {
       padding: 0.55rem 0.8rem;
       border-radius: 1.2rem;
@@ -431,9 +409,7 @@
       text-align: right;
       color: rgba(0,0,0,0.45);
     }
-    .received .message-time {
-      color: rgba(255,255,255,0.35);
-    }
+    .received .message-time { color: rgba(255,255,255,0.35); }
     .message-image {
       max-width: 200px;
       max-height: 200px;
@@ -492,12 +468,8 @@
       transition: all 0.2s;
       font-size: 1.1rem;
     }
-    .camera-btn-s:hover {
-      color: rgba(255,255,255,0.9);
-    }
-    .camera-btn-s:active {
-      transform: scale(0.9);
-    }
+    .camera-btn-s:hover { color: rgba(255,255,255,0.9); }
+    .camera-btn-s:active { transform: scale(0.9); }
     
     .mic-btn-s {
       width: 38px;
@@ -514,12 +486,8 @@
       transition: all 0.2s;
       font-size: 1.1rem;
     }
-    .mic-btn-s:hover {
-      color: rgba(255,255,255,0.9);
-    }
-    .mic-btn-s:active {
-      transform: scale(0.9);
-    }
+    .mic-btn-s:hover { color: rgba(255,255,255,0.9); }
+    .mic-btn-s:active { transform: scale(0.9); }
     .mic-btn-s.recording {
       color: #ef4444 !important;
       animation: pulse 1s infinite;
@@ -536,9 +504,7 @@
       outline: none;
       min-width: 0;
     }
-    .chat-input::placeholder {
-      color: rgba(255,255,255,0.25);
-    }
+    .chat-input::placeholder { color: rgba(255,255,255,0.25); }
     .chat-input:focus {
       border: none !important;
       outline: none !important;
@@ -563,9 +529,7 @@
       color: #FFFC00;
       transform: scale(1.05);
     }
-    .send-btn:active {
-      transform: scale(0.9);
-    }
+    .send-btn:active { transform: scale(0.9); }
     
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(10px); }
@@ -599,9 +563,7 @@
       transition: all 0.3s ease;
       position: relative;
     }
-    .fab-main:active {
-      transform: scale(0.9);
-    }
+    .fab-main:active { transform: scale(0.9); }
     .fab-main .badge {
       position: absolute;
       top: -5px;
@@ -618,10 +580,7 @@
       justify-content: center;
       border: 2px solid #000;
     }
-    
-    .fab-main i {
-      font-size: 0.9rem !important;
-    }
+    .fab-main i { font-size: 0.9rem !important; }
     
     .call-overlay {
       position: fixed;
@@ -637,9 +596,7 @@
       flex-direction: column;
       padding: 2rem;
     }
-    .call-overlay.show {
-      display: flex;
-    }
+    .call-overlay.show { display: flex; }
     .call-overlay .call-avatar {
       width: 120px;
       height: 120px;
@@ -706,23 +663,17 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .call-overlay .call-action-btn:active {
-      transform: scale(0.9);
-    }
+    .call-overlay .call-action-btn:active { transform: scale(0.9); }
     .call-overlay .call-action-btn.end-call {
       background: #ef4444;
       color: #fff;
     }
-    .call-overlay .call-action-btn.end-call:hover {
-      background: #dc2626;
-    }
+    .call-overlay .call-action-btn.end-call:hover { background: #dc2626; }
     .call-overlay .call-action-btn.mute-call {
       background: rgba(255,255,255,0.1);
       color: #fff;
     }
-    .call-overlay .call-action-btn.mute-call:hover {
-      background: rgba(255,255,255,0.2);
-    }
+    .call-overlay .call-action-btn.mute-call:hover { background: rgba(255,255,255,0.2); }
     .call-overlay .call-action-btn.mute-call.muted {
       background: #ef4444;
       color: #fff;
@@ -731,9 +682,7 @@
       background: rgba(255,255,255,0.1);
       color: #fff;
     }
-    .call-overlay .call-action-btn.video-toggle:hover {
-      background: rgba(255,255,255,0.2);
-    }
+    .call-overlay .call-action-btn.video-toggle:hover { background: rgba(255,255,255,0.2); }
     .call-overlay .call-action-btn.video-toggle.video-off {
       background: #ef4444;
       color: #fff;
@@ -742,9 +691,7 @@
       background: rgba(255,255,255,0.1);
       color: #fff;
     }
-    .call-overlay .call-action-btn.speaker-toggle:hover {
-      background: rgba(255,255,255,0.2);
-    }
+    .call-overlay .call-action-btn.speaker-toggle:hover { background: rgba(255,255,255,0.2); }
     .call-overlay .call-action-btn.speaker-toggle.speaker-on {
       background: #FFFC00;
       color: #000;
@@ -753,9 +700,7 @@
       background: #4ade80;
       color: #000;
     }
-    .call-overlay .call-action-btn.accept-call:hover {
-      background: #22c55e;
-    }
+    .call-overlay .call-action-btn.accept-call:hover { background: #22c55e; }
     
     .call-overlay .remote-video {
       width: 100%;
@@ -766,9 +711,7 @@
       margin-bottom: 1rem;
       display: none;
     }
-    .call-overlay .remote-video.show {
-      display: block;
-    }
+    .call-overlay .remote-video.show { display: block; }
     .call-overlay .local-video {
       position: absolute;
       bottom: 100px;
@@ -781,9 +724,7 @@
       object-fit: cover;
       display: none;
     }
-    .call-overlay .local-video.show {
-      display: block;
-    }
+    .call-overlay .local-video.show { display: block; }
     
     .incoming-call {
       position: fixed;
@@ -828,9 +769,7 @@
       height: 100%;
       object-fit: cover;
     }
-    .incoming-call .call-info .caller-details {
-      color: #fff;
-    }
+    .incoming-call .call-info .caller-details { color: #fff; }
     .incoming-call .call-info .caller-details .caller-name {
       font-size: 1rem;
       font-weight: 600;
@@ -852,24 +791,19 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .incoming-call .call-actions button:active {
-      transform: scale(0.9);
-    }
+    .incoming-call .call-actions button:active { transform: scale(0.9); }
     .incoming-call .call-actions .accept-btn {
       background: #4ade80;
       color: #000;
     }
-    .incoming-call .call-actions .accept-btn:hover {
-      background: #22c55e;
-    }
+    .incoming-call .call-actions .accept-btn:hover { background: #22c55e; }
     .incoming-call .call-actions .decline-btn {
       background: #ef4444;
       color: #fff;
     }
-    .incoming-call .call-actions .decline-btn:hover {
-      background: #dc2626;
-    }
+    .incoming-call .call-actions .decline-btn:hover { background: #dc2626; }
     
+    /* ====== GLASSMORPHISM NEW CHAT PANEL ====== */
     .new-chat-panel {
       position: fixed;
       bottom: 150px;
@@ -1049,9 +983,7 @@
       flex-shrink: 0;
       backdrop-filter: blur(20px);
     }
-    .new-chat-panel-action:active {
-      transform: scale(0.95);
-    }
+    .new-chat-panel-action:active { transform: scale(0.95); }
     .new-chat-panel-action.accept {
       background: rgba(74,222,128,0.12);
       border-color: rgba(74,222,128,0.2);
@@ -1175,9 +1107,7 @@
     .chat-settings-item.danger {
       color: #ef4444;
     }
-    .chat-settings-item.danger i {
-      color: #ef4444;
-    }
+    .chat-settings-item.danger i { color: #ef4444; }
     
     .toast {
       position: fixed;
@@ -1197,9 +1127,7 @@
       border: 1px solid rgba(255,255,255,0.08);
       white-space: nowrap;
     }
-    .toast.show {
-      opacity: 1;
-    }
+    .toast.show { opacity: 1; }
     
     @media (min-width: 1024px) {
       .scrollable-content { 
@@ -1236,9 +1164,7 @@
         padding: 0.3rem;
         transition: opacity 0.2s;
       }
-      .top-icons .corner-btn:hover {
-        opacity: 0.7;
-      }
+      .top-icons .corner-btn:hover { opacity: 0.7; }
     }
     
     .search-bar-container,
@@ -1256,7 +1182,6 @@
     .chat-view.show ~ .floating-nav {
       display: none !important;
     }
-    
     .chat-view.show ~ .fab-container {
       display: none;
     }
@@ -1494,170 +1419,316 @@
   </div>
 
   <script type="module">
-    import { db } from './js/firebase-config.js';
+    // ============================================================
+    // PRODUCTION-READY CHAT SYSTEM - SECURE & OPTIMIZED
+    // ============================================================
+    
+    // ===== IMPORTS =====
+    import { 
+      db, 
+      collection, 
+      query, 
+      orderBy, 
+      onSnapshot, 
+      doc, 
+      getDoc, 
+      setDoc, 
+      addDoc, 
+      updateDoc, 
+      increment, 
+      serverTimestamp, 
+      where, 
+      getDocs, 
+      deleteDoc, 
+      limit, 
+      startAfter,
+      writeBatch,
+      arrayUnion,
+      arrayRemove
+    } from './js/firebase-config.js';
+    
     import { timeAgo, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
     import { getCurrentUser } from './js/auth.js';
-    import { collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, increment, serverTimestamp, where, getDocs, deleteDoc, limit, startAfter } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     
-    // ========== ACCOUNT VALIDATION ==========
-    // Check if user is authenticated
+    // ============================================================
+    // 1. SECURITY VALIDATION
+    // ============================================================
+    
+    // Validate user authentication
     if (!requireAuth()) {
-      console.log("⛔ User not authenticated, redirecting to login...");
+      console.warn("⛔ Unauthorized access - redirecting to login");
       window.location.replace('login.html');
+      throw new Error('Authentication required');
     }
     
-    // Get current user
     const currentUser = getCurrentUser();
     if (!currentUser) {
-      console.log("⛔ No user found, redirecting to login...");
+      console.warn("⛔ No authenticated user found");
       window.location.replace('login.html');
-    }
-    
-    // Validate user document exists in Firestore
-    async function validateUserAccount() {
-      try {
-        const userRef = doc(db, 'users', currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        
-        if (!userSnap.exists()) {
-          console.log("⛔ User document not found in Firestore");
-          showToast('⚠️ User profile not found. Please complete your profile.');
-          // Redirect to profile completion page
-          setTimeout(() => {
-            window.location.href = 'profile.html?setup=true';
-          }, 2000);
-          return false;
-        }
-        
-        console.log("✅ User account validated successfully");
-        return true;
-      } catch (error) {
-        console.error("❌ Error validating user account:", error);
-        showToast('⚠️ Error validating account. Please try again.');
-        return false;
-      }
+      throw new Error('User not authenticated');
     }
     
     const currentUserId = currentUser.uid;
-    console.log("✅ Current User ID:", currentUserId);
+    console.log(`✅ Authenticated user: ${currentUserId}`);
     
-    let currentPartner = null;
-    let currentPartnerId = null;
-    let currentChatId = null;
-    let unsubMessages = null;
-    let allUsers = [];
-    let pendingRequests = [];
-    let activePanelTab = 'users';
-    let chatListData = [];
-    let isMutedSetting = false;
-    let isPanelOpen = false;
-    let messageDocs = {};
+    // ============================================================
+    // 2. CONSTANTS & CONFIGURATION
+    // ============================================================
     
-    // ========== CALL VARIABLES ==========
-    let isCallActive = false;
-    let callType = null;
-    let callTimerInterval = null;
-    let callSeconds = 0;
-    let isMutedCall = false;
-    let isSpeakerOn = false;
-    let isVideoOn = true;
-    let localStream = null;
-    let remoteStream = null;
-    let peerConnection = null;
-    let mediaRecorderInstance = null;
-    let recordedChunks = [];
-    let isRecordingVoice = false;
-    let callDocumentId = null;
-    let unsubCall = null;
-    let isCaller = false;
+    const MAX_MESSAGE_LENGTH = 2000;
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const MAX_VOICE_DURATION = 60; // seconds
+    const PAGE_SIZE = 20;
+    const DEBOUNCE_DELAY = 300;
     
-    // ========== USERNAME CACHE ==========
-    let usernameCache = {};
-    let userDisplayNameCache = {};
-    let userFetchPromises = {};
+    // ============================================================
+    // 3. STATE MANAGEMENT
+    // ============================================================
     
-    // ========== TOAST FUNCTION ==========
+    const state = {
+      currentPartner: null,
+      currentPartnerId: null,
+      currentChatId: null,
+      unsubMessages: null,
+      unsubChats: null,
+      unsubCalls: null,
+      allUsers: [],
+      pendingRequests: [],
+      chatListData: [],
+      isMuted: false,
+      isPanelOpen: false,
+      isCallActive: false,
+      callType: null,
+      callTimerInterval: null,
+      callSeconds: 0,
+      isMutedCall: false,
+      isSpeakerOn: false,
+      isVideoOn: true,
+      localStream: null,
+      remoteStream: null,
+      peerConnection: null,
+      mediaRecorderInstance: null,
+      recordedChunks: [],
+      isRecordingVoice: false,
+      callDocumentId: null,
+      isCaller: false,
+      isLoadingMore: false,
+      lastVisible: null,
+      allUsersLoaded: false,
+      hasMoreMessages: true,
+      messageListeners: new Set(),
+      usernameCache: {},
+      userDisplayNameCache: {},
+      userFetchPromises: {},
+      sendCooldown: false,
+      isSending: false
+    };
+    
+    // ============================================================
+    // 4. DOM REFS
+    // ============================================================
+    
+    const DOM = {
+      topIcons: document.getElementById('topIcons'),
+      chatHeader: document.getElementById('chatHeader'),
+      chatListFull: document.getElementById('chatListFull'),
+      searchBarContainer: document.getElementById('searchBarContainer'),
+      chatView: document.getElementById('chatView'),
+      messagesContainer: document.getElementById('messagesContainer'),
+      chatInputArea: document.getElementById('chatInputArea'),
+      floatingNav: document.getElementById('floatingNav'),
+      fabContainer: document.getElementById('fabContainer'),
+      partnerName: document.getElementById('partnerName'),
+      partnerAvatar: document.getElementById('partnerAvatar'),
+      chatInput: document.getElementById('chatInput'),
+      sendBtn: document.querySelector('.send-btn'),
+      micBtn: document.getElementById('micBtn'),
+      cameraBtn: document.getElementById('cameraBtn'),
+      imageInput: document.getElementById('imageInput'),
+      chatList: document.getElementById('chatList'),
+      chatCount: document.getElementById('chatCount'),
+      searchInput: document.getElementById('searchInput'),
+      toast: document.getElementById('toast'),
+      callOverlay: document.getElementById('callOverlay'),
+      callAvatar: document.getElementById('callAvatar'),
+      callName: document.getElementById('callName'),
+      callStatus: document.getElementById('callStatus'),
+      callTimer: document.getElementById('callTimer'),
+      muteBtn: document.getElementById('muteBtn'),
+      speakerBtn: document.getElementById('speakerBtn'),
+      videoToggleBtn: document.getElementById('videoToggleBtn'),
+      remoteVideo: document.getElementById('remoteVideo'),
+      localVideo: document.getElementById('localVideo'),
+      incomingCall: document.getElementById('incomingCall'),
+      incomingCallerName: document.getElementById('incomingCallerName'),
+      incomingCallType: document.getElementById('incomingCallType'),
+      incomingCallerAvatar: document.getElementById('incomingCallerAvatar'),
+      newChatPanel: document.getElementById('newChatPanel'),
+      panelSearchInput: document.getElementById('panelSearchInput'),
+      newChatPanelList: document.getElementById('newChatPanelList'),
+      panelRequestBadge: document.getElementById('panelRequestBadge'),
+      fabBadge: document.getElementById('fabBadge'),
+      chatSettingsOverlay: document.getElementById('chatSettingsOverlay'),
+      muteText: document.getElementById('muteText')
+    };
+    
+    // ============================================================
+    // 5. SECURITY UTILITIES
+    // ============================================================
+    
+    // XSS Prevention - Sanitize input
+    function sanitizeInput(input) {
+      if (!input) return '';
+      const div = document.createElement('div');
+      div.textContent = input;
+      return div.innerHTML;
+    }
+    
+    // Validate message content
+    function validateMessage(text) {
+      if (!text || text.trim().length === 0) {
+        return { valid: false, error: 'Message cannot be empty' };
+      }
+      if (text.length > MAX_MESSAGE_LENGTH) {
+        return { valid: false, error: `Message exceeds ${MAX_MESSAGE_LENGTH} characters` };
+      }
+      return { valid: true };
+    }
+    
+    // Validate image file
+    function validateImageFile(file) {
+      if (!file) return { valid: false, error: 'No file selected' };
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        return { valid: false, error: 'Invalid image type. Allowed: JPEG, PNG, WebP, GIF' };
+      }
+      if (file.size > MAX_IMAGE_SIZE) {
+        return { valid: false, error: `Image size exceeds ${MAX_IMAGE_SIZE / 1024 / 1024}MB` };
+      }
+      return { valid: true };
+    }
+    
+    // ============================================================
+    // 6. ERROR HANDLING UTILITY
+    // ============================================================
+    
+    function handleError(error, context = 'Unknown') {
+      console.error(`❌ ${context}:`, error);
+      
+      let userMessage = 'Something went wrong. Please try again.';
+      if (error.code === 'permission-denied') {
+        userMessage = 'You don\'t have permission to perform this action.';
+      } else if (error.code === 'not-found') {
+        userMessage = 'The requested item was not found.';
+      } else if (error.code === 'unavailable') {
+        userMessage = 'Service is temporarily unavailable. Please try again later.';
+      }
+      
+      showToast(userMessage);
+      return userMessage;
+    }
+    
+    // ============================================================
+    // 7. TOAST SYSTEM
+    // ============================================================
+    
+    let toastTimeout = null;
+    
     function showToast(message) {
-      const toast = document.getElementById('toast');
+      const toast = DOM.toast;
       if (!toast) return;
+      
       toast.textContent = message;
       toast.classList.add('show');
-      clearTimeout(toast._timeout);
-      toast._timeout = setTimeout(() => {
+      
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
         toast.classList.remove('show');
+        toastTimeout = null;
       }, 3000);
     }
     
     window.showToast = showToast;
     
-    // ========== INFINITE SCROLL VARIABLES ==========
-    let lastVisible = null;
-    let isLoadingUsers = false;
-    let allUsersLoaded = false;
-    const PAGE_SIZE = 50;
+    // ============================================================
+    // 8. USERNAME MANAGEMENT
+    // ============================================================
     
-    // ========== GET USERNAME FROM USER ID ==========
     async function getUsernameFromId(userId) {
-      if (usernameCache[userId]) {
-        return usernameCache[userId];
+      // Validate userId
+      if (!userId) return 'Unknown';
+      
+      // Check cache first
+      if (state.usernameCache[userId]) {
+        return state.usernameCache[userId];
       }
       
-      if (userFetchPromises[userId]) {
-        return await userFetchPromises[userId];
+      // Prevent duplicate fetches
+      if (state.userFetchPromises[userId]) {
+        return await state.userFetchPromises[userId];
       }
       
-      userFetchPromises[userId] = (async () => {
+      state.userFetchPromises[userId] = (async () => {
         try {
           const userDoc = await getDoc(doc(db, 'users', userId));
           if (userDoc.exists()) {
             const data = userDoc.data();
             const username = data.username || data.displayName || data.name || data.email || userId;
-            usernameCache[userId] = username;
+            state.usernameCache[userId] = username;
             return username;
           }
-          usernameCache[userId] = userId;
+          state.usernameCache[userId] = userId;
           return userId;
         } catch (error) {
-          console.error('Error fetching username for', userId, ':', error);
-          usernameCache[userId] = userId;
+          handleError(error, `getUsernameFromId(${userId})`);
+          state.usernameCache[userId] = userId;
           return userId;
         } finally {
-          delete userFetchPromises[userId];
+          delete state.userFetchPromises[userId];
         }
       })();
       
-      return await userFetchPromises[userId];
+      return await state.userFetchPromises[userId];
     }
     
-    // ========== GET USER DISPLAY NAME ==========
     async function getUserDisplayName(userId) {
+      if (!userId) return 'User';
+      
       if (userId === currentUserId) {
         return 'You';
       }
       
-      if (userDisplayNameCache[userId]) {
-        return userDisplayNameCache[userId];
+      if (state.userDisplayNameCache[userId]) {
+        return state.userDisplayNameCache[userId];
       }
       
       try {
         const username = await getUsernameFromId(userId);
         const cleanName = username ? cleanUsername('@' + username) : 'User';
-        userDisplayNameCache[userId] = cleanName;
+        state.userDisplayNameCache[userId] = cleanName;
         return cleanName;
       } catch (error) {
-        console.error('Error getting display name for', userId, ':', error);
+        handleError(error, 'getUserDisplayName');
         return 'User';
       }
     }
     
-    // ========== ENSURE CHAT EXISTS ==========
+    // ============================================================
+    // 9. CHAT MANAGEMENT
+    // ============================================================
+    
+    // Ensure chat document exists with proper validation
     async function ensureChatExists(chatId, userId1, userId2) {
+      if (!chatId || !userId1 || !userId2) {
+        throw new Error('Invalid chat parameters');
+      }
+      
       try {
         const chatRef = doc(db, 'chats', chatId);
         const chatSnap = await getDoc(chatRef);
         
         if (!chatSnap.exists()) {
-          console.log("🆕 Creating new chat with ID:", chatId);
+          console.log(`🆕 Creating new chat: ${chatId}`);
           await setDoc(chatRef, {
             users: [userId1, userId2],
             createdAt: serverTimestamp(),
@@ -1671,15 +1742,82 @@
         
         return { exists: true, chatRef };
       } catch (error) {
-        console.error("❌ Error ensuring chat exists:", error);
+        handleError(error, 'ensureChatExists');
         throw error;
       }
     }
     
-    // ========== DELETE MESSAGE ==========
-    window.deleteMessage = async function(messageId) {
-      if (!currentChatId) {
+    // ============================================================
+    // 10. MESSAGE OPERATIONS
+    // ============================================================
+    
+    // Send message with validation and rate limiting
+    async function sendMessage() {
+      const input = DOM.chatInput;
+      const text = input.value.trim();
+      
+      // Validate message
+      const validation = validateMessage(text);
+      if (!validation.valid) {
+        showToast(validation.error);
+        return;
+      }
+      
+      if (!state.currentChatId) {
         showToast('No chat selected');
+        return;
+      }
+      
+      // Rate limiting
+      if (state.isSending || state.sendCooldown) {
+        showToast('Please wait before sending another message');
+        return;
+      }
+      
+      state.isSending = true;
+      state.sendCooldown = true;
+      
+      try {
+        await ensureChatExists(state.currentChatId, currentUserId, state.currentPartnerId);
+        
+        const chatRef = doc(db, 'chats', state.currentChatId);
+        
+        // Update chat document with validation
+        await setDoc(chatRef, {
+          lastMessage: text,
+          lastTime: serverTimestamp(),
+          [`unread_${state.currentPartnerId}`]: increment(1)
+        }, { merge: true });
+        
+        // Add message with validation
+        await addDoc(collection(db, 'chats', state.currentChatId, 'messages'), {
+          text: text,
+          sender: currentUserId,
+          createdAt: serverTimestamp()
+        });
+        
+        // Clear input
+        input.value = '';
+        showToast('✅ Sent');
+        
+      } catch (error) {
+        handleError(error, 'sendMessage');
+      } finally {
+        state.isSending = false;
+        setTimeout(() => {
+          state.sendCooldown = false;
+        }, 1000);
+        input.disabled = false;
+        input.focus();
+      }
+    }
+    
+    window.sendMessage = sendMessage;
+    
+    // Delete message with authorization check
+    async function deleteMessage(messageId) {
+      if (!state.currentChatId || !messageId) {
+        showToast('Invalid message');
         return;
       }
       
@@ -1688,18 +1826,34 @@
       }
       
       try {
-        const messageRef = doc(db, 'chats', currentChatId, 'messages', messageId);
+        const messageRef = doc(db, 'chats', state.currentChatId, 'messages', messageId);
+        const messageSnap = await getDoc(messageRef);
+        
+        if (!messageSnap.exists()) {
+          showToast('Message not found');
+          return;
+        }
+        
+        const data = messageSnap.data();
+        // Only allow deletion of own messages
+        if (data.sender !== currentUserId) {
+          showToast('You can only delete your own messages');
+          return;
+        }
+        
         await deleteDoc(messageRef);
         showToast('Message deleted ✅');
+        
       } catch (error) {
-        console.error('❌ Error deleting message:', error);
-        showToast('Failed to delete message');
+        handleError(error, 'deleteMessage');
       }
-    };
+    }
     
-    // ========== DELETE CHAT ==========
-    window.deleteChat = async function() {
-      if (!currentChatId) {
+    window.deleteMessage = deleteMessage;
+    
+    // Delete entire chat with authorization
+    async function deleteChat() {
+      if (!state.currentChatId) {
         showToast('No chat selected');
         return;
       }
@@ -1709,7 +1863,23 @@
       }
       
       try {
-        const messagesRef = collection(db, 'chats', currentChatId, 'messages');
+        const chatRef = doc(db, 'chats', state.currentChatId);
+        const chatSnap = await getDoc(chatRef);
+        
+        if (!chatSnap.exists()) {
+          showToast('Chat not found');
+          return;
+        }
+        
+        const data = chatSnap.data();
+        // Verify user is part of the chat
+        if (!data.users || !data.users.includes(currentUserId)) {
+          showToast('You are not authorized to delete this chat');
+          return;
+        }
+        
+        // Delete all messages in the chat
+        const messagesRef = collection(db, 'chats', state.currentChatId, 'messages');
         const messagesSnap = await getDocs(messagesRef);
         
         const batch = writeBatch(db);
@@ -1718,19 +1888,22 @@
         });
         await batch.commit();
         
-        await deleteDoc(doc(db, 'chats', currentChatId));
+        // Delete the chat document
+        await deleteDoc(chatRef);
         
         showToast('Chat deleted ✅');
         goBack();
+        
       } catch (error) {
-        console.error('❌ Error deleting chat:', error);
-        showToast('Failed to delete chat');
+        handleError(error, 'deleteChat');
       }
-    };
+    }
     
-    // ========== CLEAR CHAT ==========
-    window.clearChat = async function() {
-      if (!currentChatId) {
+    window.deleteChat = deleteChat;
+    
+    // Clear chat messages with authorization
+    async function clearChat() {
+      if (!state.currentChatId) {
         showToast('No chat selected');
         return;
       }
@@ -1740,7 +1913,22 @@
       }
       
       try {
-        const messagesRef = collection(db, 'chats', currentChatId, 'messages');
+        const chatRef = doc(db, 'chats', state.currentChatId);
+        const chatSnap = await getDoc(chatRef);
+        
+        if (!chatSnap.exists()) {
+          showToast('Chat not found');
+          return;
+        }
+        
+        const data = chatSnap.data();
+        if (!data.users || !data.users.includes(currentUserId)) {
+          showToast('You are not authorized to clear this chat');
+          return;
+        }
+        
+        // Delete all messages
+        const messagesRef = collection(db, 'chats', state.currentChatId, 'messages');
         const messagesSnap = await getDocs(messagesRef);
         
         const batch = writeBatch(db);
@@ -1749,31 +1937,250 @@
         });
         await batch.commit();
         
-        await updateDoc(doc(db, 'chats', currentChatId), {
+        // Update last message
+        await updateDoc(chatRef, {
           lastMessage: 'Chat cleared',
           lastTime: serverTimestamp()
         });
         
         showToast('Chat cleared ✅');
         closeChatSettings();
+        
       } catch (error) {
-        console.error('❌ Error clearing chat:', error);
-        showToast('Failed to clear chat');
+        handleError(error, 'clearChat');
       }
-    };
+    }
     
-    // ========== LOAD CHATS ==========
-    async function loadChats() {
+    window.clearChat = clearChat;
+    
+    // ============================================================
+    // 11. IMAGE UPLOAD (Firebase Storage)
+    // ============================================================
+    
+    // Note: This implementation uses Firebase Storage instead of Base64
+    // You'll need to configure Firebase Storage in your firebase-config.js
+    
+    async function uploadImageToStorage(file) {
+      // Validate file
+      const validation = validateImageFile(file);
+      if (!validation.valid) {
+        showToast(validation.error);
+        return null;
+      }
+      
       try {
-        console.log("📡 Loading chats for user:", currentUserId);
+        // Generate unique filename
+        const timestamp = Date.now();
+        const randomId = Math.random().toString(36).substring(2, 10);
+        const extension = file.name.split('.').pop();
+        const filename = `${timestamp}_${randomId}.${extension}`;
+        const storagePath = `chat_images/${currentUserId}/${filename}`;
+        
+        // Import storage
+        const { ref, uploadBytes, getDownloadURL } = await import('./js/firebase-storage.js');
+        const storageRef = ref(storagePath, storagePath);
+        
+        // Upload with progress
+        const uploadTask = uploadBytes(storageRef, file);
+        const snapshot = await uploadTask;
+        
+        // Get download URL
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        
+        return downloadURL;
+        
+      } catch (error) {
+        handleError(error, 'uploadImageToStorage');
+        return null;
+      }
+    }
+    
+    // Send image with proper upload
+    async function sendImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (!state.currentChatId) {
+        showToast('No chat selected');
+        event.target.value = '';
+        return;
+      }
+      
+      // Show uploading status
+      showToast('📤 Uploading image...');
+      
+      try {
+        // Upload to Firebase Storage
+        const imageUrl = await uploadImageToStorage(file);
+        if (!imageUrl) {
+          showToast('❌ Failed to upload image');
+          event.target.value = '';
+          return;
+        }
+        
+        // Ensure chat exists
+        await ensureChatExists(state.currentChatId, currentUserId, state.currentPartnerId);
+        
+        const chatRef = doc(db, 'chats', state.currentChatId);
+        
+        // Update chat document
+        await setDoc(chatRef, {
+          lastMessage: '📷 Photo',
+          lastTime: serverTimestamp(),
+          [`unread_${state.currentPartnerId}`]: increment(1)
+        }, { merge: true });
+        
+        // Add message with image URL
+        await addDoc(collection(db, 'chats', state.currentChatId, 'messages'), {
+          imageUrl: imageUrl,
+          sender: currentUserId,
+          createdAt: serverTimestamp()
+        });
+        
+        showToast('📷 Photo sent');
+        
+      } catch (error) {
+        handleError(error, 'sendImage');
+      }
+      
+      event.target.value = '';
+    }
+    
+    window.sendImage = sendImage;
+    
+    // ============================================================
+    // 12. VOICE RECORDING
+    // ============================================================
+    
+    async function toggleVoiceRecording() {
+      // Check if recording is already in progress
+      if (state.isRecordingVoice) {
+        if (state.mediaRecorderInstance && state.mediaRecorderInstance.state === 'recording') {
+          state.mediaRecorderInstance.stop();
+          DOM.micBtn.classList.remove('recording');
+          DOM.micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+          state.isRecordingVoice = false;
+          showToast('⏹️ Recording stopped');
+        }
+        return;
+      }
+      
+      if (!state.currentChatId) {
+        showToast('No chat selected');
+        return;
+      }
+      
+      try {
+        // Request microphone permission
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: { 
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          } 
+        });
+        
+        state.mediaRecorderInstance = new MediaRecorder(stream, {
+          mimeType: 'audio/webm'
+        });
+        state.recordedChunks = [];
+        
+        state.mediaRecorderInstance.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            state.recordedChunks.push(event.data);
+          }
+        };
+        
+        state.mediaRecorderInstance.onstop = async () => {
+          // Stop all tracks
+          stream.getTracks().forEach(track => track.stop());
+          
+          if (state.recordedChunks.length === 0) {
+            showToast('No voice recorded');
+            return;
+          }
+          
+          // Create audio blob
+          const blob = new Blob(state.recordedChunks, { type: 'audio/webm' });
+          
+          // Check size (max 5MB)
+          if (blob.size > 5 * 1024 * 1024) {
+            showToast('Voice message too large (max 5MB)');
+            return;
+          }
+          
+          // Convert to base64 for storage (in production, use Firebase Storage)
+          const reader = new FileReader();
+          reader.onload = async function(ev) {
+            try {
+              const voiceUrl = ev.target.result;
+              
+              await ensureChatExists(state.currentChatId, currentUserId, state.currentPartnerId);
+              
+              const chatRef = doc(db, 'chats', state.currentChatId);
+              await setDoc(chatRef, {
+                lastMessage: '🎤 Voice message',
+                lastTime: serverTimestamp(),
+                [`unread_${state.currentPartnerId}`]: increment(1)
+              }, { merge: true });
+              
+              await addDoc(collection(db, 'chats', state.currentChatId, 'messages'), {
+                voiceUrl: voiceUrl,
+                sender: currentUserId,
+                createdAt: serverTimestamp()
+              });
+              
+              showToast('🎤 Voice message sent');
+              
+            } catch (error) {
+              handleError(error, 'voiceMessageSend');
+            }
+          };
+          reader.readAsDataURL(blob);
+        };
+        
+        // Start recording
+        state.mediaRecorderInstance.start();
+        state.isRecordingVoice = true;
+        DOM.micBtn.classList.add('recording');
+        DOM.micBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        showToast('🔴 Recording... tap again to stop');
+        
+      } catch (error) {
+        if (error.name === 'NotAllowedError') {
+          showToast('⚠️ Microphone permission denied. Please allow microphone access.');
+        } else if (error.name === 'NotFoundError') {
+          showToast('⚠️ No microphone found. Please connect a microphone.');
+        } else {
+          handleError(error, 'toggleVoiceRecording');
+        }
+      }
+    }
+    
+    window.toggleVoiceRecording = toggleVoiceRecording;
+    
+    // ============================================================
+    // 13. CHAT LIST
+    // ============================================================
+    
+    function loadChats() {
+      try {
+        // Unsubscribe from previous listener
+        if (state.unsubChats) {
+          state.unsubChats();
+          state.unsubChats = null;
+        }
+        
         const q = query(collection(db, 'chats'), orderBy('lastTime', 'desc'));
-        onSnapshot(q, async (snapshot) => {
-          console.log("📡 Chats snapshot received, size:", snapshot.size);
+        
+        state.unsubChats = onSnapshot(q, async (snapshot) => {
           const chats = [];
+          
           for (const doc of snapshot.docs) {
             const data = doc.data();
             const docId = doc.id;
             
+            // Security: Verify user is part of the chat
             if (data.users && data.users.includes(currentUserId)) {
               const partnerId = data.users.find(id => id !== currentUserId);
               if (partnerId) {
@@ -1789,28 +2196,40 @@
               }
             }
           }
-          chatListData = chats;
+          
+          state.chatListData = chats;
           renderChatList(chats);
-          document.getElementById('chatCount').textContent = chats.length ? `(${chats.length})` : '';
+          
+          const count = chats.length;
+          DOM.chatCount.textContent = count ? `(${count})` : '';
+          
           applySearchFilter();
+          
         }, (error) => {
-          console.error("❌ Error in chat listener:", error);
-          showToast('Error loading chats: ' + error.message);
+          handleError(error, 'loadChats');
         });
+        
       } catch (error) {
-        console.error('❌ Error loading chats:', error);
-        showToast('Error loading chats');
+        handleError(error, 'loadChats');
       }
     }
     
     function renderChatList(chats) {
-      const container = document.getElementById('chatList');
       if (!chats.length) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-comment-slash"></i><p>No messages yet</p><p style="font-size:0.65rem;margin-top:0.5rem;">Tap + to start a chat</p></div>';
+        DOM.chatList.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-comment-slash"></i>
+            <p>No messages yet</p>
+            <p style="font-size:0.65rem;margin-top:0.5rem;">Tap + to start a chat</p>
+          </div>
+        `;
         return;
       }
-      container.innerHTML = chats.map(c => `
-        <div class="user-list-item ${currentPartnerId === c.partnerId ? 'active' : ''}" data-partner="${c.partnerId}" onclick="openChat('${c.partnerId}', '${c.chatId}')">
+      
+      DOM.chatList.innerHTML = chats.map(c => `
+        <div class="user-list-item ${state.currentPartnerId === c.partnerId ? 'active' : ''}" 
+             data-partner="${c.partnerId}" 
+             onclick="openChat('${c.partnerId}', '${c.chatId}')">
           <div class="user-avatar" onclick="event.stopPropagation();window.location.href='profile.html?user=${encodeURIComponent(c.partnerUsername || c.partnerId)}'">
             ${getAvatarHTML('@' + (c.partnerUsername || c.partnerId))}
           </div>
@@ -1828,14 +2247,25 @@
       `).join('');
     }
     
-    // ========== SEARCH FILTER ==========
-    window.filterChats = function() {
-      applySearchFilter();
-    };
+    // ============================================================
+    // 14. SEARCH
+    // ============================================================
+    
+    let searchTimeout = null;
+    
+    function filterChats() {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        applySearchFilter();
+        searchTimeout = null;
+      }, DEBOUNCE_DELAY);
+    }
+    
+    window.filterChats = filterChats;
     
     function applySearchFilter() {
-      const search = document.getElementById('searchInput').value.toLowerCase().trim();
-      const items = document.querySelectorAll('#chatList .user-list-item');
+      const search = DOM.searchInput.value.toLowerCase().trim();
+      const items = DOM.chatList.querySelectorAll('.user-list-item');
       
       if (!search) {
         items.forEach(item => item.style.display = 'flex');
@@ -1852,66 +2282,108 @@
       });
     }
     
-    // ========== OPEN CHAT ==========
-    window.openChat = async function(partnerId, chatId) {
+    // ============================================================
+    // 15. OPEN CHAT
+    // ============================================================
+    
+    async function openChat(partnerId, chatId) {
       try {
-        console.log("🔍 Opening chat with partner:", partnerId);
-        currentPartnerId = partnerId;
+        if (!partnerId) {
+          showToast('Invalid chat');
+          return;
+        }
+        
+        state.currentPartnerId = partnerId;
         const partnerUsername = await getUsernameFromId(partnerId);
-        currentPartner = '@' + (partnerUsername || partnerId);
+        state.currentPartner = '@' + (partnerUsername || partnerId);
         
         if (chatId) {
-          currentChatId = chatId;
-          console.log("✅ Using existing chat ID:", currentChatId);
+          state.currentChatId = chatId;
         } else {
-          currentChatId = [currentUserId, partnerId].sort().join('_');
-          console.log("🆕 Generated new chat ID:", currentChatId);
-          await ensureChatExists(currentChatId, currentUserId, partnerId);
+          state.currentChatId = [currentUserId, partnerId].sort().join('_');
+          await ensureChatExists(state.currentChatId, currentUserId, partnerId);
         }
         
-        console.log("🔍 Opening Chat - Debug Info:");
-        console.log("📤 Current Chat ID:", currentChatId);
-        console.log("📤 Current User ID:", currentUserId);
-        console.log("📤 Partner ID:", currentPartnerId);
-        
+        // Mark messages as read
         try {
-          await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 });
+          await updateDoc(doc(db, 'chats', state.currentChatId), { 
+            [`unread_${currentUserId}`]: 0 
+          });
         } catch (error) {
-          console.log('Note: Could not update read status');
+          // Chat might not exist yet, which is fine
         }
         
-        document.getElementById('topIcons').style.display = 'none';
-        document.getElementById('chatHeader').classList.add('show');
-        document.getElementById('chatListFull').classList.add('hidden');
-        document.getElementById('searchBarContainer').classList.add('hidden');
-        document.getElementById('chatView').classList.add('show');
-        document.getElementById('chatInputArea').classList.add('show');
-        document.getElementById('floatingNav').style.display = 'none';
-        document.getElementById('partnerName').textContent = cleanUsername('@' + (partnerUsername || partnerId));
+        // Update UI
+        DOM.topIcons.style.display = 'none';
+        DOM.chatHeader.classList.add('show');
+        DOM.chatListFull.classList.add('hidden');
+        DOM.searchBarContainer.classList.add('hidden');
+        DOM.chatView.classList.add('show');
+        DOM.chatInputArea.classList.add('show');
+        DOM.floatingNav.style.display = 'none';
+        DOM.partnerName.textContent = cleanUsername('@' + (partnerUsername || partnerId));
+        DOM.fabContainer.style.display = 'none';
         
-        document.getElementById('fabContainer').style.display = 'none';
+        const avatarHTML = getAvatarHTML('@' + (partnerUsername || partnerId));
+        DOM.partnerAvatar.innerHTML = avatarHTML;
+        
         closeNewChatPanel();
         
-        const avatarContainer = document.getElementById('partnerAvatar');
-        avatarContainer.innerHTML = getAvatarHTML('@' + (partnerUsername || partnerId));
+        // Load messages
+        loadMessages();
         
-        if (unsubMessages) unsubMessages();
+      } catch (error) {
+        handleError(error, 'openChat');
+      }
+    }
+    
+    window.openChat = openChat;
+    
+    // ============================================================
+    // 16. LOAD MESSAGES
+    // ============================================================
+    
+    function loadMessages() {
+      // Unsubscribe from previous listener
+      if (state.unsubMessages) {
+        state.unsubMessages();
+        state.unsubMessages = null;
+        state.messageListeners.clear();
+      }
+      
+      if (!state.currentChatId) return;
+      
+      try {
+        const q = query(
+          collection(db, 'chats', state.currentChatId, 'messages'),
+          orderBy('createdAt', 'asc')
+        );
         
-        console.log("📡 Listening to messages at:", `chats/${currentChatId}/messages`);
-        const q = query(collection(db, 'chats', currentChatId, 'messages'), orderBy('createdAt', 'asc'));
-        unsubMessages = onSnapshot(q, async (snapshot) => {
-          console.log("📡 Messages snapshot received, size:", snapshot.size);
-          const container = document.getElementById('messagesContainer');
+        state.unsubMessages = onSnapshot(q, async (snapshot) => {
+          const container = DOM.messagesContainer;
+          
           if (snapshot.empty) {
             container.innerHTML = '<div class="empty-chat">Send a message to start chatting!</div>';
             return;
           }
-          container.innerHTML = '';
+          
+          // Track existing message IDs to prevent duplicates
+          const existingIds = new Set();
+          const fragments = container.querySelectorAll('[data-message-id]');
+          fragments.forEach(el => {
+            const id = el.dataset.messageId;
+            if (id) existingIds.add(id);
+          });
+          
+          let hasNewMessages = false;
           
           for (const doc of snapshot.docs) {
             const msg = doc.data();
             const msgId = doc.id;
-            console.log("💬 Message:", msg);
+            
+            // Skip if already rendered
+            if (existingIds.has(msgId)) continue;
+            
             const isSent = msg.sender === currentUserId;
             const senderDisplayName = await getUserDisplayName(msg.sender);
             
@@ -1919,17 +2391,18 @@
             div.className = `message-wrapper ${isSent ? 'sent' : 'received'}`;
             div.dataset.messageId = msgId;
             
-            let time = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+            const time = msg.createdAt ? 
+              new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
             
             let messageHTML = `
               <div class="message-content">
-                <div class="message-sender-name">${senderDisplayName}</div>
+                <div class="message-sender-name">${sanitizeInput(senderDisplayName)}</div>
             `;
             
             if (msg.imageUrl) {
               messageHTML += `
                 <div class="message-bubble">
-                  <img src="${msg.imageUrl}" class="message-image" onclick="window.open('${msg.imageUrl}')">
+                  <img src="${msg.imageUrl}" class="message-image" onclick="window.open('${msg.imageUrl}')" alt="Image" loading="lazy">
                   <div class="message-time">${time}</div>
                 </div>
               `;
@@ -1948,209 +2421,234 @@
             } else {
               messageHTML += `
                 <div class="message-bubble">
-                  ${escapeHTML(msg.text || '')}
+                  ${sanitizeInput(msg.text || '')}
                   <div class="message-time">${time}</div>
                 </div>
               `;
             }
             
-            messageHTML += `
-                <button class="delete-msg-btn" onclick="event.stopPropagation();deleteMessage('${msgId}')">
+            // Only show delete button for own messages
+            if (isSent) {
+              messageHTML += `
+                <button class="delete-msg-btn" onclick="event.stopPropagation();deleteMessage('${msgId}')" aria-label="Delete message">
                   <i class="fas fa-times"></i>
                 </button>
-              </div>
-            `;
+              `;
+            }
             
+            messageHTML += `</div>`;
             div.innerHTML = messageHTML;
-            container.appendChild(div);
+            
+            // Insert in correct position based on time
+            let inserted = false;
+            const children = container.children;
+            if (children.length > 0) {
+              for (let i = children.length - 1; i >= 0; i--) {
+                const child = children[i];
+                const childId = child.dataset.messageId;
+                if (childId) {
+                  // Find position based on message order
+                  const childDoc = snapshot.docs.find(d => d.id === childId);
+                  if (childDoc) {
+                    const childData = childDoc.data();
+                    const childTime = childData.createdAt?.toDate?.() || new Date(0);
+                    const currentTime = msg.createdAt?.toDate?.() || new Date(0);
+                    if (currentTime < childTime) {
+                      container.insertBefore(div, child);
+                      inserted = true;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+            
+            if (!inserted) {
+              container.appendChild(div);
+            }
+            
+            hasNewMessages = true;
           }
-          container.scrollTop = container.scrollHeight;
+          
+          // Scroll to bottom if new messages were added
+          if (hasNewMessages) {
+            container.scrollTop = container.scrollHeight;
+          }
+          
         }, (error) => {
-          console.error("❌ Error in messages listener:", error);
-          showToast('Error loading messages: ' + error.message);
+          handleError(error, 'loadMessages');
         });
         
       } catch (error) {
-        console.error('❌ Error opening chat:', error);
-        showToast('Error opening chat: ' + error.message);
+        handleError(error, 'loadMessages');
       }
-    };
-    
-    function escapeHTML(str) {
-      if (!str) return '';
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
     }
     
-    // ========== SEND MESSAGE ==========
-    window.sendMessage = async function() {
-      const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      
-      if (!text) {
-        showToast('Please enter a message');
-        return;
+    // ============================================================
+    // 17. GO BACK
+    // ============================================================
+    
+    function goBack() {
+      // Clean up listeners
+      if (state.unsubMessages) {
+        state.unsubMessages();
+        state.unsubMessages = null;
+        state.messageListeners.clear();
       }
       
-      if (!currentChatId) {
-        showToast('No chat selected');
-        return;
+      if (state.isCallActive) {
+        endCall();
       }
       
-      console.log("📤 Sending Message - Debug Info:");
-      console.log("📤 Current Chat ID:", currentChatId);
-      console.log("📤 Current User ID:", currentUserId);
-      console.log("📤 Partner ID:", currentPartnerId);
+      if (state.isRecordingVoice) {
+        if (state.mediaRecorderInstance && state.mediaRecorderInstance.state === 'recording') {
+          state.mediaRecorderInstance.stop();
+        }
+        state.isRecordingVoice = false;
+        DOM.micBtn.classList.remove('recording');
+        DOM.micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+      }
       
-      input.value = '';
-      input.disabled = true;
+      // Reset state
+      state.currentPartner = null;
+      state.currentPartnerId = null;
+      state.currentChatId = null;
+      
+      // Update UI
+      DOM.topIcons.style.display = 'flex';
+      DOM.chatHeader.classList.remove('show');
+      DOM.chatListFull.classList.remove('hidden');
+      DOM.searchBarContainer.classList.remove('hidden');
+      DOM.chatView.classList.remove('show');
+      DOM.chatInputArea.classList.remove('show');
+      DOM.floatingNav.style.display = 'flex';
+      DOM.fabContainer.style.display = 'flex';
+      DOM.messagesContainer.innerHTML = '<div class="empty-chat">Select a chat to start messaging</div>';
+      
+      applySearchFilter();
+    }
+    
+    window.goBack = goBack;
+    
+    // ============================================================
+    // 18. NEW CHAT PANEL
+    // ============================================================
+    
+    function toggleNewChatPanel() {
+      if (state.isPanelOpen) {
+        closeNewChatPanel();
+      } else {
+        openNewChatPanel();
+      }
+    }
+    
+    window.toggleNewChatPanel = toggleNewChatPanel;
+    
+    function openNewChatPanel() {
+      state.isPanelOpen = true;
+      DOM.newChatPanel.classList.add('show');
+      DOM.fabMain.innerHTML = '<i class="fas fa-times"></i>';
+      state.lastVisible = null;
+      state.allUsersLoaded = false;
+      state.allUsers = [];
+      loadPanelUsers();
+    }
+    
+    window.openNewChatPanel = openNewChatPanel;
+    
+    function closeNewChatPanel() {
+      state.isPanelOpen = false;
+      DOM.newChatPanel.classList.remove('show');
+      DOM.fabMain.innerHTML = '<i class="fas fa-plus"></i>';
+    }
+    
+    window.closeNewChatPanel = closeNewChatPanel;
+    
+    // ============================================================
+    // 19. PANEL USERS WITH INFINITE SCROLL
+    // ============================================================
+    
+    async function loadPanelUsers() {
+      if (activePanelTab !== 'users') return;
+      if (state.isLoadingUsers || state.allUsersLoaded) return;
+      
+      state.isLoadingUsers = true;
       
       try {
-        await ensureChatExists(currentChatId, currentUserId, currentPartnerId);
-        
-        const chatRef = doc(db, 'chats', currentChatId);
-        await setDoc(chatRef, {
-          lastMessage: text,
-          lastTime: serverTimestamp(),
-          [`unread_${currentPartnerId}`]: increment(1)
-        }, { merge: true });
-        
-        await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
-          text: text,
-          sender: currentUserId,
-          createdAt: serverTimestamp()
-        });
-        
-        console.log("✅ Message sent successfully!");
-        showToast('✅ Sent');
-        
-      } catch(error) {
-        console.error("❌ Send error:", error);
-        showToast('❌ Failed to send');
-        input.value = text;
-      } finally {
-        input.disabled = false;
-        input.focus();
-      }
-    };
-    
-    window.sendImage = async function(e) {
-      const file = e.target.files[0];
-      if (!file || !currentChatId) {
-        showToast('No image selected');
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = async function(ev) {
-        try {
-          await ensureChatExists(currentChatId, currentUserId, currentPartnerId);
-          
-          const chatRef = doc(db, 'chats', currentChatId);
-          await setDoc(chatRef, {
-            lastMessage: '📷 Photo',
-            lastTime: serverTimestamp(),
-            [`unread_${currentPartnerId}`]: increment(1)
-          }, { merge: true });
-          
-          await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
-            imageUrl: ev.target.result,
-            sender: currentUserId,
-            createdAt: serverTimestamp()
-          });
-          
-          showToast('📷 Sent');
-        } catch(error) {
-          console.error('❌ Image send error:', error);
-          showToast('❌ Failed to send image');
+        let q;
+        if (state.lastVisible) {
+          q = query(
+            collection(db, 'users'),
+            orderBy('createdAt', 'desc'),
+            startAfter(state.lastVisible),
+            limit(PAGE_SIZE)
+          );
+        } else {
+          q = query(
+            collection(db, 'users'),
+            orderBy('createdAt', 'desc'),
+            limit(PAGE_SIZE)
+          );
         }
-      };
-      reader.readAsDataURL(file);
-      e.target.value = '';
-    };
-    
-    // ========== VOICE MESSAGE RECORDING ==========
-    window.toggleVoiceRecording = async function() {
-      if (isRecordingVoice) {
-        if (mediaRecorderInstance && mediaRecorderInstance.state === 'recording') {
-          mediaRecorderInstance.stop();
-          document.getElementById('micBtn').classList.remove('recording');
-          document.getElementById('micBtn').innerHTML = '<i class="fas fa-microphone"></i>';
-          isRecordingVoice = false;
-          showToast('⏹️ Recording stopped');
+        
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+          state.allUsersLoaded = true;
+          if (state.allUsers.length === 0) {
+            DOM.newChatPanelList.innerHTML = `
+              <div class="new-chat-panel-empty">
+                <i class="fas fa-user-slash"></i>
+                <p>No users found</p>
+              </div>
+            `;
+          }
+          return;
         }
-        return;
-      }
-      
-      if (!currentChatId) {
-        showToast('No chat selected');
-        return;
-      }
-      
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorderInstance = new MediaRecorder(stream);
-        recordedChunks = [];
         
-        mediaRecorderInstance.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            recordedChunks.push(event.data);
+        const newUsers = [];
+        for (const doc of snapshot.docs) {
+          const data = doc.data();
+          const userId = doc.id;
+          if (userId !== currentUserId) {
+            const username = data.username || data.displayName || data.name || userId;
+            state.usernameCache[userId] = username;
+            newUsers.push({
+              id: userId,
+              username: username,
+              name: data.name || cleanUsername(username),
+              avatar: data.avatar
+            });
           }
-        };
+        }
         
-        mediaRecorderInstance.onstop = async () => {
-          stream.getTracks().forEach(track => track.stop());
-          
-          if (recordedChunks.length === 0) {
-            showToast('No voice recorded');
-            return;
-          }
-          
-          const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-          const reader = new FileReader();
-          reader.onload = async function(ev) {
-            try {
-              const voiceUrl = ev.target.result;
-              
-              await ensureChatExists(currentChatId, currentUserId, currentPartnerId);
-              
-              const chatRef = doc(db, 'chats', currentChatId);
-              await setDoc(chatRef, {
-                lastMessage: '🎤 Voice message',
-                lastTime: serverTimestamp(),
-                [`unread_${currentPartnerId}`]: increment(1)
-              }, { merge: true });
-              
-              await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
-                voiceUrl: voiceUrl,
-                sender: currentUserId,
-                createdAt: serverTimestamp()
-              });
-              
-              showToast('🎤 Voice message sent');
-            } catch(error) {
-              console.error('❌ Voice send error:', error);
-              showToast('❌ Failed to send voice');
-            }
-          };
-          reader.readAsDataURL(blob);
-        };
+        state.lastVisible = snapshot.docs[snapshot.docs.length - 1];
+        state.allUsers = [...state.allUsers, ...newUsers];
         
-        mediaRecorderInstance.start();
-        isRecordingVoice = true;
-        document.getElementById('micBtn').classList.add('recording');
-        document.getElementById('micBtn').innerHTML = '<i class="fas fa-stop"></i>';
-        showToast('🔴 Recording... tap again to stop');
+        if (newUsers.length < PAGE_SIZE) {
+          state.allUsersLoaded = true;
+        }
+        
+        renderPanelList();
         
       } catch (error) {
-        console.error('❌ Recording error:', error);
-        showToast('❌ Cannot access microphone');
+        handleError(error, 'loadPanelUsers');
+        DOM.newChatPanelList.innerHTML = `
+          <div class="new-chat-panel-empty">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Error loading users</p>
+          </div>
+        `;
+      } finally {
+        state.isLoadingUsers = false;
       }
-    };
+    }
     
-    // ========== CALL FUNCTIONS ==========
-    const configuration = {
+    // ============================================================
+    // 20. CALL FUNCTIONS
+    // ============================================================
+    
+    const callConfiguration = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
@@ -2175,52 +2673,55 @@
     }
     
     function listenForCalls() {
-      const q = query(collection(db, 'calls'), where('to', '==', currentUserId), where('status', '==', 'calling'));
-      unsubCall = onSnapshot(q, async (snapshot) => {
-        snapshot.forEach(async (doc) => {
+      if (state.unsubCalls) {
+        state.unsubCalls();
+        state.unsubCalls = null;
+      }
+      
+      const q = query(
+        collection(db, 'calls'),
+        where('to', '==', currentUserId),
+        where('status', '==', 'calling')
+      );
+      
+      state.unsubCalls = onSnapshot(q, async (snapshot) => {
+        for (const doc of snapshot.docs) {
           const data = doc.data();
-          console.log("📞 Incoming call from:", data.from);
-          
           const callerUsername = await getUsernameFromId(data.from);
           showIncomingCall(data.from, callerUsername, data.type, doc.id);
-        });
+        }
       }, (error) => {
-        console.error("❌ Error listening for calls:", error);
+        handleError(error, 'listenForCalls');
       });
     }
     
     function showIncomingCall(fromId, callerName, type, callId) {
-      const incomingCall = document.getElementById('incomingCall');
-      document.getElementById('incomingCallerName').textContent = cleanUsername('@' + callerName);
-      document.getElementById('incomingCallType').textContent = type === 'audio' ? '🔊 Audio call' : '📹 Video call';
+      DOM.incomingCallerName.textContent = cleanUsername('@' + callerName);
+      DOM.incomingCallType.textContent = type === 'audio' ? '🔊 Audio call' : '📹 Video call';
+      DOM.incomingCallerAvatar.innerHTML = getAvatarHTML('@' + callerName);
       
-      const avatar = document.getElementById('incomingCallerAvatar');
-      avatar.innerHTML = getAvatarHTML('@' + callerName);
+      DOM.incomingCall.dataset.callId = callId;
+      DOM.incomingCall.dataset.fromId = fromId;
+      DOM.incomingCall.dataset.callType = type;
       
-      incomingCall.dataset.callId = callId;
-      incomingCall.dataset.fromId = fromId;
-      incomingCall.dataset.callType = type;
-      
-      incomingCall.classList.add('show');
-      
+      DOM.incomingCall.classList.add('show');
       document.getElementById('audioCallBtn').classList.add('ringing');
       document.getElementById('videoCallBtn').classList.add('ringing');
     }
     
-    window.acceptIncomingCall = async function() {
-      const incomingCall = document.getElementById('incomingCall');
-      const callId = incomingCall.dataset.callId;
-      const fromId = incomingCall.dataset.fromId;
-      const type = incomingCall.dataset.callType;
+    async function acceptIncomingCall() {
+      const callId = DOM.incomingCall.dataset.callId;
+      const fromId = DOM.incomingCall.dataset.fromId;
+      const type = DOM.incomingCall.dataset.callType;
       
-      incomingCall.classList.remove('show');
+      DOM.incomingCall.classList.remove('show');
       document.getElementById('audioCallBtn').classList.remove('ringing');
       document.getElementById('videoCallBtn').classList.remove('ringing');
       
-      isCaller = false;
-      callType = type;
-      callDocumentId = callId;
-      isCallActive = true;
+      state.isCaller = false;
+      state.callType = type;
+      state.callDocumentId = callId;
+      state.isCallActive = true;
       
       try {
         const constraints = {
@@ -2228,39 +2729,37 @@
           video: type === 'video'
         };
         
-        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        state.localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         if (type === 'video') {
-          const localVideo = document.getElementById('localVideo');
-          localVideo.srcObject = localStream;
-          localVideo.classList.add('show');
-          document.getElementById('videoToggleBtn').style.display = 'flex';
+          DOM.localVideo.srcObject = state.localStream;
+          DOM.localVideo.classList.add('show');
+          DOM.videoToggleBtn.style.display = 'flex';
         }
         
-        peerConnection = new RTCPeerConnection(configuration);
+        state.peerConnection = new RTCPeerConnection(callConfiguration);
         
-        localStream.getTracks().forEach(track => {
-          peerConnection.addTrack(track, localStream);
+        state.localStream.getTracks().forEach(track => {
+          state.peerConnection.addTrack(track, state.localStream);
         });
         
-        peerConnection.ontrack = (event) => {
-          remoteStream = event.streams[0];
+        state.peerConnection.ontrack = (event) => {
+          state.remoteStream = event.streams[0];
           if (type === 'video') {
-            const remoteVideo = document.getElementById('remoteVideo');
-            remoteVideo.srcObject = remoteStream;
-            remoteVideo.classList.add('show');
+            DOM.remoteVideo.srcObject = state.remoteStream;
+            DOM.remoteVideo.classList.add('show');
           }
-          document.getElementById('callStatus').textContent = 'Connected';
+          DOM.callStatus.textContent = 'Connected';
           startCallTimer();
         };
         
         const callRef = doc(db, 'calls', callId);
-        onSnapshot(callRef, async (snapshot) => {
+        const unsub = onSnapshot(callRef, async (snapshot) => {
           const data = snapshot.data();
-          if (data && data.offer && !peerConnection.currentRemoteDescription) {
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
+          if (data && data.offer && !state.peerConnection.currentRemoteDescription) {
+            await state.peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await state.peerConnection.createAnswer();
+            await state.peerConnection.setLocalDescription(answer);
             await updateDoc(callRef, {
               answer: answer,
               status: 'connected'
@@ -2269,153 +2768,124 @@
           if (data && data.candidates) {
             for (const candidate of data.candidates) {
               try {
-                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                await state.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
               } catch (e) {
-                console.warn('Error adding ICE candidate:', e);
+                // Ignore invalid candidates
               }
             }
           }
         });
         
-        peerConnection.onicecandidate = async (event) => {
+        state.peerConnection.onicecandidate = async (event) => {
           if (event.candidate) {
-            const callRef = doc(db, 'calls', callId);
             await updateDoc(callRef, {
               candidates: arrayUnion(event.candidate)
             });
           }
         };
         
-        peerConnection.onconnectionstatechange = () => {
-          console.log('Connection state:', peerConnection.connectionState);
-          if (peerConnection.connectionState === 'failed' || 
-              peerConnection.connectionState === 'disconnected' ||
-              peerConnection.connectionState === 'closed') {
+        state.peerConnection.onconnectionstatechange = () => {
+          if (state.peerConnection.connectionState === 'failed' || 
+              state.peerConnection.connectionState === 'disconnected' ||
+              state.peerConnection.connectionState === 'closed') {
             endCall();
           }
         };
         
         showCallOverlay(type);
-        document.getElementById('callStatus').textContent = 'Connecting...';
+        DOM.callStatus.textContent = 'Connecting...';
         
       } catch (error) {
-        console.error('❌ Error accepting call:', error);
-        showToast('Failed to accept call: ' + error.message);
+        handleError(error, 'acceptIncomingCall');
         endCall();
       }
-    };
+    }
     
-    window.declineIncomingCall = async function() {
-      const incomingCall = document.getElementById('incomingCall');
-      const callId = incomingCall.dataset.callId;
+    window.acceptIncomingCall = acceptIncomingCall;
+    
+    async function declineIncomingCall() {
+      const callId = DOM.incomingCall.dataset.callId;
       
-      incomingCall.classList.remove('show');
+      DOM.incomingCall.classList.remove('show');
       document.getElementById('audioCallBtn').classList.remove('ringing');
       document.getElementById('videoCallBtn').classList.remove('ringing');
       
       try {
         await deleteDoc(doc(db, 'calls', callId));
-      } catch (e) {
-        console.warn('Error deleting call:', e);
+      } catch (error) {
+        // Ignore if already deleted
       }
       
       showToast('Call declined');
-    };
+    }
     
-    window.startCall = async function(type) {
-      if (!currentPartner) {
+    window.declineIncomingCall = declineIncomingCall;
+    
+    async function startCall(type) {
+      if (!state.currentPartner) {
         showToast('Please select a chat first');
         return;
       }
       
-      if (isCallActive) {
+      if (state.isCallActive) {
         showToast('Call already in progress');
         return;
       }
       
-      isCaller = true;
-      callType = type;
-      isCallActive = true;
+      state.isCaller = true;
+      state.callType = type;
+      state.isCallActive = true;
       
       try {
-        showToast('Fetching secure connection settings...');
-        
-        try {
-          const idToken = await currentUser.getIdToken();
-          const response = await fetch('https://your-railway-app.railway.app/turn', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${idToken}`,
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (response.ok) {
-            const turnData = await response.json();
-            if (turnData && turnData.iceServers) {
-              configuration.iceServers = turnData.iceServers;
-              console.log('✅ Secure TURN credentials loaded successfully.');
-            }
-          }
-        } catch (fetchError) {
-          console.warn('⚠️ Failed to fetch TURN credentials, using fallback STUN.');
-        }
-        
-        const callRef = await createCallDocument(currentPartnerId, type);
-        callDocumentId = callRef.id;
+        const callRef = await createCallDocument(state.currentPartnerId, type);
+        state.callDocumentId = callRef.id;
         
         const constraints = {
           audio: true,
           video: type === 'video'
         };
         
-        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        state.localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         if (type === 'video') {
-          const localVideo = document.getElementById('localVideo');
-          localVideo.srcObject = localStream;
-          localVideo.classList.add('show');
-          document.getElementById('videoToggleBtn').style.display = 'flex';
+          DOM.localVideo.srcObject = state.localStream;
+          DOM.localVideo.classList.add('show');
+          DOM.videoToggleBtn.style.display = 'flex';
         }
         
-        peerConnection = new RTCPeerConnection(configuration);
+        state.peerConnection = new RTCPeerConnection(callConfiguration);
         
-        localStream.getTracks().forEach(track => {
-          peerConnection.addTrack(track, localStream);
+        state.localStream.getTracks().forEach(track => {
+          state.peerConnection.addTrack(track, state.localStream);
         });
         
-        peerConnection.ontrack = (event) => {
-          remoteStream = event.streams[0];
+        state.peerConnection.ontrack = (event) => {
+          state.remoteStream = event.streams[0];
           if (type === 'video') {
-            const remoteVideo = document.getElementById('remoteVideo');
-            remoteVideo.srcObject = remoteStream;
-            remoteVideo.classList.add('show');
+            DOM.remoteVideo.srcObject = state.remoteStream;
+            DOM.remoteVideo.classList.add('show');
           }
-          document.getElementById('callStatus').textContent = 'Connected';
+          DOM.callStatus.textContent = 'Connected';
           startCallTimer();
         };
         
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
+        const offer = await state.peerConnection.createOffer();
+        await state.peerConnection.setLocalDescription(offer);
+        await updateDoc(callRef, { offer: offer, status: 'calling' });
         
-        await updateDoc(callRef, {
-          offer: offer,
-          status: 'calling'
-        });
-        
-        onSnapshot(callRef, async (snapshot) => {
+        const unsub = onSnapshot(callRef, async (snapshot) => {
           const data = snapshot.data();
-          if (data && data.answer && !peerConnection.currentRemoteDescription) {
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-            document.getElementById('callStatus').textContent = 'Connected';
+          if (data && data.answer && !state.peerConnection.currentRemoteDescription) {
+            await state.peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            DOM.callStatus.textContent = 'Connected';
             startCallTimer();
           }
           if (data && data.candidates) {
             for (const candidate of data.candidates) {
               try {
-                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                await state.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
               } catch (e) {
-                console.warn('Error adding ICE candidate:', e);
+                // Ignore invalid candidates
               }
             }
           }
@@ -2424,7 +2894,7 @@
           }
         });
         
-        peerConnection.onicecandidate = async (event) => {
+        state.peerConnection.onicecandidate = async (event) => {
           if (event.candidate) {
             await updateDoc(callRef, {
               candidates: arrayUnion(event.candidate)
@@ -2432,134 +2902,137 @@
           }
         };
         
-        peerConnection.onconnectionstatechange = () => {
-          console.log('Connection state:', peerConnection.connectionState);
-          if (peerConnection.connectionState === 'failed' || 
-              peerConnection.connectionState === 'disconnected' ||
-              peerConnection.connectionState === 'closed') {
+        state.peerConnection.onconnectionstatechange = () => {
+          if (state.peerConnection.connectionState === 'failed' || 
+              state.peerConnection.connectionState === 'disconnected' ||
+              state.peerConnection.connectionState === 'closed') {
             endCall();
           }
         };
         
         showCallOverlay(type);
-        document.getElementById('callStatus').textContent = 'Calling...';
+        DOM.callStatus.textContent = 'Calling...';
         
         document.getElementById('audioCallBtn').classList.add('in-call');
         document.getElementById('videoCallBtn').classList.add('in-call');
         showToast(`${type} call started`);
         
       } catch (error) {
-        console.error('❌ Call error:', error);
-        isCallActive = false;
-        showToast(`Failed to start ${type} call: ${error.message}`);
+        handleError(error, 'startCall');
+        state.isCallActive = false;
         endCall();
       }
-    };
+    }
+    
+    window.startCall = startCall;
     
     function showCallOverlay(type) {
-      const overlay = document.getElementById('callOverlay');
-      const avatar = document.getElementById('callAvatar');
-      const name = document.getElementById('callName');
-      const status = document.getElementById('callStatus');
-      const remoteVideo = document.getElementById('remoteVideo');
-      const localVideo = document.getElementById('localVideo');
-      
-      avatar.innerHTML = currentPartner ? getAvatarHTML(currentPartner) : '<i class="fas fa-user"></i>';
-      name.textContent = currentPartner ? cleanUsername(currentPartner) : 'Unknown';
-      status.textContent = type === 'audio' ? 'Audio calling...' : 'Video calling...';
+      DOM.callAvatar.innerHTML = state.currentPartner ? getAvatarHTML(state.currentPartner) : '<i class="fas fa-user"></i>';
+      DOM.callName.textContent = state.currentPartner ? cleanUsername(state.currentPartner) : 'Unknown';
       
       if (type === 'video') {
-        remoteVideo.classList.add('show');
-        localVideo.classList.add('show');
-        document.getElementById('videoToggleBtn').style.display = 'flex';
+        DOM.remoteVideo.classList.add('show');
+        DOM.localVideo.classList.add('show');
+        DOM.videoToggleBtn.style.display = 'flex';
       } else {
-        remoteVideo.classList.remove('show');
-        localVideo.classList.remove('show');
-        document.getElementById('videoToggleBtn').style.display = 'none';
+        DOM.remoteVideo.classList.remove('show');
+        DOM.localVideo.classList.remove('show');
+        DOM.videoToggleBtn.style.display = 'none';
       }
       
-      overlay.classList.add('show');
-      document.getElementById('floatingNav').style.display = 'none';
+      DOM.callOverlay.classList.add('show');
+      DOM.floatingNav.style.display = 'none';
     }
     
     function startCallTimer() {
-      callSeconds = 0;
-      clearInterval(callTimerInterval);
-      callTimerInterval = setInterval(() => {
-        callSeconds++;
-        const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-        const secs = String(callSeconds % 60).padStart(2, '0');
-        document.getElementById('callTimer').textContent = `${mins}:${secs}`;
+      state.callSeconds = 0;
+      if (state.callTimerInterval) clearInterval(state.callTimerInterval);
+      state.callTimerInterval = setInterval(() => {
+        state.callSeconds++;
+        const mins = String(Math.floor(state.callSeconds / 60)).padStart(2, '0');
+        const secs = String(state.callSeconds % 60).padStart(2, '0');
+        DOM.callTimer.textContent = `${mins}:${secs}`;
       }, 1000);
     }
     
-    window.endCall = async function() {
-      isCallActive = false;
-      clearInterval(callTimerInterval);
-      callSeconds = 0;
-      document.getElementById('callTimer').textContent = '00:00';
-      document.getElementById('callOverlay').classList.remove('show');
+    async function endCall() {
+      state.isCallActive = false;
       
-      const chatView = document.getElementById('chatView');
-      if (chatView && chatView.classList.contains('show')) {
-        document.getElementById('floatingNav').style.display = 'none';
-      } else {
-        document.getElementById('floatingNav').style.display = 'flex';
+      if (state.callTimerInterval) {
+        clearInterval(state.callTimerInterval);
+        state.callTimerInterval = null;
       }
       
-      if (callDocumentId) {
+      state.callSeconds = 0;
+      DOM.callTimer.textContent = '00:00';
+      DOM.callOverlay.classList.remove('show');
+      
+      // Show navbar only if chat is not open
+      if (DOM.chatView.classList.contains('show')) {
+        DOM.floatingNav.style.display = 'none';
+      } else {
+        DOM.floatingNav.style.display = 'flex';
+      }
+      
+      // Update call status in Firestore
+      if (state.callDocumentId) {
         try {
-          await updateDoc(doc(db, 'calls', callDocumentId), {
+          await updateDoc(doc(db, 'calls', state.callDocumentId), {
             status: 'ended',
             endedAt: serverTimestamp()
           });
-        } catch (e) {
-          console.warn('Error updating call status:', e);
+        } catch (error) {
+          // Ignore if document already deleted
         }
       }
       
-      document.getElementById('remoteVideo').classList.remove('show');
-      document.getElementById('remoteVideo').srcObject = null;
-      document.getElementById('localVideo').classList.remove('show');
-      document.getElementById('localVideo').srcObject = null;
-      document.getElementById('videoToggleBtn').style.display = 'none';
+      // Clean up video
+      DOM.remoteVideo.classList.remove('show');
+      DOM.remoteVideo.srcObject = null;
+      DOM.localVideo.classList.remove('show');
+      DOM.localVideo.srcObject = null;
+      DOM.videoToggleBtn.style.display = 'none';
       
-      if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
+      // Clean up peer connection
+      if (state.peerConnection) {
+        state.peerConnection.close();
+        state.peerConnection = null;
       }
       
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
+      // Clean up local stream
+      if (state.localStream) {
+        state.localStream.getTracks().forEach(track => track.stop());
+        state.localStream = null;
       }
       
-      remoteStream = null;
-      callDocumentId = null;
+      state.remoteStream = null;
+      state.callDocumentId = null;
       
       document.getElementById('audioCallBtn').classList.remove('in-call');
       document.getElementById('videoCallBtn').classList.remove('in-call');
       
-      const muteBtn = document.getElementById('muteBtn');
+      const muteBtn = DOM.muteBtn;
       muteBtn.classList.remove('muted');
       muteBtn.querySelector('i').className = 'fas fa-microphone';
-      isMutedCall = false;
+      state.isMutedCall = false;
       
-      document.getElementById('callStatus').textContent = 'Connecting...';
+      DOM.callStatus.textContent = 'Connecting...';
       showToast('Call ended');
-    };
+    }
     
-    window.toggleMute = function() {
-      if (!localStream) return;
+    window.endCall = endCall;
+    
+    function toggleMute() {
+      if (!state.localStream) return;
       
-      isMutedCall = !isMutedCall;
-      const muteBtn = document.getElementById('muteBtn');
+      state.isMutedCall = !state.isMutedCall;
+      const muteBtn = DOM.muteBtn;
       
-      localStream.getAudioTracks().forEach(track => {
-        track.enabled = !isMutedCall;
+      state.localStream.getAudioTracks().forEach(track => {
+        track.enabled = !state.isMutedCall;
       });
       
-      if (isMutedCall) {
+      if (state.isMutedCall) {
         muteBtn.classList.add('muted');
         muteBtn.querySelector('i').className = 'fas fa-microphone-slash';
         showToast('Microphone muted');
@@ -2568,13 +3041,15 @@
         muteBtn.querySelector('i').className = 'fas fa-microphone';
         showToast('Microphone unmuted');
       }
-    };
+    }
     
-    window.toggleSpeaker = function() {
-      isSpeakerOn = !isSpeakerOn;
-      const speakerBtn = document.getElementById('speakerBtn');
+    window.toggleMute = toggleMute;
+    
+    function toggleSpeaker() {
+      state.isSpeakerOn = !state.isSpeakerOn;
+      const speakerBtn = DOM.speakerBtn;
       
-      if (isSpeakerOn) {
+      if (state.isSpeakerOn) {
         speakerBtn.classList.add('speaker-on');
         speakerBtn.querySelector('i').className = 'fas fa-volume-up';
         showToast('Speaker on');
@@ -2583,19 +3058,21 @@
         speakerBtn.querySelector('i').className = 'fas fa-volume-off';
         showToast('Speaker off');
       }
-    };
+    }
     
-    window.toggleVideo = function() {
-      if (!localStream) return;
+    window.toggleSpeaker = toggleSpeaker;
+    
+    function toggleVideo() {
+      if (!state.localStream) return;
       
-      isVideoOn = !isVideoOn;
-      const videoBtn = document.getElementById('videoToggleBtn');
+      state.isVideoOn = !state.isVideoOn;
+      const videoBtn = DOM.videoToggleBtn;
       
-      localStream.getVideoTracks().forEach(track => {
-        track.enabled = isVideoOn;
+      state.localStream.getVideoTracks().forEach(track => {
+        track.enabled = state.isVideoOn;
       });
       
-      if (isVideoOn) {
+      if (state.isVideoOn) {
         videoBtn.classList.remove('video-off');
         videoBtn.querySelector('i').className = 'fas fa-video';
         showToast('Video on');
@@ -2604,232 +3081,123 @@
         videoBtn.querySelector('i').className = 'fas fa-video-slash';
         showToast('Video off');
       }
-    };
-    
-    const arrayUnion = (element) => {
-      return element;
-    };
-    
-    // ========== GO BACK ==========
-    window.goBack = function() {
-      if (unsubMessages) {
-        unsubMessages();
-        unsubMessages = null;
-      }
-      if (unsubCall) {
-        unsubCall();
-        unsubCall = null;
-      }
-      if (isCallActive) {
-        endCall();
-      }
-      if (isRecordingVoice) {
-        if (mediaRecorderInstance && mediaRecorderInstance.state === 'recording') {
-          mediaRecorderInstance.stop();
-        }
-        isRecordingVoice = false;
-        document.getElementById('micBtn').classList.remove('recording');
-        document.getElementById('micBtn').innerHTML = '<i class="fas fa-microphone"></i>';
-      }
-      currentPartner = null;
-      currentPartnerId = null;
-      currentChatId = null;
-      document.getElementById('topIcons').style.display = 'flex';
-      document.getElementById('chatHeader').classList.remove('show');
-      document.getElementById('chatListFull').classList.remove('hidden');
-      document.getElementById('searchBarContainer').classList.remove('hidden');
-      document.getElementById('chatView').classList.remove('show');
-      document.getElementById('chatInputArea').classList.remove('show');
-      document.getElementById('floatingNav').style.display = 'flex';
-      document.getElementById('fabContainer').style.display = 'flex';
-      document.getElementById('messagesContainer').innerHTML = '<div class="empty-chat">Select a chat to start messaging</div>';
-      applySearchFilter();
-    };
-    
-    window.goToPartnerProfile = function() {
-      if (currentPartner) window.location.href = `profile.html?user=${encodeURIComponent(currentPartner)}`;
-    };
-    
-    // ========== FLOATING ACTION BUTTON FUNCTIONS ==========
-    
-    window.toggleNewChatPanel = function() {
-      if (isPanelOpen) {
-        closeNewChatPanel();
-      } else {
-        openNewChatPanel();
-      }
-    };
-    
-    function openNewChatPanel() {
-      isPanelOpen = true;
-      document.getElementById('newChatPanel').classList.add('show');
-      document.getElementById('fabMain').innerHTML = '<i class="fas fa-times"></i>';
-      lastVisible = null;
-      allUsersLoaded = false;
-      allUsers = [];
-      loadPanelUsers();
     }
     
-    window.closeNewChatPanel = function() {
-      isPanelOpen = false;
-      document.getElementById('newChatPanel').classList.remove('show');
-      document.getElementById('fabMain').innerHTML = '<i class="fas fa-plus"></i>';
-    };
+    window.toggleVideo = toggleVideo;
     
-    window.switchPanelTab = function(tab) {
+    // ============================================================
+    // 21. CHAT SETTINGS
+    // ============================================================
+    
+    function openChatSettings() {
+      if (!state.currentPartner) {
+        showToast('No chat selected');
+        return;
+      }
+      DOM.chatSettingsOverlay.classList.add('show');
+    }
+    
+    window.openChatSettings = openChatSettings;
+    
+    function closeChatSettings() {
+      DOM.chatSettingsOverlay.classList.remove('show');
+    }
+    
+    window.closeChatSettings = closeChatSettings;
+    
+    function viewContact() {
+      closeChatSettings();
+      if (state.currentPartner) {
+        window.location.href = `profile.html?user=${encodeURIComponent(state.currentPartner)}`;
+      }
+    }
+    
+    window.viewContact = viewContact;
+    
+    function toggleMuteSetting() {
+      state.isMuted = !state.isMuted;
+      if (state.isMuted) {
+        DOM.muteText.textContent = 'Unmute Notifications';
+        showToast('Chat muted 🔕');
+      } else {
+        DOM.muteText.textContent = 'Mute Notifications';
+        showToast('Chat unmuted 🔔');
+      }
+    }
+    
+    window.toggleMuteSetting = toggleMuteSetting;
+    
+    function blockUser() {
+      if (!state.currentPartner) return;
+      if (confirm('Block this user?')) {
+        closeChatSettings();
+        showToast('User blocked 🚫');
+        goBack();
+      }
+    }
+    
+    window.blockUser = blockUser;
+    
+    // ============================================================
+    // 22. PANEL FUNCTIONS
+    // ============================================================
+    
+    let activePanelTab = 'users';
+    
+    function switchPanelTab(tab) {
       activePanelTab = tab;
       document.querySelectorAll('.new-chat-panel-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.tab === tab);
       });
+      
       if (tab === 'users') {
-        lastVisible = null;
-        allUsersLoaded = false;
-        allUsers = [];
+        state.lastVisible = null;
+        state.allUsersLoaded = false;
+        state.allUsers = [];
         loadPanelUsers();
       } else {
         renderPanelList();
       }
-    };
+    }
     
-    window.filterPanelUsers = function() {
+    window.switchPanelTab = switchPanelTab;
+    
+    function filterPanelUsers() {
       renderPanelList();
-    };
-    
-    // ========== LOAD USERS WITH INFINITE SCROLL ==========
-    async function loadPanelUsers() {
-      if (activePanelTab !== 'users') return;
-      if (isLoadingUsers || allUsersLoaded) return;
-      
-      isLoadingUsers = true;
-      const container = document.getElementById('newChatPanelList');
-      
-      try {
-        let q;
-        if (lastVisible) {
-          q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), startAfter(lastVisible), limit(PAGE_SIZE));
-        } else {
-          q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(PAGE_SIZE));
-        }
-        
-        const snapshot = await getDocs(q);
-        
-        if (snapshot.empty) {
-          allUsersLoaded = true;
-          if (allUsers.length === 0) {
-            container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
-          }
-          return;
-        }
-        
-        const newUsers = [];
-        for (const doc of snapshot.docs) {
-          const data = doc.data();
-          const userId = doc.id;
-          if (userId !== currentUserId) {
-            const username = data.username || data.displayName || data.name || userId;
-            usernameCache[userId] = username;
-            newUsers.push({
-              id: userId,
-              username: username,
-              name: data.name || cleanUsername(username),
-              avatar: data.avatar
-            });
-          }
-        }
-        
-        lastVisible = snapshot.docs[snapshot.docs.length - 1];
-        allUsers = [...allUsers, ...newUsers];
-        
-        if (newUsers.length < PAGE_SIZE) {
-          allUsersLoaded = true;
-        }
-        
-        renderPanelList();
-        
-      } catch (error) {
-        console.error('❌ Error loading users:', error);
-        container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-exclamation-triangle"></i><p>Error loading users</p></div>';
-      } finally {
-        isLoadingUsers = false;
-      }
     }
     
-    function setupPanelScroll() {
-      const list = document.getElementById('newChatPanelList');
-      list.addEventListener('scroll', function() {
-        if (activePanelTab !== 'users') return;
-        if (isLoadingUsers || allUsersLoaded) return;
-        
-        const scrollTop = this.scrollTop;
-        const scrollHeight = this.scrollHeight;
-        const clientHeight = this.clientHeight;
-        
-        if (scrollTop + clientHeight >= scrollHeight - 100) {
-          loadPanelUsers();
-        }
-      });
-    }
+    window.filterPanelUsers = filterPanelUsers;
     
-    // ========== LOAD REQUESTS ==========
-    async function loadRequests() {
-      try {
-        pendingRequests = [];
-        const q = query(collection(db, 'message_requests'), where('toId', '==', currentUserId), where('status', '==', 'pending'));
-        const snapshot = await getDocs(q);
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          pendingRequests.push({
-            id: doc.id,
-            from: data.from,
-            fromName: data.fromName,
-            fromAvatar: data.fromAvatar,
-            fromId: data.fromId
-          });
-        });
-        
-        const badge = document.getElementById('fabBadge');
-        const panelBadge = document.getElementById('panelRequestBadge');
-        if (pendingRequests.length > 0) {
-          badge.style.display = 'flex';
-          badge.textContent = pendingRequests.length;
-          panelBadge.style.display = 'inline';
-          panelBadge.textContent = pendingRequests.length;
-        } else {
-          badge.style.display = 'none';
-          panelBadge.style.display = 'none';
-        }
-      } catch (error) {
-        console.error('❌ Error loading requests:', error);
-      }
-    }
-    
-    // ========== RENDER PANEL LIST ==========
     function renderPanelList() {
-      const container = document.getElementById('newChatPanelList');
-      const searchTerm = document.getElementById('panelSearchInput').value.toLowerCase();
+      const searchTerm = DOM.panelSearchInput.value.toLowerCase();
       
       if (activePanelTab === 'users') {
-        let filtered = allUsers;
+        let filtered = state.allUsers;
         if (searchTerm) {
-          filtered = allUsers.filter(u => 
+          filtered = state.allUsers.filter(u => 
             (u.username || '').toLowerCase().includes(searchTerm) || 
             (u.name || '').toLowerCase().includes(searchTerm)
           );
         }
         
-        if (filtered.length === 0 && !isLoadingUsers) {
-          container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
+        if (filtered.length === 0 && !state.isLoadingUsers) {
+          DOM.newChatPanelList.innerHTML = `
+            <div class="new-chat-panel-empty">
+              <i class="fas fa-user-slash"></i>
+              <p>No users found</p>
+            </div>
+          `;
           return;
         }
         
         let html = filtered.map(u => `
           <div class="new-chat-panel-item" onclick="startChatFromPanel('${u.id}')">
             <div class="new-chat-panel-avatar">
-              ${u.avatar ? `<img src="${u.avatar}">` : '<i class="fas fa-user"></i>'}
+              ${u.avatar ? `<img src="${u.avatar}" alt="${u.username}">` : '<i class="fas fa-user"></i>'}
             </div>
             <div class="new-chat-panel-info">
-              <div class="new-chat-panel-name">${u.name || cleanUsername(u.username || u.id)}</div>
-              <div class="new-chat-panel-sub">@${u.username || u.id}</div>
+              <div class="new-chat-panel-name">${sanitizeInput(u.name || cleanUsername(u.username || u.id))}</div>
+              <div class="new-chat-panel-sub">@${sanitizeInput(u.username || u.id)}</div>
             </div>
             <button class="new-chat-panel-action" onclick="event.stopPropagation();startChatFromPanel('${u.id}')">
               <i class="fas fa-comment"></i> Chat
@@ -2837,28 +3205,34 @@
           </div>
         `).join('');
         
-        if (!allUsersLoaded && !isLoadingUsers) {
+        if (!state.allUsersLoaded && !state.isLoadingUsers) {
           html += `<div class="panel-loading" id="panelLoadMore"><i class="fas fa-spinner"></i> Loading more users...</div>`;
-        } else if (isLoadingUsers) {
+        } else if (state.isLoadingUsers) {
           html += `<div class="panel-loading"><i class="fas fa-spinner"></i> Loading...</div>`;
         }
         
-        container.innerHTML = html;
+        DOM.newChatPanelList.innerHTML = html;
         
       } else {
-        if (pendingRequests.length === 0) {
-          container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-envelope-open"></i><p>No pending requests</p></div>';
+        // Requests tab
+        if (state.pendingRequests.length === 0) {
+          DOM.newChatPanelList.innerHTML = `
+            <div class="new-chat-panel-empty">
+              <i class="fas fa-envelope-open"></i>
+              <p>No pending requests</p>
+            </div>
+          `;
           return;
         }
         
-        container.innerHTML = pendingRequests.map(r => `
+        DOM.newChatPanelList.innerHTML = state.pendingRequests.map(r => `
           <div class="new-chat-panel-item">
             <div class="new-chat-panel-avatar" onclick="window.location.href='profile.html?user=${encodeURIComponent(r.from)}'">
-              ${r.fromAvatar ? `<img src="${r.fromAvatar}">` : '<i class="fas fa-user"></i>'}
+              ${r.fromAvatar ? `<img src="${r.fromAvatar}" alt="${r.from}">` : '<i class="fas fa-user"></i>'}
             </div>
             <div class="new-chat-panel-info" onclick="window.location.href='profile.html?user=${encodeURIComponent(r.from)}'">
-              <div class="new-chat-panel-name">${r.fromName || cleanUsername(r.from)}</div>
-              <div class="new-chat-panel-sub">${r.from}</div>
+              <div class="new-chat-panel-name">${sanitizeInput(r.fromName || cleanUsername(r.from))}</div>
+              <div class="new-chat-panel-sub">${sanitizeInput(r.from)}</div>
             </div>
             <div style="display:flex;gap:0.3rem;">
               <button class="new-chat-panel-action accept" onclick="event.stopPropagation();acceptRequestFromPanel('${r.id}', '${r.from}')">
@@ -2873,109 +3247,207 @@
       }
     }
     
-    // ========== CHAT ACTIONS FROM PANEL ==========
-    window.startChatFromPanel = async function(partnerUserId) {
+    function setupPanelScroll() {
+      DOM.newChatPanelList.addEventListener('scroll', function() {
+        if (activePanelTab !== 'users') return;
+        if (state.isLoadingUsers || state.allUsersLoaded) return;
+        
+        const scrollTop = this.scrollTop;
+        const scrollHeight = this.scrollHeight;
+        const clientHeight = this.clientHeight;
+        
+        if (scrollTop + clientHeight >= scrollHeight - 100) {
+          loadPanelUsers();
+        }
+      });
+    }
+    
+    // ============================================================
+    // 23. LOAD REQUESTS
+    // ============================================================
+    
+    async function loadRequests() {
+      try {
+        const q = query(
+          collection(db, 'message_requests'),
+          where('toId', '==', currentUserId),
+          where('status', '==', 'pending')
+        );
+        
+        const snapshot = await getDocs(q);
+        state.pendingRequests = [];
+        
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          state.pendingRequests.push({
+            id: doc.id,
+            from: data.from,
+            fromName: data.fromName,
+            fromAvatar: data.fromAvatar,
+            fromId: data.fromId
+          });
+        });
+        
+        const count = state.pendingRequests.length;
+        DOM.fabBadge.style.display = count > 0 ? 'flex' : 'none';
+        DOM.fabBadge.textContent = count;
+        DOM.panelRequestBadge.style.display = count > 0 ? 'inline' : 'none';
+        DOM.panelRequestBadge.textContent = count;
+        
+      } catch (error) {
+        handleError(error, 'loadRequests');
+      }
+    }
+    
+    // ============================================================
+    // 24. CHAT ACTIONS FROM PANEL
+    // ============================================================
+    
+    async function startChatFromPanel(partnerUserId) {
       closeNewChatPanel();
+      
+      if (!partnerUserId) {
+        showToast('Invalid user');
+        return;
+      }
       
       const chatId = [currentUserId, partnerUserId].sort().join('_');
       
       try {
         await ensureChatExists(chatId, currentUserId, partnerUserId);
         await openChat(partnerUserId, chatId);
-      } catch(error) {
-        console.error('❌ Error starting chat:', error);
-        showToast('Failed to start chat: ' + error.message);
+      } catch (error) {
+        handleError(error, 'startChatFromPanel');
       }
-    };
+    }
     
-    window.acceptRequestFromPanel = async function(requestId, fromUser) {
+    window.startChatFromPanel = startChatFromPanel;
+    
+    async function acceptRequestFromPanel(requestId, fromUser) {
       try {
         await deleteDoc(doc(db, 'message_requests', requestId));
         await loadRequests();
         renderPanelList();
         showToast(`Accepted request from ${cleanUsername(fromUser)}`);
-      } catch(error) {
-        console.error('❌ Error accepting request:', error);
-        showToast('Failed to accept request');
+      } catch (error) {
+        handleError(error, 'acceptRequestFromPanel');
       }
-    };
+    }
     
-    window.declineRequestFromPanel = async function(requestId) {
+    window.acceptRequestFromPanel = acceptRequestFromPanel;
+    
+    async function declineRequestFromPanel(requestId) {
       try {
         await deleteDoc(doc(db, 'message_requests', requestId));
         await loadRequests();
         renderPanelList();
         showToast('Request declined');
-      } catch(error) {
-        console.error('❌ Error declining request:', error);
-        showToast('Failed to decline request');
+      } catch (error) {
+        handleError(error, 'declineRequestFromPanel');
       }
-    };
+    }
     
-    // ========== CHAT SETTINGS ==========
-    window.openChatSettings = function() {
-      if (!currentPartner) {
-        showToast('No chat selected');
-        return;
+    window.declineRequestFromPanel = declineRequestFromPanel;
+    
+    // ============================================================
+    // 25. PROFILE NAVIGATION
+    // ============================================================
+    
+    function goToPartnerProfile() {
+      if (state.currentPartner) {
+        window.location.href = `profile.html?user=${encodeURIComponent(state.currentPartner)}`;
       }
-      document.getElementById('chatSettingsOverlay').classList.add('show');
-    };
+    }
     
-    window.closeChatSettings = function() {
-      document.getElementById('chatSettingsOverlay').classList.remove('show');
-    };
+    window.goToPartnerProfile = goToPartnerProfile;
     
-    window.viewContact = function() {
-      closeChatSettings();
-      if (currentPartner) {
-        window.location.href = `profile.html?user=${encodeURIComponent(currentPartner)}`;
-      }
-    };
+    // ============================================================
+    // 26. KEYBOARD SHORTCUTS
+    // ============================================================
     
-    window.toggleMuteSetting = function() {
-      isMutedSetting = !isMutedSetting;
-      const muteText = document.getElementById('muteText');
-      if (isMutedSetting) {
-        muteText.textContent = 'Unmute Notifications';
-        showToast('Chat muted 🔕');
-      } else {
-        muteText.textContent = 'Mute Notifications';
-        showToast('Chat unmuted 🔔');
-      }
-    };
-    
-    // ========== EVENT LISTENERS ==========
-    document.getElementById('chatSettingsOverlay').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('chatSettingsOverlay')) closeChatSettings();
-    });
-    
-    document.getElementById('chatInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
+    DOM.chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
       }
     });
     
+    // ============================================================
+    // 27. CLOSE PANELS ON OUTSIDE CLICK
+    // ============================================================
+    
     document.addEventListener('click', function(e) {
-      const panel = document.getElementById('newChatPanel');
-      const fab = document.getElementById('fabMain');
-      if (isPanelOpen && panel && fab && !panel.contains(e.target) && !fab.contains(e.target)) {
+      const panel = DOM.newChatPanel;
+      const fab = DOM.fabMain;
+      if (state.isPanelOpen && panel && fab && !panel.contains(e.target) && !fab.contains(e.target)) {
         closeNewChatPanel();
       }
     });
     
-    // ========== INITIALIZE ==========
-    console.log("🚀 App Initialized");
-    console.log("👤 Current User ID:", currentUserId);
+    DOM.chatSettingsOverlay.addEventListener('click', (e) => {
+      if (e.target === DOM.chatSettingsOverlay) closeChatSettings();
+    });
     
-    // Validate user account before loading
-    const isValid = await validateUserAccount();
-    if (isValid) {
-      loadChats();
-      loadRequests();
-      setupPanelScroll();
-      listenForCalls();
-    }
+    // ============================================================
+    // 28. ERROR BOUNDARY FOR UNCAUGHT ERRORS
+    // ============================================================
+    
+    window.addEventListener('error', (event) => {
+      console.error('Uncaught error:', event.error);
+      showToast('Something went wrong. Please refresh the page.');
+    });
+    
+    // ============================================================
+    // 29. INITIALIZATION
+    // ============================================================
+    
+    console.log('🚀 Chat App Initialized');
+    console.log(`👤 User: ${currentUserId}`);
+    
+    loadChats();
+    loadRequests();
+    setupPanelScroll();
+    listenForCalls();
+    
+    // ============================================================
+    // 30. EXPOSE FUNCTIONS TO GLOBAL SCOPE
+    // ============================================================
+    
+    // Keep existing function references for inline onclick handlers
+    window.startCall = startCall;
+    window.endCall = endCall;
+    window.toggleMute = toggleMute;
+    window.toggleSpeaker = toggleSpeaker;
+    window.toggleVideo = toggleVideo;
+    window.acceptIncomingCall = acceptIncomingCall;
+    window.declineIncomingCall = declineIncomingCall;
+    window.goBack = goBack;
+    window.goToPartnerProfile = goToPartnerProfile;
+    window.openChatSettings = openChatSettings;
+    window.closeChatSettings = closeChatSettings;
+    window.viewContact = viewContact;
+    window.toggleMuteSetting = toggleMuteSetting;
+    window.blockUser = blockUser;
+    window.deleteChat = deleteChat;
+    window.clearChat = clearChat;
+    window.deleteMessage = deleteMessage;
+    window.sendMessage = sendMessage;
+    window.sendImage = sendImage;
+    window.toggleVoiceRecording = toggleVoiceRecording;
+    window.toggleNewChatPanel = toggleNewChatPanel;
+    window.closeNewChatPanel = closeNewChatPanel;
+    window.openNewChatPanel = openNewChatPanel;
+    window.switchPanelTab = switchPanelTab;
+    window.filterPanelUsers = filterPanelUsers;
+    window.startChatFromPanel = startChatFromPanel;
+    window.acceptRequestFromPanel = acceptRequestFromPanel;
+    window.declineRequestFromPanel = declineRequestFromPanel;
+    window.filterChats = filterChats;
+    window.openChat = openChat;
+    window.goBack = goBack;
+    window.showToast = showToast;
+    
+    console.log('✅ Chat App Ready');
   </script>
 </body>
 </html>
