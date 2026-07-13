@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="CSS/main.css">
   <style>
-    /* ... (all existing styles remain the same) ... */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -339,6 +338,7 @@
       gap: 0.2rem;
       background: #000;
       width: 100%;
+      padding-bottom: 0; /* Remove padding bottom to reduce gap */
     }
     .messages-container::-webkit-scrollbar { width: 0; }
     .message-wrapper {
@@ -470,6 +470,7 @@
       background: #000;
       border-top: 1px solid rgba(255,255,255,0.06);
       width: 100%;
+      margin-top: 0; /* Remove margin top */
     }
     .chat-input-area.show { display: flex; }
     .camera-btn-s, .mic-btn-s {
@@ -829,7 +830,6 @@
       background: #dc2626;
     }
     
-    /* ========== NEW CHAT PANEL - 100% TRANSPARENCY WITH ULTRA GLASSMORPHISM ========== */
     .new-chat-panel {
       position: fixed;
       bottom: 150px;
