@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="CSS/main.css">
   <style>
+    /* ... (all existing styles remain the same) ... */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -338,7 +339,7 @@
       gap: 0.2rem;
       background: #000;
       width: 100%;
-      padding-bottom: 0; /* Remove padding bottom to reduce gap */
+      padding-bottom: 0;
     }
     .messages-container::-webkit-scrollbar { width: 0; }
     .message-wrapper {
@@ -461,72 +462,111 @@
       color: #333;
       font-size: 0.8rem;
     }
+    
+    /* ========== CHAT INPUT AREA - NO BACKGROUNDS ========== */
     .chat-input-area {
       display: none;
       align-items: center;
       gap: 0.4rem;
       padding: 0.5rem 0.8rem;
       padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
-      background: #000;
+      background: transparent !important;
       border-top: 1px solid rgba(255,255,255,0.06);
       width: 100%;
-      margin-top: 0; /* Remove margin top */
+      margin-top: 0;
     }
     .chat-input-area.show { display: flex; }
-    .camera-btn-s, .mic-btn-s {
+    
+    .camera-btn-s {
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #fff;
+      background: transparent !important;
+      border: none !important;
+      color: rgba(255,255,255,0.6);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
       transition: all 0.2s;
+      font-size: 1.1rem;
     }
-    .camera-btn-s:hover, .mic-btn-s:hover {
-      background: rgba(255,255,255,0.15);
+    .camera-btn-s:hover {
+      color: #fff;
+    }
+    .camera-btn-s:active {
+      transform: scale(0.9);
+    }
+    
+    .mic-btn-s {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: transparent !important;
+      border: none !important;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      font-size: 1.1rem;
+    }
+    .mic-btn-s:hover {
+      color: #fff;
+    }
+    .mic-btn-s:active {
+      transform: scale(0.9);
     }
     .mic-btn-s.recording {
-      background: #ef4444;
-      border-color: #ef4444;
+      color: #ef4444 !important;
       animation: pulse 1s infinite;
     }
+    
     .chat-input {
       flex: 1;
-      padding: 0.6rem 1rem;
-      border-radius: 1.5rem;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: #0a0a0a;
+      padding: 0.6rem 0.8rem;
+      border-radius: 0;
+      border: none !important;
+      background: transparent !important;
       color: #fff;
       font-size: 0.85rem;
       outline: none;
       min-width: 0;
     }
-    .chat-input:focus { border-color: #FFFC00; }
+    .chat-input::placeholder {
+      color: rgba(255,255,255,0.3);
+    }
+    .chat-input:focus {
+      border: none !important;
+      outline: none !important;
+    }
+    
     .send-btn {
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      background: #FFFC00;
-      border: none;
-      color: #000;
+      background: transparent !important;
+      border: none !important;
+      color: rgba(255,255,255,0.4);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
       transition: all 0.2s;
+      font-size: 1.1rem;
     }
     .send-btn:hover {
+      color: #FFFC00;
       transform: scale(1.05);
     }
     .send-btn:active {
-      transform: scale(0.95);
+      transform: scale(0.9);
     }
+    
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
