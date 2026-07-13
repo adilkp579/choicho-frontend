@@ -52,7 +52,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // Backend API URL - Update with your actual backend URL
-const BACKEND_URL = 'choicho-backend-production.up.railway.app';
+const BACKEND_URL = 'https://choicho-backend.onrender.com';
 
 // Get Auth Token for backend requests
 async function getAuthToken() {
