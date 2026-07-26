@@ -202,8 +202,10 @@
       border:2px solid rgba(255,255,255,0.3);border-radius:14px;
       position:relative;overflow:hidden;
       display:flex;align-items:center;justify-content:center;
+      transition: all 0.3s;
     }
     .my-camera.active { border-color:#ef4444; }
+    .my-camera.camera-off { border-color:#666; opacity:0.6; }
     #myFeed {
       width:100%;height:100%;object-fit:cover;display:none;background:#000;
       transform: scaleX(-1);
@@ -274,7 +276,7 @@
     .mic-btn.visible { display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(255,255,255,0.2);font-size:0.75rem; }
     .mic-btn.muted { color:#ef4444;background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.5); }
     
-    /* Camera toggle button - simple addition */
+    /* Camera toggle button */
     .cam-btn {
       display:none;
       width:32px;height:32px;border-radius:50%;
@@ -286,9 +288,14 @@
       font-size:0.75rem;
       align-items:center;
       justify-content:center;
+      transition:all 0.3s;
     }
     .cam-btn.visible { display:inline-flex; }
-    .cam-btn.off { color:#ef4444;background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.5); }
+    .cam-btn.off { 
+      color:#ef4444;
+      background:rgba(239,68,68,0.2);
+      border-color:rgba(239,68,68,0.5);
+    }
     
     .chat-toggle-btn {
       display:none; width:32px; height:32px; border-radius:50%;
@@ -457,7 +464,6 @@
       .stranger-camera { height: 50vh; }
       .my-camera { height: 25vh; }
       .search-bar { padding: 0.35rem 0.7rem; }
-      .cam-btn { width:28px;height:28px;font-size:0.65rem; }
     }
 
     @media (min-width: 1024px) {
@@ -540,7 +546,6 @@
         right: 2rem; 
         transform: none; 
       }
-      .cam-btn { width:32px;height:32px;font-size:0.75rem; }
     }
     @media (max-width: 1023px) {
       .stranger-controls-row { display: none; }
@@ -1112,7 +1117,7 @@
       let inviteListenerUnsub = null;
       let waitingListenerUnsub = null;
       
-      // Camera toggle function
+      // Camera toggle function - properly turns camera on/off
       function toggleCamera() {
         if (!localStream) {
           showToast('❌ Camera not started');
@@ -1120,39 +1125,43 @@
         }
         
         isCameraOn = !isCameraOn;
+        
+        // Get all video tracks from the local stream
         const videoTracks = localStream.getVideoTracks();
         
         if (videoTracks.length > 0) {
           videoTracks.forEach(track => {
             track.enabled = isCameraOn;
           });
-        }
-        
-        // Update button states
-        [camBtn, camBtnDesktop].forEach(btn => {
-          if (btn) {
-            if (isCameraOn) {
-              btn.classList.remove('off');
-              btn.innerHTML = '<i class="fas fa-video"></i>';
-            } else {
-              btn.classList.add('off');
-              btn.innerHTML = '<i class="fas fa-video-slash"></i>';
+          
+          // Update button states
+          [camBtn, camBtnDesktop].forEach(btn => {
+            if (btn) {
+              if (isCameraOn) {
+                btn.classList.remove('off');
+                btn.innerHTML = '<i class="fas fa-video"></i>';
+              } else {
+                btn.classList.add('off');
+                btn.innerHTML = '<i class="fas fa-video-slash"></i>';
+              }
             }
+          });
+          
+          // Update camera display
+          if (isCameraOn) {
+            myFeed.style.display = 'block';
+            myPlaceholder.style.display = 'none';
+            myCameraEl.classList.remove('camera-off');
+            showToast('📷 Camera on');
+          } else {
+            myFeed.style.display = 'none';
+            myPlaceholder.style.display = 'flex';
+            myCameraEl.classList.add('camera-off');
+            showToast('📷 Camera off');
           }
-        });
-        
-        // Update camera display
-        if (isCameraOn) {
-          myFeed.style.display = 'block';
-          myPlaceholder.style.display = 'none';
-          myCameraEl.classList.remove('camera-off');
         } else {
-          myFeed.style.display = 'none';
-          myPlaceholder.style.display = '';
-          myCameraEl.classList.add('camera-off');
+          showToast('❌ No video track found');
         }
-        
-        showToast(isCameraOn ? '📷 Camera on' : '📷 Camera off');
       }
       
       // Show toast
@@ -1705,6 +1714,7 @@
           myFeed.style.display = 'block';
           myPlaceholder.style.display = 'none';
           myCameraEl.classList.add('active');
+          myCameraEl.classList.remove('camera-off');
           isCameraOn = true;
           
           // Update camera button
@@ -1733,6 +1743,7 @@
         myFeed.srcObject = null;
         myPlaceholder.style.display = '';
         myCameraEl.classList.remove('active');
+        myCameraEl.classList.remove('camera-off');
         isCameraOn = false;
         
         // Update camera button
