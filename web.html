@@ -204,6 +204,7 @@
       display:flex;align-items:center;justify-content:center;
     }
     .my-camera.active { border-color:#ef4444; }
+    .my-camera.camera-off { border-color:#666; opacity:0.6; }
     #myFeed {
       width:100%;height:100%;object-fit:cover;display:none;background:#000;
       transform: scaleX(-1);
@@ -267,6 +268,21 @@
     .live-btn.active { background:rgba(239,68,68,0.3);border-color:rgba(239,68,68,0.7);color:#ef4444;animation:livePulse 2s infinite; }
     .start-btn { background:rgba(74,222,128,0.2);border-color:rgba(74,222,128,0.5);color:#4ade80; }
     .start-btn.stop-state { background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.5);color:#ef4444; }
+    
+    /* Camera On/Off Button */
+    .camera-toggle-btn {
+      width:72px;height:32px;border-radius:17px;
+      display:inline-flex;align-items:center;justify-content:center;gap:4px;
+      cursor:pointer;border:1px solid transparent;outline:none;
+      font-size:0.65rem;font-weight:600;padding:0;color:#fff;
+      transition:all 0.3s;
+      touch-action:manipulation;user-select:none;
+      background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.5);color:#3b82f6;
+    }
+    .camera-toggle-btn.off {
+      background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.5);color:#ef4444;
+    }
+    .camera-toggle-btn:active { transform:scale(0.95); }
     
     .next-btn { display:none;width:56px;height:32px;border-radius:17px;background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);color:#ccc; }
     .next-btn.visible { display:inline-flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;border:1px solid rgba(255,255,255,0.2); }
@@ -434,6 +450,7 @@
     @media (max-width: 380px) {
       .token-btn{width:90px;height:32px;font-size:0.65rem;}
       .ctrl-btn{width:60px;height:28px;font-size:0.55rem;}
+      .camera-toggle-btn{width:60px;height:28px;font-size:0.55rem;}
       .floating-nav { width: 94%; padding: 0.5rem 0.8rem; }
       .nav-center a { font-size: 1.1rem; width: 2rem; height: 2rem; }
       .search-bar-container { padding: 0.15rem 0.6rem 0.15rem 0.6rem; }
@@ -579,6 +596,7 @@
           <div class="stranger-controls-row" id="strangerControlsRow">
             <button class="ctrl-btn live-btn" id="liveBtnDesktop" type="button"><i class="fas fa-circle"></i><span>Live</span></button>
             <button class="ctrl-btn start-btn" id="startStopBtnDesktop" type="button"><i class="fas fa-play"></i><span>Start</span></button>
+            <button class="camera-toggle-btn" id="cameraToggleBtnDesktop" type="button"><i class="fas fa-video"></i><span>Cam</span></button>
             <button class="next-btn" id="nextBtnDesktop" type="button"><i class="fas fa-forward"></i><span>Next</span></button>
             <button class="mic-btn" id="micBtnDesktop" type="button"><i class="fas fa-microphone"></i></button>
             <button class="chat-toggle-btn" id="chatToggleBtnDesktop" type="button"><i class="fas fa-comment"></i></button>
@@ -602,6 +620,7 @@
       <div class="control-row mobile-only">
         <button class="ctrl-btn live-btn" id="liveBtn" type="button"><i class="fas fa-circle"></i><span>Live</span></button>
         <button class="ctrl-btn start-btn" id="startStopBtn" type="button"><i class="fas fa-play"></i><span>Start</span></button>
+        <button class="camera-toggle-btn" id="cameraToggleBtn" type="button"><i class="fas fa-video"></i><span>Cam</span></button>
         <button class="next-btn" id="nextBtn" type="button"><i class="fas fa-forward"></i><span>Next</span></button>
         <button class="mic-btn" id="micBtn" type="button"><i class="fas fa-microphone"></i></button>
         <button class="chat-toggle-btn" id="chatToggleBtn" type="button"><i class="fas fa-comment"></i></button>
@@ -1069,10 +1088,12 @@
       const nextBtn = document.getElementById('nextBtn');
       const micBtn = document.getElementById('micBtn');
       const liveBtn = document.getElementById('liveBtn');
+      const cameraToggleBtn = document.getElementById('cameraToggleBtn');
       const startStopBtnDesktop = document.getElementById('startStopBtnDesktop');
       const nextBtnDesktop = document.getElementById('nextBtnDesktop');
       const micBtnDesktop = document.getElementById('micBtnDesktop');
       const liveBtnDesktop = document.getElementById('liveBtnDesktop');
+      const cameraToggleBtnDesktop = document.getElementById('cameraToggleBtnDesktop');
       
       let localStream = null;
       let pc = null;
@@ -1080,6 +1101,7 @@
       let unsubs = [];
       let isMuted = false;
       let isLive = false;
+      let isCameraOn = true;
       let strangerStream = null;
       let chatMessagesUnsub = null;
       let tokenTransferUnsub = null;
@@ -1088,6 +1110,65 @@
       let isSearching = false;
       let inviteListenerUnsub = null;
       let waitingListenerUnsub = null;
+      
+      // Camera toggle function
+      function toggleCamera() {
+        if (!localStream) {
+          showToast('❌ Camera not started');
+          return;
+        }
+        
+        isCameraOn = !isCameraOn;
+        const videoTracks = localStream.getVideoTracks();
+        
+        if (videoTracks.length > 0) {
+          videoTracks.forEach(track => {
+            track.enabled = isCameraOn;
+          });
+        }
+        
+        // Update button states
+        [cameraToggleBtn, cameraToggleBtnDesktop].forEach(btn => {
+          if (btn) {
+            const icon = btn.querySelector('i');
+            const span = btn.querySelector('span');
+            if (isCameraOn) {
+              btn.classList.remove('off');
+              if (icon) icon.className = 'fas fa-video';
+              if (span) span.textContent = 'Cam';
+            } else {
+              btn.classList.add('off');
+              if (icon) icon.className = 'fas fa-video-slash';
+              if (span) span.textContent = 'Off';
+            }
+          }
+        });
+        
+        // Update camera border
+        if (isCameraOn) {
+          myCameraEl.classList.remove('camera-off');
+          myPlaceholder.style.display = 'none';
+          myFeed.style.display = 'block';
+        } else {
+          myCameraEl.classList.add('camera-off');
+          myPlaceholder.style.display = '';
+          myFeed.style.display = 'none';
+        }
+        
+        showToast(isCameraOn ? '📷 Camera on' : '📷 Camera off');
+      }
+      
+      // Show toast
+      function showToast(message) {
+        const toast = document.getElementById('toast');
+        if (toast) {
+          toast.textContent = message;
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 2000);
+        } else {
+          console.log('Toast:', message);
+        }
+      }
       
       sendChatMessageFn = async (text) => {
         if (!roomId || !currentUserId || !isConnectedToStranger) {
@@ -1625,6 +1706,20 @@
           myFeed.style.display = 'block';
           myPlaceholder.style.display = 'none';
           myCameraEl.classList.add('active');
+          myCameraEl.classList.remove('camera-off');
+          isCameraOn = true;
+          
+          // Update camera button
+          [cameraToggleBtn, cameraToggleBtnDesktop].forEach(btn => {
+            if (btn) {
+              btn.classList.remove('off');
+              const icon = btn.querySelector('i');
+              const span = btn.querySelector('span');
+              if (icon) icon.className = 'fas fa-video';
+              if (span) span.textContent = 'Cam';
+            }
+          });
+          
           console.log('✅ Camera started');
           return true;
         } catch (e) {
@@ -1643,6 +1738,19 @@
         myFeed.srcObject = null;
         myPlaceholder.style.display = '';
         myCameraEl.classList.remove('active');
+        myCameraEl.classList.remove('camera-off');
+        isCameraOn = false;
+        
+        // Update camera button
+        [cameraToggleBtn, cameraToggleBtnDesktop].forEach(btn => {
+          if (btn) {
+            btn.classList.add('off');
+            const icon = btn.querySelector('i');
+            const span = btn.querySelector('span');
+            if (icon) icon.className = 'fas fa-video-slash';
+            if (span) span.textContent = 'Off';
+          }
+        });
       }
       
       function resetStranger() {
@@ -1685,6 +1793,10 @@
       
       micBtn.onclick = toggleMute;
       if (micBtnDesktop) micBtnDesktop.onclick = toggleMute;
+      
+      // Camera toggle event listeners
+      cameraToggleBtn.onclick = toggleCamera;
+      if (cameraToggleBtnDesktop) cameraToggleBtnDesktop.onclick = toggleCamera;
       
       function stopChat() {
         console.log('🛑 Stopping chat');
@@ -1806,5 +1918,8 @@
       });
     }
   </script>
+  
+  <!-- Toast element for camera toggle feedback -->
+  <div class="toast" id="toast"></div>
 </body>
 </html>
