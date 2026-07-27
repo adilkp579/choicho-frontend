@@ -276,7 +276,6 @@
     .mic-btn.visible { display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(255,255,255,0.2);font-size:0.75rem; }
     .mic-btn.muted { color:#ef4444;background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.5); }
     
-    /* Camera toggle button - simple */
     .cam-btn {
       display:none;
       width:32px;height:32px;border-radius:50%;
@@ -697,7 +696,7 @@
   
   <script type="module">
     // ================================================================
-    // WEBRTC FIXED - Proper connection and video sharing
+    // WEBRTC - Cross Browser Compatible
     // ================================================================
     
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -1080,7 +1079,7 @@
     }
     
     // ================================================================
-    // FIXED WEBRTC IMPLEMENTATION
+    // CROSS-BROWSER WEBRTC IMPLEMENTATION
     // ================================================================
     
     function startWebChat() {
@@ -1115,9 +1114,27 @@
       let pendingIceCandidates = [];
       let isSearching = false;
       let inviteListenerUnsub = null;
-      let waitingListenerUnsub = null;
       
-      // Camera toggle function - simply turns camera screen off/on
+      // Cross-browser compatible PeerConnection config
+      function getPeerConnectionConfig() {
+        const config = {
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" },
+            { urls: "stun:stun2.l.google.com:19302" },
+            { urls: "stun:stun3.l.google.com:19302" },
+            { urls: "stun:stun4.l.google.com:19302" },
+            { urls: "stun:stun.stunprotocol.org:3478" }
+          ],
+          iceCandidatePoolSize: 10,
+          bundlePolicy: "max-bundle",
+          rtcpMuxPolicy: "require",
+          sdpSemantics: "unified-plan"
+        };
+        return config;
+      }
+      
+      // Camera toggle function
       function toggleCamera() {
         if (!localStream) {
           showToast('❌ Camera not started');
@@ -1125,8 +1142,6 @@
         }
         
         isCameraOn = !isCameraOn;
-        
-        // Get all video tracks from the local stream
         const videoTracks = localStream.getVideoTracks();
         
         if (videoTracks.length > 0) {
@@ -1134,7 +1149,6 @@
             track.enabled = isCameraOn;
           });
           
-          // Update button states
           [camBtn, camBtnDesktop].forEach(btn => {
             if (btn) {
               if (isCameraOn) {
@@ -1147,7 +1161,6 @@
             }
           });
           
-          // Update camera display - simply show/hide the video
           if (isCameraOn) {
             myFeed.style.display = 'block';
             myPlaceholder.style.display = 'none';
@@ -1157,20 +1170,15 @@
             myPlaceholder.style.display = 'flex';
             myCameraEl.classList.add('camera-off');
           }
-        } else {
-          showToast('❌ No video track found');
         }
       }
       
-      // Show toast
       function showToast(message) {
         const toast = document.getElementById('toast');
         if (toast) {
           toast.textContent = message;
           toast.classList.add('show');
           setTimeout(() => toast.classList.remove('show'), 2000);
-        } else {
-          console.log('Toast:', message);
         }
       }
       
@@ -1249,17 +1257,8 @@
         cleanupRoomListeners();
         pendingIceCandidates = [];
         
-        // Create PeerConnection
-        pc = new RTCPeerConnection({
-          iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" },
-            { urls: "stun:stun.relay.metered.ca:80" }
-          ],
-          iceCandidatePoolSize: 10,
-          bundlePolicy: "max-bundle",
-          rtcpMuxPolicy: "require"
-        });
+        // Create PeerConnection with cross-browser config
+        pc = new RTCPeerConnection(getPeerConnectionConfig());
         
         // Add local tracks
         if (localStream) {
@@ -1385,34 +1384,26 @@
         }
         
         try {
-          // First check if there's a waiting user
           const waitingQuery = query(collection(db, 'waiting'), where('userId', '!=', currentUserId), limit(1));
           const waitingSnap = await getDocs(waitingQuery);
           
           if (!waitingSnap.empty) {
             const waitingDoc = waitingSnap.docs[0];
             const waitingUserId = waitingDoc.data().userId;
-            
-            // Delete waiting document
             await deleteDoc(waitingDoc.ref);
-            
-            // Connect with the waiting user (as caller)
             await createRoomWithParticipant(waitingUserId, true);
             isSearching = false;
             return;
           }
           
-          // No waiting user, add ourselves to waiting
           await setDoc(doc(db, 'waiting', currentUserId), {
             userId: currentUserId,
             username: currentUser?.displayName || 'Anonymous',
             createdAt: serverTimestamp()
           });
           
-          // Listen for invites
           listenForInvites();
           
-          // Timeout after 30 seconds
           setTimeout(async () => {
             if (!isConnectedToStranger && isSearching) {
               await deleteDoc(doc(db, 'waiting', currentUserId)).catch(() => {});
@@ -1448,7 +1439,6 @@
       
       function listenForInvites() {
         try {
-          // Remove old listener if exists
           if (inviteListenerUnsub) {
             inviteListenerUnsub();
             inviteListenerUnsub = null;
@@ -1458,7 +1448,6 @@
             if (!snap.exists() || pc) return;
             const d = snap.data();
             
-            // Ignore if this is our own offer
             if (d.from === currentUserId) return;
             
             await deleteDoc(doc(db, 'waiting', currentUserId)).catch(() => {});
@@ -1504,16 +1493,7 @@
             cleanupRoomListeners();
             pendingIceCandidates = [];
             
-            pc = new RTCPeerConnection({
-              iceServers: [
-                { urls: "stun:stun.l.google.com:19302" },
-                { urls: "stun:stun1.l.google.com:19302" },
-                { urls: "stun:stun.relay.metered.ca:80" }
-              ],
-              iceCandidatePoolSize: 10,
-              bundlePolicy: "max-bundle",
-              rtcpMuxPolicy: "require"
-            });
+            pc = new RTCPeerConnection(getPeerConnectionConfig());
             
             if (localStream) {
               localStream.getTracks().forEach(track => {
@@ -1573,7 +1553,6 @@
               console.warn('ICE listener error:', e);
             }
             
-            // Handle offer from caller
             if (d.offer && pc.signalingState !== 'closed') {
               try {
                 await pc.setRemoteDescription(new RTCSessionDescription(d.offer));
@@ -1715,7 +1694,6 @@
           myCameraEl.classList.remove('camera-off');
           isCameraOn = true;
           
-          // Update camera button
           [camBtn, camBtnDesktop].forEach(btn => {
             if (btn) {
               btn.classList.remove('off');
@@ -1744,7 +1722,6 @@
         myCameraEl.classList.remove('camera-off');
         isCameraOn = false;
         
-        // Update camera button
         [camBtn, camBtnDesktop].forEach(btn => {
           if (btn) {
             btn.classList.add('off');
@@ -1794,7 +1771,6 @@
       micBtn.onclick = toggleMute;
       if (micBtnDesktop) micBtnDesktop.onclick = toggleMute;
       
-      // Camera toggle event listeners
       camBtn.onclick = toggleCamera;
       if (camBtnDesktop) camBtnDesktop.onclick = toggleCamera;
       
@@ -1920,7 +1896,6 @@
     }
   </script>
   
-  <!-- Toast element for camera toggle feedback -->
   <div class="toast" id="toast"></div>
 </body>
 </html>
