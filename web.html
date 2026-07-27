@@ -208,10 +208,11 @@
     .my-camera.camera-off { border-color:#666; opacity:0.5; }
     #myFeed {
       width:100%;height:100%;object-fit:cover;display:none;background:#000;
-      transform: scaleX(-1);
-      -webkit-transform: scaleX(-1);
-      -moz-transform: scaleX(-1);
-      -ms-transform: scaleX(-1);
+      /* REMOVED MIRRORING - video appears normal */
+      transform: none;
+      -webkit-transform: none;
+      -moz-transform: none;
+      -ms-transform: none;
     }
     .my-placeholder { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:rgba(255,255,255,0.35);font-size:0.6rem; }
     .my-placeholder i { font-size:1.2rem; }
@@ -696,7 +697,7 @@
   
   <script type="module">
     // ================================================================
-    // WEBRTC - Cross Browser Compatible
+    // WEBRTC - Cross Browser Compatible with Video Fix
     // ================================================================
     
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -1079,7 +1080,7 @@
     }
     
     // ================================================================
-    // CROSS-BROWSER WEBRTC IMPLEMENTATION
+    // WEBRTC WITH FIXED VIDEO SHARING - NO MIRRORING
     // ================================================================
     
     function startWebChat() {
@@ -1115,7 +1116,7 @@
       let isSearching = false;
       let inviteListenerUnsub = null;
       
-      // Cross-browser compatible PeerConnection config
+      // Cross-browser compatible PeerConnection config with video fix
       function getPeerConnectionConfig() {
         const config = {
           iceServers: [
@@ -1257,18 +1258,34 @@
         cleanupRoomListeners();
         pendingIceCandidates = [];
         
-        // Create PeerConnection with cross-browser config
+        // Create PeerConnection
         pc = new RTCPeerConnection(getPeerConnectionConfig());
         
-        // Add local tracks
+        // Add local tracks with proper transceivers for video
         if (localStream) {
-          localStream.getTracks().forEach(track => {
-            pc.addTrack(track, localStream);
-          });
+          const videoTrack = localStream.getVideoTracks()[0];
+          const audioTrack = localStream.getAudioTracks()[0];
+          
+          if (videoTrack) {
+            const transceiver = pc.addTransceiver(videoTrack, {
+              direction: 'sendrecv',
+              streams: [localStream]
+            });
+            console.log('✅ Video track added');
+          }
+          
+          if (audioTrack) {
+            const transceiver = pc.addTransceiver(audioTrack, {
+              direction: 'sendrecv',
+              streams: [localStream]
+            });
+            console.log('✅ Audio track added');
+          }
         }
         
         let trackAdded = false;
         pc.ontrack = (e) => {
+          console.log('🔔 ontrack event received:', e.track.kind);
           if (trackAdded) return;
           if (e.streams && e.streams[0]) {
             trackAdded = true;
@@ -1277,7 +1294,7 @@
             strangerFeed.style.display = 'block';
             strangerPlaceholder.textContent = '';
             strangerCamera.classList.add('connected');
-            console.log('✅ Remote stream received');
+            console.log('✅ Remote stream received, tracks:', strangerStream.getTracks().length);
           }
         };
         
@@ -1496,13 +1513,29 @@
             pc = new RTCPeerConnection(getPeerConnectionConfig());
             
             if (localStream) {
-              localStream.getTracks().forEach(track => {
-                pc.addTrack(track, localStream);
-              });
+              const videoTrack = localStream.getVideoTracks()[0];
+              const audioTrack = localStream.getAudioTracks()[0];
+              
+              if (videoTrack) {
+                const transceiver = pc.addTransceiver(videoTrack, {
+                  direction: 'sendrecv',
+                  streams: [localStream]
+                });
+                console.log('✅ Video track added');
+              }
+              
+              if (audioTrack) {
+                const transceiver = pc.addTransceiver(audioTrack, {
+                  direction: 'sendrecv',
+                  streams: [localStream]
+                });
+                console.log('✅ Audio track added');
+              }
             }
             
             let trackAdded = false;
             pc.ontrack = (e) => {
+              console.log('🔔 ontrack event received:', e.track.kind);
               if (trackAdded) return;
               if (e.streams && e.streams[0]) {
                 trackAdded = true;
@@ -1511,7 +1544,7 @@
                 strangerFeed.style.display = 'block';
                 strangerPlaceholder.textContent = '';
                 strangerCamera.classList.add('connected');
-                console.log('✅ Remote stream received');
+                console.log('✅ Remote stream received, tracks:', strangerStream.getTracks().length);
               }
             };
             
@@ -1680,12 +1713,29 @@
       
       async function startCamera() {
         try {
-          if (localStream) localStream.getTracks().forEach(t => t.stop());
+          if (localStream) {
+            localStream.getTracks().forEach(t => t.stop());
+            localStream = null;
+          }
+          
           const constraints = {
-            video: { width: { ideal: 480 }, height: { ideal: 640 }, facingMode: 'user' },
-            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+            video: { 
+              width: { ideal: 640 }, 
+              height: { ideal: 480 }, 
+              facingMode: 'user',
+              frameRate: { ideal: 30 }
+            },
+            audio: { 
+              echoCancellation: true, 
+              noiseSuppression: true, 
+              autoGainControl: true,
+              sampleRate: 48000
+            }
           };
+          
           localStream = await navigator.mediaDevices.getUserMedia(constraints);
+          console.log('📷 Local stream tracks:', localStream.getTracks().length);
+          
           myFeed.srcObject = localStream;
           await myFeed.play();
           myFeed.style.display = 'block';
