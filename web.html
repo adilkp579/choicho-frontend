@@ -190,11 +190,11 @@
     .stranger-camera.live-active { border-color:#ef4444; animation:livePulse 2s infinite; }
     #strangerFeed { 
       width:100%;height:100%;object-fit:cover;display:none;background:#000;
-      /* Stranger video - normal (not mirrored) */
-      transform: scaleX(1);
-      -webkit-transform: scaleX(1);
-      -moz-transform: scaleX(1);
-      -ms-transform: scaleX(1);
+      /* Stranger video - also mirrored like your video */
+      transform: scaleX(-1);
+      -webkit-transform: scaleX(-1);
+      -moz-transform: scaleX(-1);
+      -ms-transform: scaleX(-1);
     }
     .stranger-placeholder { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:rgba(255,255,255,0.25); }
     .stranger-placeholder i { font-size:2.5rem; }
