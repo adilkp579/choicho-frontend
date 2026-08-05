@@ -18,18 +18,57 @@
     .username { font-size: 0.9rem; font-weight: 650; color: #fff; }
     .bio-text { font-size: 0.7rem; color: #bbb; margin-top: 0.1rem; }
     .website { font-size: 0.65rem; color: #3897f0; margin-top: 0.1rem; }
-    .actions-row { display: flex; gap: 0.4rem; width: 100%; max-width: 400px; }
-    .action-btn { flex: 1; padding: 0.45rem; border-radius: 0.4rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.7rem; font-weight: 600; cursor: pointer; text-align: center; }
+    .actions-row { display: flex; gap: 0.4rem; width: 100%; max-width: 400px; flex-wrap: wrap; }
+    .action-btn { flex: 1; padding: 0.45rem; border-radius: 0.4rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.7rem; font-weight: 600; cursor: pointer; text-align: center; min-width: 60px; }
     .action-btn.primary { background: #3897f0; border: none; }
-    .action-btn.following { background: #1a3a5c; border-color: #3897f0; color: #3897f0; }
-    .tabs { display: flex; width: 100%; max-width: 400px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 0.2rem; }
-    .tab { flex: 1; text-align: center; padding: 0.5rem 0; color: #666; font-size: 0.7rem; cursor: pointer; border-bottom: 1px solid transparent; }
+    .action-btn.customize-btn { background: linear-gradient(135deg, #8b5cf6, #6d28d9); border: none; color: #fff; }
+    .tabs { display: flex; width: 100%; max-width: 400px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 0.2rem; overflow-x: auto; flex-wrap: nowrap; }
+    .tab { flex: 1; text-align: center; padding: 0.5rem 0.3rem; color: #666; font-size: 0.6rem; cursor: pointer; border-bottom: 1px solid transparent; white-space: nowrap; min-width: 50px; }
     .tab.active { color: #fff; border-bottom-color: #fff; }
-    .tab i { font-size: 1.1rem; display: block; margin-bottom: 0.1rem; }
+    .tab i { font-size: 1rem; display: block; margin-bottom: 0.1rem; }
     .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; width: 100%; max-width: 400px; }
     .post-item { aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
     .post-item img { width: 100%; height: 100%; object-fit: cover; }
     .empty-text { color: #444; font-size: 0.75rem; text-align: center; padding: 2rem 0; }
+
+    /* Customize Modal */
+    .customize-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 400; display: none; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px); }
+    .customize-modal.show { display: flex; }
+    .customize-container { background: #1a1a1a; border-radius: 1.5rem; width: 100%; max-width: 420px; max-height: 90vh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; }
+    .customize-header { padding: 1rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; }
+    .customize-header h3 { color: #fff; font-size: 1rem; font-weight: 600; }
+    .customize-close { color: #666; cursor: pointer; font-size: 1.2rem; background: none; border: none; }
+    .customize-close:hover { color: #fff; }
+    .customize-body { flex: 1; overflow-y: auto; padding: 0.8rem 1.2rem; }
+    .customize-section { margin-bottom: 1rem; }
+    .customize-section-title { color: #888; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .customize-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; margin-bottom: 0.3rem; border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; cursor: move; }
+    .customize-item:hover { background: rgba(255,255,255,0.06); }
+    .customize-item .drag-icon { color: #555; cursor: grab; font-size: 0.8rem; }
+    .customize-item .item-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0; }
+    .customize-item .item-info { flex: 1; }
+    .customize-item .item-name { color: #fff; font-size: 0.75rem; font-weight: 500; }
+    .customize-item .item-desc { color: #666; font-size: 0.6rem; }
+    .customize-item .item-toggle { position: relative; width: 40px; height: 22px; background: #333; border-radius: 12px; cursor: pointer; transition: all 0.3s; flex-shrink: 0; }
+    .customize-item .item-toggle.active { background: #3897f0; }
+    .customize-item .item-toggle .toggle-slider { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: all 0.3s; }
+    .customize-item .item-toggle.active .toggle-slider { left: 20px; }
+    .customize-item .item-remove { color: #ef4444; cursor: pointer; font-size: 0.7rem; padding: 0.2rem 0.4rem; background: rgba(239,68,68,0.1); border-radius: 0.3rem; }
+    .customize-item .item-remove:hover { background: rgba(239,68,68,0.2); }
+    .customize-add-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15); border-radius: 0.5rem; color: #888; font-size: 0.7rem; cursor: pointer; transition: all 0.2s; width: 100%; }
+    .customize-add-btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25); color: #fff; }
+    .customize-footer { padding: 0.8rem 1.2rem; border-top: 1px solid rgba(255,255,255,0.08); display: flex; gap: 0.5rem; }
+    .customize-footer button { flex: 1; padding: 0.5rem; border-radius: 0.4rem; border: none; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+    .customize-reset { background: rgba(255,255,255,0.08); color: #fff; }
+    .customize-save { background: #3897f0; color: #fff; }
+
+    /* Edit Profile Modal - Now accessed via Customize */
+    .edit-profile-section { margin-top: 0.5rem; padding: 0.8rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.05); }
+    .edit-profile-section label { color: #888; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.3rem; }
+    .edit-profile-section input, .edit-profile-section textarea { width: 100%; padding: 0.5rem; background: #111; border: 1px solid #333; color: #fff; border-radius: 0.4rem; font-size: 0.8rem; outline: none; margin-bottom: 0.5rem; }
+    .edit-profile-section input:focus, .edit-profile-section textarea:focus { border-color: #3897f0; }
+    .edit-profile-section textarea { resize: vertical; min-height: 60px; }
+
     @media (min-width: 1024px) { .profile-header, .bio-section, .actions-row, .tabs, .posts-grid { max-width: 500px; } .scrollable-content { padding-left: 5.5rem; } .avatar { width: 85px; height: 85px; } }
   </style>
 </head>
@@ -45,12 +84,56 @@
       <div class="content" style="padding:0.5rem 1.2rem 2rem; display:flex; flex-direction:column; align-items:center; gap:0.6rem; width:100%;">
         <div class="profile-header"><div class="avatar" id="profileAvatar"><i class="fas fa-user"></i></div><div class="stats-row"><div class="stat"><div class="stat-num" id="postCount">0</div><div class="stat-label">Posts</div></div><div class="stat" onclick="showList('friends')"><div class="stat-num" id="friendsCount">0</div><div class="stat-label">Friends</div></div><div class="stat" onclick="showList('besties')"><div class="stat-num" id="bestiesCount">0</div><div class="stat-label">Besties</div></div></div></div>
         <div class="bio-section"><div class="username" id="displayName"></div><div class="bio-text" id="displayBio"></div><div class="website" id="displayWebsite"></div></div>
-        <div class="actions-row" id="actionsRow"><button class="action-btn primary" id="editProfileBtn" onclick="openEditProfile()">Edit Profile</button><button class="action-btn" onclick="shareProfile()"><i class="fas fa-share-alt"></i> Share</button></div>
-        <div class="tabs"><div class="tab active" onclick="switchTab(this,'posts')"><i class="fas fa-grid-2"></i>Posts</div><div class="tab" onclick="switchTab(this,'reels')"><i class="fas fa-film"></i>Reels</div></div>
+        <div class="actions-row" id="actionsRow">
+          <button class="action-btn customize-btn" onclick="openCustomize()"><i class="fas fa-sliders-h"></i> Customize</button>
+          <button class="action-btn" onclick="shareProfile()"><i class="fas fa-share-alt"></i> Share</button>
+        </div>
+        <div class="tabs" id="profileTabs"><div class="tab active" onclick="switchTab(this,'posts')"><i class="fas fa-grid-2"></i>Posts</div><div class="tab" onclick="switchTab(this,'reels')"><i class="fas fa-film"></i>Reels</div></div>
         <div class="posts-grid" id="postsGrid"></div><div class="posts-grid" id="reelsGrid" style="display:none;"></div><div class="empty-text" id="emptyText">No posts yet</div>
       </div>
     </div>
-    <div class="modal-overlay" id="editModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:300; align-items:center; justify-content:center;"><div class="modal" style="background:#1a1a1a; border-radius:1rem; padding:1.2rem; width:90%; max-width:360px;"><h3 style="margin-bottom:0.8rem;">Edit Profile</h3><label>Username</label><input type="text" id="editUsername" style="width:100%; padding:0.6rem; margin-bottom:0.5rem; background:#111; border:1px solid #333; color:#fff; border-radius:0.4rem;"><label>Bio</label><textarea id="editBio" rows="2" style="width:100%; padding:0.6rem; background:#111; border:1px solid #333; color:#fff; border-radius:0.4rem;"></textarea><div class="btn-row" style="display:flex; gap:0.5rem; margin-top:1rem;"><button class="btn-cancel" onclick="closeEditProfile()" style="flex:1; padding:0.6rem; background:#333; border:none; color:#fff; border-radius:0.4rem;">Cancel</button><button class="btn-save" onclick="saveProfile()" style="flex:1; padding:0.6rem; background:#3897f0; border:none; color:#fff; border-radius:0.4rem;">Save</button></div></div></div>
+
+    <!-- Customize Modal -->
+    <div class="customize-modal" id="customizeModal">
+      <div class="customize-container">
+        <div class="customize-header">
+          <h3><i class="fas fa-sliders-h"></i> Customize Profile</h3>
+          <button class="customize-close" onclick="closeCustomize()">✕</button>
+        </div>
+        <div class="customize-body" id="customizeBody">
+          <!-- Edit Profile Section -->
+          <div class="edit-profile-section">
+            <label>Display Name</label>
+            <input type="text" id="editUsername" placeholder="Enter display name">
+            <label>Bio</label>
+            <textarea id="editBio" placeholder="Tell about yourself..."></textarea>
+            <label>Website</label>
+            <input type="text" id="editWebsite" placeholder="https://example.com">
+            <button class="action-btn primary" onclick="saveProfile()" style="width:100%;margin-top:0.3rem;">Save Profile</button>
+          </div>
+
+          <!-- Profile Sections -->
+          <div class="customize-section" style="margin-top:1rem;">
+            <div class="customize-section-title">Profile Sections</div>
+            <div id="customizeSectionsList">
+              <!-- Items will be rendered here -->
+            </div>
+          </div>
+          <!-- Add New Section -->
+          <div class="customize-section">
+            <div class="customize-section-title">Add New Section</div>
+            <button class="customize-add-btn" onclick="addNewSection()">
+              <i class="fas fa-plus"></i> Add custom section
+            </button>
+          </div>
+        </div>
+        <div class="customize-footer">
+          <button class="customize-reset" onclick="resetCustomize()">Reset</button>
+          <button class="customize-save" onclick="saveCustomize()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
     <div class="toast" id="toast"></div>
     <nav class="floating-nav"><div class="nav-center"><a href="index.html"><i class="fas fa-home"></i></a><a href="web.html"><i class="fas fa-globe"></i></a><a href="reel.html"><i class="fas fa-film"></i></a><a href="chat.html"><i class="fas fa-comment-dots"></i></a><a href="profile.html" class="active"><i class="fas fa-user"></i></a><a href="upload.html" class="nav-upload"><i class="fas fa-plus"></i></a><a href="search.html" class="nav-search"><i class="fas fa-search"></i></a></div></nav>
   </div>
@@ -65,14 +148,42 @@
     
     const currentUser = getCurrentUser();
     let profile = null;
-    
+    let customSections = [];
+
+    // Default sections configuration
+    const defaultSections = [
+      { id: 'posts', name: 'Posts', icon: 'fa-grid-2', enabled: true, removable: false, order: 0 },
+      { id: 'reels', name: 'Reels', icon: 'fa-film', enabled: true, removable: false, order: 1 },
+      { id: 'friends', name: 'Friends', icon: 'fa-users', enabled: true, removable: true, order: 2 },
+      { id: 'besties', name: 'Besties', icon: 'fa-star', enabled: true, removable: true, order: 3 },
+      { id: 'photos', name: 'Photos', icon: 'fa-image', enabled: false, removable: true, order: 4 },
+      { id: 'videos', name: 'Videos', icon: 'fa-video', enabled: false, removable: true, order: 5 },
+      { id: 'music', name: 'Music', icon: 'fa-music', enabled: false, removable: true, order: 6 },
+      { id: 'places', name: 'Places', icon: 'fa-map-pin', enabled: false, removable: true, order: 7 },
+      { id: 'products', name: 'Products', icon: 'fa-shopping-bag', enabled: false, removable: true, order: 8 },
+    ];
+
     async function loadProfile() {
       const userRef = doc(db, 'users', currentUser.uid);
       const docSnap = await getDoc(userRef);
       if (docSnap.exists()) profile = docSnap.data();
       else profile = { username: currentUser.username, name: cleanUsername(currentUser.username), bio: '', website: '', avatar: null, friends: [], besties: [], posts: [] };
+      
+      // Load custom sections from profile or use default
+      if (profile.customSections) {
+        customSections = profile.customSections;
+      } else {
+        customSections = JSON.parse(JSON.stringify(defaultSections));
+      }
+      
       updateUI();
       renderContent();
+      renderCustomizeSections();
+      
+      // Fill edit form
+      document.getElementById('editUsername').value = profile.name || '';
+      document.getElementById('editBio').value = profile.bio || '';
+      document.getElementById('editWebsite').value = profile.website || '';
     }
     
     function updateUI() {
@@ -84,34 +195,317 @@
       document.getElementById('friendsCount').textContent = (profile.friends || []).length;
       document.getElementById('bestiesCount').textContent = (profile.besties || []).length;
       document.getElementById('topBrand').textContent = cleanUsername(profile.username);
+      updateTabs();
     }
-    
+
+    function updateTabs() {
+      const tabsContainer = document.getElementById('profileTabs');
+      const enabledSections = customSections.filter(s => s.enabled).sort((a,b) => a.order - b.order);
+      
+      // Clear existing tabs
+      tabsContainer.innerHTML = '';
+      
+      // Rebuild tabs
+      enabledSections.forEach((section, index) => {
+        const tab = document.createElement('div');
+        tab.className = 'tab' + (index === 0 ? ' active' : '');
+        tab.setAttribute('data-section', section.id);
+        tab.innerHTML = `<i class="fas ${section.icon}"></i>${section.name}`;
+        tab.onclick = function() { switchTab(this, section.id); };
+        tabsContainer.appendChild(tab);
+      });
+      
+      // If no tabs, show default
+      if (enabledSections.length === 0) {
+        const tab = document.createElement('div');
+        tab.className = 'tab active';
+        tab.innerHTML = '<i class="fas fa-grid-2"></i>Posts';
+        tab.onclick = function() { switchTab(this, 'posts'); };
+        tabsContainer.appendChild(tab);
+      }
+    }
+
     function renderContent() {
-      const posts = profile.posts || [];
-      const images = posts.filter(p => p.type === 'image');
-      const reels = posts.filter(p => p.type === 'reel' || p.type === 'video');
       const activeTab = document.querySelector('.tab.active');
-      const isReels = activeTab && activeTab.textContent.includes('Reels');
+      const sectionId = activeTab ? activeTab.getAttribute('data-section') || 'posts' : 'posts';
+      
+      const posts = profile.posts || [];
       const pg = document.getElementById('postsGrid'), rg = document.getElementById('reelsGrid'), et = document.getElementById('emptyText');
-      if (isReels) {
-        pg.style.display = 'none'; rg.style.display = 'grid'; et.style.display = reels.length ? 'none' : 'block';
-        et.textContent = reels.length ? '' : 'No reels yet';
-        rg.innerHTML = reels.map(r => `<div class="post-item"><video src="${r.src}" style="width:100%;height:100%;object-fit:cover;" muted loop playsinline></video></div>`).join('');
+      
+      // Determine content based on section
+      let content = [];
+      let sectionName = '';
+      
+      if (sectionId === 'posts') {
+        content = posts.filter(p => p.type === 'image');
+        sectionName = 'posts';
+      } else if (sectionId === 'reels') {
+        content = posts.filter(p => p.type === 'reel' || p.type === 'video');
+        sectionName = 'reels';
+      } else if (sectionId === 'friends') {
+        content = (profile.friends || []).map(f => ({ type: 'friend', name: f.name || f, src: f.avatar || null }));
+        sectionName = 'friends';
+      } else if (sectionId === 'besties') {
+        content = (profile.besties || []).map(f => ({ type: 'bestie', name: f.name || f, src: f.avatar || null }));
+        sectionName = 'besties';
       } else {
-        rg.style.display = 'none'; pg.style.display = 'grid'; et.style.display = images.length ? 'none' : 'block';
-        et.textContent = images.length ? '' : 'No posts yet';
-        pg.innerHTML = images.map(i => `<div class="post-item"><img src="${i.src}" alt="post" loading="lazy"></div>`).join('');
+        // Custom section - show demo content
+        content = posts.filter(p => p.type === 'image').slice(0, 6);
+        sectionName = sectionId;
+      }
+      
+      if (sectionId === 'posts' || sectionId === 'reels' || sectionId === 'photos' || sectionId === 'videos') {
+        pg.style.display = 'grid';
+        rg.style.display = 'none';
+        et.style.display = content.length ? 'none' : 'block';
+        et.textContent = content.length ? '' : `No ${sectionName} yet`;
+        pg.innerHTML = content.map(i => `<div class="post-item"><img src="${i.src}" alt="post" loading="lazy"></div>`).join('');
+      } else if (sectionId === 'friends' || sectionId === 'besties') {
+        pg.style.display = 'grid';
+        rg.style.display = 'none';
+        et.style.display = content.length ? 'none' : 'block';
+        et.textContent = content.length ? '' : `No ${sectionName} yet`;
+        pg.innerHTML = content.map(i => `<div class="post-item" style="background:linear-gradient(135deg,#2a2a2a,#1a1a1a);display:flex;flex-direction:column;gap:0.2rem;align-items:center;justify-content:center;"><div class="avatar" style="width:40px;height:40px;font-size:0.8rem;">${i.src ? `<img src="${i.src}">` : '<i class="fas fa-user"></i>'}</div><span style="font-size:0.55rem;color:#aaa;">${i.name}</span></div>`).join('');
+      } else {
+        // Custom section - show grid with info
+        pg.style.display = 'grid';
+        rg.style.display = 'none';
+        et.style.display = content.length ? 'none' : 'block';
+        et.textContent = content.length ? '' : `No ${sectionName} yet`;
+        pg.innerHTML = content.map(i => `<div class="post-item"><img src="${i.src}" alt="post" loading="lazy"></div>`).join('');
       }
     }
     
-    window.switchTab = function(el, type) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); renderContent(); };
-    window.openEditProfile = function() { document.getElementById('editUsername').value = profile.name || ''; document.getElementById('editBio').value = profile.bio || ''; document.getElementById('editModal').style.display = 'flex'; };
-    window.closeEditProfile = function() { document.getElementById('editModal').style.display = 'none'; };
-    window.saveProfile = async function() { profile.name = document.getElementById('editUsername').value.trim() || cleanUsername(profile.username); profile.bio = document.getElementById('editBio').value.trim(); await setDoc(doc(db, 'users', currentUser.uid), profile, { merge: true }); updateUI(); closeEditProfile(); showToast('Profile saved!'); };
-    window.shareProfile = function() { navigator.clipboard.writeText(window.location.href); showToast('Link copied!'); };
-    window.showList = function(type) { showToast(`${type}: ${(profile[type] || []).map(f => f.name).join(', ') || 'None'}`); };
-    window.logout = function() { authLogout(); };
+    window.switchTab = function(el, sectionId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      renderContent();
+    };
     
+    window.saveProfile = async function() {
+      const name = document.getElementById('editUsername').value.trim() || cleanUsername(profile.username);
+      const bio = document.getElementById('editBio').value.trim();
+      const website = document.getElementById('editWebsite').value.trim();
+      
+      profile.name = name;
+      profile.bio = bio;
+      profile.website = website;
+      
+      await setDoc(doc(db, 'users', currentUser.uid), profile, { merge: true });
+      updateUI();
+      showToast('Profile saved! ✅');
+    };
+    
+    window.shareProfile = function() {
+      navigator.clipboard.writeText(window.location.href);
+      showToast('Link copied!');
+    };
+    
+    window.showList = function(type) {
+      showToast(`${type}: ${(profile[type] || []).map(f => f.name || f).join(', ') || 'None'}`);
+    };
+    
+    window.logout = function() {
+      authLogout();
+    };
+
+    // ========== CUSTOMIZE FUNCTIONS ==========
+    
+    function renderCustomizeSections() {
+      const container = document.getElementById('customizeSectionsList');
+      const enabled = customSections.filter(s => s.enabled).sort((a,b) => a.order - b.order);
+      const disabled = customSections.filter(s => !s.enabled);
+      
+      let html = '';
+      
+      // Enabled sections
+      enabled.forEach((section, index) => {
+        html += `
+          <div class="customize-item" draggable="true" data-id="${section.id}" data-order="${section.order}">
+            <span class="drag-icon"><i class="fas fa-grip-vertical"></i></span>
+            <div class="item-icon" style="background:${getIconColor(section.id)};">
+              <i class="fas ${section.icon}" style="color:#fff;"></i>
+            </div>
+            <div class="item-info">
+              <div class="item-name">${section.name}</div>
+              <div class="item-desc">${section.removable ? 'Can be removed' : 'Default section'}</div>
+            </div>
+            <div class="item-toggle active" onclick="toggleSection('${section.id}')">
+              <div class="toggle-slider"></div>
+            </div>
+            ${section.removable ? `<span class="item-remove" onclick="removeSection('${section.id}')"><i class="fas fa-trash"></i></span>` : ''}
+          </div>
+        `;
+      });
+      
+      // Disabled sections
+      disabled.forEach((section) => {
+        html += `
+          <div class="customize-item" data-id="${section.id}">
+            <span class="drag-icon" style="color:#333;"><i class="fas fa-grip-vertical"></i></span>
+            <div class="item-icon" style="background:#333;">
+              <i class="fas ${section.icon}" style="color:#666;"></i>
+            </div>
+            <div class="item-info">
+              <div class="item-name" style="color:#666;">${section.name}</div>
+              <div class="item-desc">Hidden</div>
+            </div>
+            <div class="item-toggle" onclick="toggleSection('${section.id}')">
+              <div class="toggle-slider"></div>
+            </div>
+            ${section.removable ? `<span class="item-remove" onclick="removeSection('${section.id}')"><i class="fas fa-trash"></i></span>` : ''}
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+      
+      // Add drag and drop support
+      const items = container.querySelectorAll('.customize-item[draggable="true"]');
+      items.forEach(item => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
+      });
+    }
+
+    let dragSourceId = null;
+
+    function handleDragStart(e) {
+      dragSourceId = e.target.closest('.customize-item').dataset.id;
+      e.target.closest('.customize-item').style.opacity = '0.5';
+    }
+
+    function handleDragEnd(e) {
+      e.target.closest('.customize-item').style.opacity = '1';
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      const target = e.target.closest('.customize-item');
+      if (target && target.dataset.id !== dragSourceId) {
+        target.style.borderColor = '#3897f0';
+      }
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      const target = e.target.closest('.customize-item');
+      if (target && target.dataset.id !== dragSourceId) {
+        target.style.borderColor = 'rgba(255,255,255,0.05)';
+        reorderSections(dragSourceId, target.dataset.id);
+      }
+    }
+
+    function reorderSections(sourceId, targetId) {
+      const sourceIndex = customSections.findIndex(s => s.id === sourceId);
+      const targetIndex = customSections.findIndex(s => s.id === targetId);
+      
+      if (sourceIndex === -1 || targetIndex === -1) return;
+      
+      const [removed] = customSections.splice(sourceIndex, 1);
+      customSections.splice(targetIndex, 0, removed);
+      
+      // Update order
+      customSections.forEach((s, i) => s.order = i);
+      renderCustomizeSections();
+      showToast('Sections reordered');
+    }
+
+    function getIconColor(id) {
+      const colors = {
+        posts: '#3897f0',
+        reels: '#ef4444',
+        friends: '#22c55e',
+        besties: '#f59e0b',
+        photos: '#8b5cf6',
+        videos: '#ec4899',
+        music: '#06b6d4',
+        places: '#f97316',
+        products: '#14b8a6'
+      };
+      return colors[id] || '#555';
+    }
+
+    window.toggleSection = function(id) {
+      const section = customSections.find(s => s.id === id);
+      if (section) {
+        section.enabled = !section.enabled;
+        renderCustomizeSections();
+      }
+    };
+
+    window.removeSection = function(id) {
+      const section = customSections.find(s => s.id === id);
+      if (section && section.removable) {
+        if (confirm(`Remove "${section.name}" section?`)) {
+          customSections = customSections.filter(s => s.id !== id);
+          renderCustomizeSections();
+          showToast(`Removed "${section.name}" section`);
+        }
+      }
+    };
+
+    window.addNewSection = function() {
+      const name = prompt('Enter section name:');
+      if (!name || name.trim() === '') return;
+      
+      const id = name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+      const iconOptions = ['fa-star', 'fa-heart', 'fa-camera', 'fa-bookmark', 'fa-tag', 'fa-flag', 'fa-clock', 'fa-calendar'];
+      const icon = iconOptions[Math.floor(Math.random() * iconOptions.length)];
+      
+      customSections.push({
+        id: id,
+        name: name.trim(),
+        icon: icon,
+        enabled: true,
+        removable: true,
+        order: customSections.length
+      });
+      
+      renderCustomizeSections();
+      showToast(`Added "${name}" section`);
+    };
+
+    window.openCustomize = function() {
+      // Refresh form values
+      document.getElementById('editUsername').value = profile.name || '';
+      document.getElementById('editBio').value = profile.bio || '';
+      document.getElementById('editWebsite').value = profile.website || '';
+      document.getElementById('customizeModal').classList.add('show');
+    };
+
+    window.closeCustomize = function() {
+      document.getElementById('customizeModal').classList.remove('show');
+      // Reload from saved state
+      if (profile.customSections) {
+        customSections = JSON.parse(JSON.stringify(profile.customSections));
+      } else {
+        customSections = JSON.parse(JSON.stringify(defaultSections));
+      }
+      renderCustomizeSections();
+    };
+
+    window.saveCustomize = async function() {
+      // Save custom sections to profile
+      profile.customSections = JSON.parse(JSON.stringify(customSections));
+      await setDoc(doc(db, 'users', currentUser.uid), { customSections: profile.customSections }, { merge: true });
+      closeCustomize();
+      updateUI();
+      renderContent();
+      showToast('Profile customized! ✅');
+    };
+
+    window.resetCustomize = function() {
+      if (confirm('Reset to default sections?')) {
+        customSections = JSON.parse(JSON.stringify(defaultSections));
+        renderCustomizeSections();
+        showToast('Reset to default');
+      }
+    };
+
+    // Load profile on page load
     loadProfile();
   </script>
 </body>
