@@ -19,9 +19,10 @@
     .bio-text { font-size: 0.7rem; color: #bbb; margin-top: 0.1rem; }
     .website { font-size: 0.65rem; color: #3897f0; margin-top: 0.1rem; }
     .actions-row { display: flex; gap: 0.4rem; width: 100%; max-width: 400px; flex-wrap: wrap; }
-    .action-btn { flex: 1; padding: 0.45rem; border-radius: 0.4rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.7rem; font-weight: 600; cursor: pointer; text-align: center; min-width: 60px; }
+    .action-btn { flex: 1; padding: 0.45rem; border-radius: 0.4rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.7rem; font-weight: 600; cursor: pointer; text-align: center; min-width: 60px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; }
     .action-btn.primary { background: #3897f0; border: none; }
     .action-btn.customize-btn { background: linear-gradient(135deg, #8b5cf6, #6d28d9); border: none; color: #fff; }
+    .action-btn.upload-btn { background: linear-gradient(135deg, #FFFC00, #F59E0B); border: none; color: #000; }
     .tabs { display: flex; width: 100%; max-width: 400px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 0.2rem; overflow-x: auto; flex-wrap: nowrap; }
     .tab { flex: 1; text-align: center; padding: 0.5rem 0.3rem; color: #666; font-size: 0.6rem; cursor: pointer; border-bottom: 1px solid transparent; white-space: nowrap; min-width: 50px; }
     .tab.active { color: #fff; border-bottom-color: #fff; }
@@ -62,7 +63,7 @@
     .customize-reset { background: rgba(255,255,255,0.08); color: #fff; }
     .customize-save { background: #3897f0; color: #fff; }
 
-    /* Edit Profile Modal - Now accessed via Customize */
+    /* Edit Profile Section */
     .edit-profile-section { margin-top: 0.5rem; padding: 0.8rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.05); }
     .edit-profile-section label { color: #888; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.3rem; }
     .edit-profile-section input, .edit-profile-section textarea { width: 100%; padding: 0.5rem; background: #111; border: 1px solid #333; color: #fff; border-radius: 0.4rem; font-size: 0.8rem; outline: none; margin-bottom: 0.5rem; }
@@ -86,7 +87,7 @@
         <div class="bio-section"><div class="username" id="displayName"></div><div class="bio-text" id="displayBio"></div><div class="website" id="displayWebsite"></div></div>
         <div class="actions-row" id="actionsRow">
           <button class="action-btn customize-btn" onclick="openCustomize()"><i class="fas fa-sliders-h"></i> Customize</button>
-          <button class="action-btn" onclick="shareProfile()"><i class="fas fa-share-alt"></i> Share</button>
+          <a href="upload.html" class="action-btn upload-btn"><i class="fas fa-plus"></i> Upload</a>
         </div>
         <div class="tabs" id="profileTabs"><div class="tab active" onclick="switchTab(this,'posts')"><i class="fas fa-grid-2"></i>Posts</div><div class="tab" onclick="switchTab(this,'reels')"><i class="fas fa-film"></i>Reels</div></div>
         <div class="posts-grid" id="postsGrid"></div><div class="posts-grid" id="reelsGrid" style="display:none;"></div><div class="empty-text" id="emptyText">No posts yet</div>
@@ -294,11 +295,6 @@
       await setDoc(doc(db, 'users', currentUser.uid), profile, { merge: true });
       updateUI();
       showToast('Profile saved! ✅');
-    };
-    
-    window.shareProfile = function() {
-      navigator.clipboard.writeText(window.location.href);
-      showToast('Link copied!');
     };
     
     window.showList = function(type) {
