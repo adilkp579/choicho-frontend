@@ -190,7 +190,6 @@
     .stranger-camera.live-active { border-color:#ef4444; animation:livePulse 2s infinite; }
     #strangerFeed { 
       width:100%;height:100%;object-fit:cover;display:none;background:#000;
-      /* Stranger video - also mirrored like your video */
       transform: scaleX(-1);
       -webkit-transform: scaleX(-1);
       -moz-transform: scaleX(-1);
@@ -215,7 +214,6 @@
     .my-camera.camera-off { border-color:#666; opacity:0.5; }
     #myFeed {
       width:100%;height:100%;object-fit:cover;display:none;background:#000;
-      /* Your camera - mirrored like a mirror */
       transform: scaleX(-1);
       -webkit-transform: scaleX(-1);
       -moz-transform: scaleX(-1);
@@ -461,6 +459,259 @@
       display: none !important;
     }
 
+    /* Live Stream Page */
+    .live-stream-page {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #000;
+      z-index: 300;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .live-stream-page.active {
+      display: flex;
+    }
+    .live-stream-header {
+      position: absolute;
+      top: max(1rem, env(safe-area-inset-top, 1rem));
+      left: 1rem;
+      right: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .live-stream-header > * {
+      pointer-events: auto;
+    }
+    .live-stream-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(20px);
+      padding: 0.4rem 0.8rem;
+      border-radius: 2rem;
+      border: 1px solid rgba(255, 252, 0, 0.3);
+    }
+    .live-stream-dot {
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: blink 1s infinite;
+    }
+    .live-stream-text {
+      color: #FFFC00;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .live-stream-viewers {
+      color: #ccc;
+      font-size: 0.65rem;
+    }
+    .live-stream-host {
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(20px);
+      padding: 0.4rem 0.8rem;
+      border-radius: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .live-stream-close {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .live-video-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+      position: relative;
+    }
+    .live-video-wrapper {
+      flex: 1;
+      position: relative;
+      background: #0a0a0a;
+      min-height: 0;
+    }
+    .live-video-wrapper video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+      transform: scaleX(-1);
+      -webkit-transform: scaleX(-1);
+      -moz-transform: scaleX(-1);
+      -ms-transform: scaleX(-1);
+    }
+    .live-video-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #555;
+    }
+    .live-video-placeholder i {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 0.5rem;
+      opacity: 0.5;
+    }
+    .live-video-placeholder p {
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+    .live-bottom-bar {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      right: 1rem;
+      z-index: 25;
+      display: flex;
+      align-items: flex-end;
+      gap: 0.8rem;
+      pointer-events: none;
+    }
+    .live-comment-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      pointer-events: none;
+      min-width: 0;
+    }
+    .live-comment-list {
+      max-height: 100px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      padding: 0 0.2rem;
+      pointer-events: auto;
+      scrollbar-width: none;
+    }
+    .live-comment-list::-webkit-scrollbar {
+      display: none;
+    }
+    .live-comment-item {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(12px);
+      padding: 0.3rem 0.6rem;
+      border-radius: 1rem;
+      color: #fff;
+      font-size: 0.7rem;
+      align-self: flex-start;
+      max-width: 100%;
+      word-break: break-word;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: baseline;
+      gap: 0.3rem;
+    }
+    .live-comment-username {
+      font-weight: 700;
+      color: #fbbf24;
+      font-size: 0.65rem;
+      white-space: nowrap;
+    }
+    .live-comment-input-row {
+      display: flex;
+      gap: 0.5rem;
+      pointer-events: auto;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(20px);
+      padding: 0.35rem;
+      border-radius: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .live-comment-input-row input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.75rem;
+      outline: none;
+    }
+    .live-comment-input-row input::placeholder {
+      color: #888;
+      font-size: 0.7rem;
+    }
+    .live-comment-send-btn {
+      background: #FFFC00;
+      border: none;
+      color: #000;
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+      font-weight: bold;
+    }
+    .live-comment-send-btn:active {
+      transform: scale(0.95);
+    }
+    .live-action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      pointer-events: auto;
+      flex-shrink: 0;
+    }
+    .live-action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 2rem;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 0.5rem 0.6rem;
+      transition: all 0.2s;
+      width: 3rem;
+    }
+    .live-action-btn span {
+      font-size: 0.5rem;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .live-action-btn:active {
+      transform: scale(0.95);
+    }
+    .live-action-btn.liked {
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
     @media (max-width: 380px) {
       .token-btn{width:90px;height:32px;font-size:0.65rem;}
       .ctrl-btn{width:60px;height:28px;font-size:0.55rem;}
@@ -644,6 +895,54 @@
       <div class="chat-header"><span>💬 Chat</span><button class="chat-close-btn" id="chatCloseBtn"><i class="fas fa-times"></i></button></div>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input-area"><input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." autocomplete="off"><button class="chat-send-btn" id="chatSendBtn"><i class="fas fa-paper-plane"></i></button></div>
+    </div>
+    
+    <!-- Live Stream Page -->
+    <div class="live-stream-page" id="liveStreamPage">
+      <div class="live-stream-header">
+        <div class="live-stream-info">
+          <div class="live-stream-dot"></div>
+          <span class="live-stream-text">LIVE</span>
+          <span class="live-stream-viewers" id="liveViewerCount">0 watching</span>
+        </div>
+        <div class="live-stream-host" id="liveHostName">@user</div>
+        <button class="live-stream-close" onclick="closeLiveStream()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="live-video-container">
+        <div class="live-video-wrapper" id="liveVideoWrapper">
+          <div class="live-video-placeholder" id="liveVideoPlaceholder">
+            <i class="fas fa-video"></i>
+            <p>Starting live stream...</p>
+          </div>
+          <video id="liveVideo" autoplay playsinline webkit-playsinline muted></video>
+        </div>
+      </div>
+      
+      <div class="live-bottom-bar">
+        <div class="live-comment-section">
+          <div class="live-comment-list" id="liveCommentList"></div>
+          <div class="live-comment-input-row">
+            <input type="text" id="liveCommentInput" placeholder="Add a comment..." maxlength="150" autocomplete="off">
+            <button class="live-comment-send-btn" onclick="sendLiveComment()">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="live-action-buttons">
+          <button class="live-action-btn" id="liveLikeBtn" onclick="toggleLiveLike()">
+            <i class="far fa-heart"></i>
+            <span id="liveLikeCount">Like</span>
+          </button>
+          <button class="live-action-btn" onclick="shareLiveStream()">
+            <i class="fas fa-share"></i>
+            <span>Share</span>
+          </button>
+        </div>
+      </div>
     </div>
     
     <nav class="floating-nav" id="floatingNav">
@@ -1087,6 +1386,155 @@
     }
     
     // ================================================================
+    // LIVE STREAM FUNCTIONS
+    // ================================================================
+    
+    let liveStreamActive = false;
+    let liveLocalStream = null;
+    let liveViewers = 0;
+    let liveIsLiked = false;
+    
+    window.openLiveStream = async function() {
+      try {
+        // Get camera for live stream
+        const constraints = {
+          video: { width: { ideal: 480 }, height: { ideal: 640 }, facingMode: 'user' },
+          audio: { echoCancellation: true, noiseSuppression: true }
+        };
+        
+        liveLocalStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // Show live page
+        document.getElementById('liveStreamPage').classList.add('active');
+        document.getElementById('mainPage').style.display = 'none';
+        
+        // Set host name
+        document.getElementById('liveHostName').textContent = currentUser?.displayName || '@user';
+        document.getElementById('liveViewerCount').textContent = '0 watching';
+        
+        // Show video
+        const liveVideo = document.getElementById('liveVideo');
+        liveVideo.srcObject = liveLocalStream;
+        liveVideo.style.display = 'block';
+        document.getElementById('liveVideoPlaceholder').style.display = 'none';
+        
+        liveStreamActive = true;
+        
+        // Add demo viewers
+        let viewerCount = 0;
+        setInterval(() => {
+          if (liveStreamActive) {
+            viewerCount = Math.floor(Math.random() * 20) + 1;
+            document.getElementById('liveViewerCount').textContent = viewerCount + ' watching';
+          }
+        }, 5000);
+        
+        showToast('🔴 Live stream started!');
+        
+        // Update Live button state
+        document.querySelectorAll('.live-btn').forEach(btn => {
+          btn.classList.add('active');
+          btn.innerHTML = '<i class="fas fa-stop-circle"></i><span>End</span>';
+        });
+        
+      } catch (error) {
+        console.error('Live stream error:', error);
+        showToast('❌ Could not start live stream. Please allow camera access.');
+      }
+    };
+    
+    window.closeLiveStream = function() {
+      liveStreamActive = false;
+      
+      if (liveLocalStream) {
+        liveLocalStream.getTracks().forEach(track => track.stop());
+        liveLocalStream = null;
+      }
+      
+      document.getElementById('liveStreamPage').classList.remove('active');
+      document.getElementById('mainPage').style.display = 'block';
+      document.getElementById('liveVideo').style.display = 'none';
+      document.getElementById('liveVideoPlaceholder').style.display = 'flex';
+      document.getElementById('liveCommentList').innerHTML = '';
+      document.getElementById('liveLikeCount').textContent = 'Like';
+      liveIsLiked = false;
+      document.getElementById('liveLikeBtn').classList.remove('liked');
+      document.getElementById('liveLikeBtn').querySelector('i').className = 'far fa-heart';
+      
+      // Update Live button state
+      document.querySelectorAll('.live-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.innerHTML = '<i class="fas fa-circle"></i><span>Live</span>';
+      });
+      
+      showToast('Live stream ended');
+    };
+    
+    window.sendLiveComment = function() {
+      const input = document.getElementById('liveCommentInput');
+      const text = sanitizeString(input.value.trim());
+      if (!text) return;
+      
+      input.value = '';
+      
+      const commentList = document.getElementById('liveCommentList');
+      const commentDiv = document.createElement('div');
+      commentDiv.className = 'live-comment-item';
+      commentDiv.innerHTML = `<span class="live-comment-username">${sanitizeString(currentUser?.displayName || '@user')}</span> ${text}`;
+      commentList.appendChild(commentDiv);
+      commentList.scrollTop = commentList.scrollHeight;
+      showToast('💬 Comment posted!');
+    };
+    
+    window.toggleLiveLike = function() {
+      const likeBtn = document.getElementById('liveLikeBtn');
+      const icon = likeBtn.querySelector('i');
+      
+      if (!liveIsLiked) {
+        liveIsLiked = true;
+        likeBtn.classList.add('liked');
+        icon.className = 'fas fa-heart';
+        const currentLikes = parseInt(document.getElementById('liveLikeCount').textContent) || 0;
+        document.getElementById('liveLikeCount').textContent = currentLikes + 1;
+        showToast('❤️ Liked this live stream!');
+      } else {
+        liveIsLiked = false;
+        likeBtn.classList.remove('liked');
+        icon.className = 'far fa-heart';
+        const currentLikes = parseInt(document.getElementById('liveLikeCount').textContent) || 0;
+        document.getElementById('liveLikeCount').textContent = Math.max(0, currentLikes - 1);
+      }
+    };
+    
+    window.shareLiveStream = async function() {
+      const url = window.location.origin + '/live.html';
+      
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: '🔴 CHOICHO LIVE',
+            text: 'Watch my live stream on Choicho!',
+            url: url
+          });
+        } catch (e) {}
+      } else {
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast('Link copied! 📋');
+        } catch (e) {
+          showToast('Unable to share');
+        }
+      }
+    };
+    
+    // Live comment enter key
+    document.getElementById('liveCommentInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendLiveComment();
+      }
+    });
+    
+    // ================================================================
     // CROSS-BROWSER WEBRTC IMPLEMENTATION
     // ================================================================
     
@@ -1190,6 +1638,20 @@
         }
       }
       
+      // Live button handler
+      function handleLiveToggle() {
+        if (document.querySelector('.live-btn.active')) {
+          // Already live, end it
+          closeLiveStream();
+        } else {
+          // Start live
+          window.openLiveStream();
+        }
+      }
+      
+      liveBtn.onclick = handleLiveToggle;
+      if (liveBtnDesktop) liveBtnDesktop.onclick = handleLiveToggle;
+      
       sendChatMessageFn = async (text) => {
         if (!roomId || !currentUserId || !isConnectedToStranger) {
           addChatMessage('❌ Not connected!', true);
@@ -1265,10 +1727,8 @@
         cleanupRoomListeners();
         pendingIceCandidates = [];
         
-        // Create PeerConnection with cross-browser config
         pc = new RTCPeerConnection(getPeerConnectionConfig());
         
-        // Add local tracks
         if (localStream) {
           localStream.getTracks().forEach(track => {
             pc.addTrack(track, localStream);
@@ -1310,7 +1770,6 @@
           }
         };
         
-        // Listen for ICE candidates
         try {
           unsubs.push(onSnapshot(collection(doc(db, 'rooms', roomId), 'ice'), async (snap) => {
             snap.docChanges().forEach(async (c) => {
@@ -1344,7 +1803,6 @@
               timestamp: serverTimestamp()
             });
             
-            // Listen for answer
             unsubs.push(onSnapshot(doc(db, 'invites', safePartnerId), async (snap) => {
               const d = snap.data();
               if (d?.answer && !pc.currentRemoteDescription && d.roomId === roomId) {
@@ -1370,7 +1828,10 @@
       }
       
       async function startChat() {
-        if (isLive) { alert('Please END live first.'); return; }
+        if (isLive) { 
+          showToast('Please END live first.');
+          return; 
+        }
         if (isSearching) return;
         isSearching = true;
         
@@ -1805,7 +2266,6 @@
           roomId = null;
         }
         
-        if (isLive) { endLive().catch(() => {}); }
         resetStranger();
         stopCamera();
         
@@ -1828,59 +2288,6 @@
         chatVisible = false;
       }
       
-      async function startLive() {
-        if (!localStream) return;
-        isLive = true;
-        [liveBtn, liveBtnDesktop].forEach(btn => {
-          if (btn) {
-            btn.textContent = '';
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-stop-circle';
-            const span = document.createElement('span');
-            span.textContent = 'End';
-            btn.appendChild(icon);
-            btn.appendChild(span);
-            btn.classList.add('active');
-          }
-        });
-        try {
-          await setDoc(doc(db, 'live', currentUserId), {
-            userId: currentUserId,
-            username: currentUser?.displayName || 'Anonymous',
-            active: true,
-            startedAt: serverTimestamp(),
-            viewers: 0
-          });
-          strangerCamera.classList.add('live-active');
-        } catch (e) { isLive = false; }
-      }
-      
-      async function endLive() {
-        isLive = false;
-        [liveBtn, liveBtnDesktop].forEach(btn => {
-          if (btn) {
-            btn.textContent = '';
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-circle';
-            const span = document.createElement('span');
-            span.textContent = 'Live';
-            btn.appendChild(icon);
-            btn.appendChild(span);
-            btn.classList.remove('active');
-          }
-        });
-        await deleteDoc(doc(db, 'live', currentUserId)).catch(() => {});
-        strangerCamera.classList.remove('live-active');
-      }
-      
-      async function toggleLive() {
-        if (isLive) await endLive();
-        else { if (!localStream && !await startCamera()) return; await startLive(); }
-      }
-      
-      liveBtn.onclick = toggleLive;
-      if (liveBtnDesktop) liveBtnDesktop.onclick = toggleLive;
-      
       startStopBtn.onclick = () => {
         if (startStopBtn.classList.contains('stop-state')) stopChat();
         else startChat();
@@ -1900,6 +2307,7 @@
       window.addEventListener('beforeunload', () => {
         if (pc) pc.close();
         if (localStream) localStream.getTracks().forEach(t => t.stop());
+        if (liveLocalStream) liveLocalStream.getTracks().forEach(t => t.stop());
       });
     }
   </script>
