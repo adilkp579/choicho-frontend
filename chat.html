@@ -1190,7 +1190,6 @@
     let peerConnection = null;
     let iceServers = [];
     
-    // ========== INFINITE SCROLL VARIABLES ==========
     let lastVisible = null;
     let isLoadingUsers = false;
     let allUsersLoaded = false;
@@ -1199,35 +1198,14 @@
     // ========== FETCH TURN CREDENTIALS ==========
     async function fetchTurnCredentials() {
       try {
-        // In production, replace with your actual backend endpoint
-        const response = await fetch('https://choicho-backend.onrender.com', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${await currentUser.getIdToken()}`
-          },
-          body: JSON.stringify({
-            userId: currentUserId,
-            secret: 'your-secret-key' // This would be securely managed on the backend
-          })
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch TURN credentials');
-        }
-        
-        const data = await response.json();
-        
-        // Store the received ICE servers
-        iceServers = data.iceServers || [
+        iceServers = [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' }
         ];
-        
         return iceServers;
       } catch (error) {
         console.warn('Failed to fetch TURN credentials, using fallback STUN servers:', error);
-        // Fallback to STUN only
         iceServers = [
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' }
@@ -1501,7 +1479,6 @@
         return;
       }
       
-      // Ensure TURN credentials are loaded
       if (iceServers.length === 0) {
         showToast('Loading call configuration...');
         await fetchTurnCredentials();
@@ -1518,7 +1495,6 @@
         
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
-        // Create peer connection with the fetched ICE servers
         peerConnection = createPeerConnection();
         
         localStream.getTracks().forEach(track => {
@@ -1530,8 +1506,6 @@
         
         showCallOverlay(type);
         
-        // In production, send the offer to the other peer via signaling
-        // For now, simulate connection
         setTimeout(() => {
           if (isCallActive) {
             document.getElementById('callStatus').textContent = 'Connected';
@@ -1542,13 +1516,11 @@
         peerConnection.onicecandidate = (event) => {
           if (event.candidate) {
             console.log('ICE candidate:', event.candidate);
-            // In production, send candidate to other peer via signaling
           }
         };
         
         peerConnection.ontrack = (event) => {
           console.log('Remote track received');
-          // In production, display remote stream
         };
         
         peerConnection.onconnectionstatechange = () => {
@@ -1838,6 +1810,7 @@
         container.innerHTML = html;
         
       } else {
+        // Requests tab
         if (pendingRequests.length === 0) {
           container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-envelope-open"></i><p>No pending requests</p></div>';
           return;
@@ -1854,10 +1827,10 @@
             </div>
             <div style="display:flex;gap:0.3rem;">
               <button class="new-chat-panel-action accept" onclick="event.stopPropagation();acceptRequestFromPanel('${r.id}', '${r.from}')">
-                <i class="fas fa-check"></i>
+                <i class="fas fa-check"></i> Accept
               </button>
               <button class="new-chat-panel-action decline" onclick="event.stopPropagation();declineRequestFromPanel('${r.id}')">
-                <i class="fas fa-times"></i>
+                <i class="fas fa-times"></i> Decline
               </button>
             </div>
           </div>
@@ -1894,11 +1867,39 @@
     
     window.acceptRequestFromPanel = async function(requestId, fromUser) {
       try {
+        // Delete the request
         await deleteDoc(doc(db, 'message_requests', requestId));
+        
+        // Create a new chat with the user
+        const partnerId = fromUser.replace('@', '');
+        const chatId = [currentUserId, partnerId].sort().join('_');
+        
+        const chatRef = doc(db, 'chats', chatId);
+        const chatSnap = await getDoc(chatRef);
+        
+        if (!chatSnap.exists()) {
+          await setDoc(chatRef, {
+            users: [currentUserId, partnerId],
+            lastMessage: 'Chat started',
+            lastTime: serverTimestamp(),
+            [`unread_${partnerId}`]: 1,
+            [`unread_${currentUserId}`]: 0
+          });
+        }
+        
+        // Reload requests and update UI
         await loadRequests();
         renderPanelList();
-        showToast(`Accepted request from ${cleanUsername(fromUser)}`);
+        
+        // Show toast and open chat
+        showToast(`✅ Accepted request from ${cleanUsername(fromUser)}`);
+        
+        // Close panel and open chat
+        closeNewChatPanel();
+        await openChat(fromUser);
+        
       } catch(e) {
+        console.error('Error accepting request:', e);
         showToast('Failed to accept request');
       }
     };
@@ -1998,7 +1999,6 @@
     });
     
     // ========== INITIALIZE ==========
-    // Fetch TURN credentials on load
     await fetchTurnCredentials();
     
     loadChats();
