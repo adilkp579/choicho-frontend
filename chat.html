@@ -1825,9 +1825,8 @@
         });
       });
       
-      // Get accepted users (both users have accepted)
-      // Check chats where both users are present
-      const chatsQuery = query(collection(db, 'chats'), where(`users`, 'array-contains', currentUserId));
+      // Get accepted users - check chats where both users are present
+      const chatsQuery = query(collection(db, 'chats'), where('users', 'array-contains', currentUserId));
       const chatsSnap = await getDocs(chatsQuery);
       chatsSnap.forEach(doc => {
         const data = doc.data();
@@ -1861,6 +1860,10 @@
       return acceptedUsers.some(u => u === partnerId || u === username);
     }
     
+    function hasPendingRequestFrom(username) {
+      return pendingRequests.some(r => r.from === username);
+    }
+    
     // ========== RENDER PANEL LIST ==========
     function renderPanelList() {
       const container = document.getElementById('newChatPanelList');
@@ -1882,26 +1885,31 @@
         
         let html = filtered.map(u => {
           const hasRequest = hasSentRequest(u.username);
-          const isRequestPending = pendingRequests.some(r => r.from === u.username);
+          const isRequestPending = hasPendingRequestFrom(u.username);
           const isAccepted = isAcceptedUser(u.username);
           
           let actionHtml = '';
           if (isAccepted) {
+            // User is connected - show Chat button
             actionHtml = `<button class="new-chat-panel-action chat-btn" onclick="event.stopPropagation();openChat('${u.username}')">
               <i class="fas fa-comment"></i> Chat
             </button>`;
           } else if (hasRequest) {
+            // User has sent a request - show Requested
             actionHtml = `<span class="new-chat-panel-action request-sent"><i class="fas fa-clock"></i> Requested</span>`;
           } else if (isRequestPending) {
+            // User has received a request - show Accept/Decline
+            const req = pendingRequests.find(r => r.from === u.username);
             actionHtml = `
-              <button class="new-chat-panel-action accept" onclick="event.stopPropagation();acceptRequestFromPanel('${pendingRequests.find(r => r.from === u.username).id}', '${u.username}')">
+              <button class="new-chat-panel-action accept" onclick="event.stopPropagation();acceptRequestFromPanel('${req.id}', '${u.username}')">
                 <i class="fas fa-check"></i> Accept
               </button>
-              <button class="new-chat-panel-action decline" onclick="event.stopPropagation();declineRequestFromPanel('${pendingRequests.find(r => r.from === u.username).id}')">
-                <i class="fas fa-times"></i>
+              <button class="new-chat-panel-action decline" onclick="event.stopPropagation();declineRequestFromPanel('${req.id}')">
+                <i class="fas fa-times"></i> Decline
               </button>
             `;
           } else {
+            // No request - show Request button
             actionHtml = `<button class="new-chat-panel-action request-btn" onclick="event.stopPropagation();sendRequestFromPanel('${u.username}')">
               <i class="fas fa-paper-plane"></i> Request
             </button>`;
@@ -1916,7 +1924,7 @@
                 <div class="new-chat-panel-name">${u.name || cleanUsername(u.username)}</div>
                 <div class="new-chat-panel-sub">${u.username}</div>
               </div>
-              <div style="display:flex;gap:0.3rem;">
+              <div style="display:flex;gap:0.3rem;flex-wrap:wrap;justify-content:flex-end;">
                 ${actionHtml}
               </div>
             </div>
@@ -1932,7 +1940,7 @@
         container.innerHTML = html;
         
       } else {
-        // Requests tab
+        // Requests tab - show all pending requests
         if (pendingRequests.length === 0) {
           container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-envelope-open"></i><p>No pending requests</p></div>';
           return;
@@ -1967,7 +1975,7 @@
       try {
         const profile = { name: currentUser.displayName || cleanUsername(currentUser.username), avatar: null };
         
-        await addDoc(collection(db, 'message_requests'), {
+        const requestData = {
           from: currentUser.username,
           fromName: profile.name || cleanUsername(currentUser.username),
           fromAvatar: profile.avatar || null,
@@ -1976,16 +1984,22 @@
           toId: username.replace('@', ''),
           status: 'pending',
           createdAt: serverTimestamp()
-        });
+        };
+        
+        const docRef = await addDoc(collection(db, 'message_requests'), requestData);
         
         // Add to sent requests list
         sentRequests.push({
+          id: docRef.id,
           to: username,
           toId: username.replace('@', '')
         });
         
-        showToast(`✅ Request sent to ${cleanUsername(username)}`);
+        // Reload requests to update badges
+        await loadRequests();
         renderPanelList();
+        
+        showToast(`✅ Request sent to ${cleanUsername(username)}`);
         
       } catch(e) {
         console.error('Error sending request:', e);
