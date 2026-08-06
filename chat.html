@@ -1184,6 +1184,7 @@
     let allUsers = [];
     let pendingRequests = [];
     let sentRequests = [];
+    let acceptedUsers = [];
     let activePanelTab = 'users';
     let chatListData = [];
     let isMuted = false;
@@ -1310,10 +1311,29 @@
       });
     }
     
+    // ========== CHECK IF USER CAN CHAT ==========
+    function canChatWithUser(username) {
+      const partnerId = username.replace('@', '');
+      return acceptedUsers.some(u => u === partnerId || u === username);
+    }
+    
     // ========== OPEN CHAT ==========
     window.openChat = async function(partner) {
+      const partnerId = partner.replace('@', '');
+      
+      // Check if chat is allowed
+      if (!canChatWithUser(partnerId) && !acceptedUsers.includes(partnerId)) {
+        // Check if request is pending
+        const isPending = pendingRequests.some(r => r.from === partner) || sentRequests.some(r => r.to === partner);
+        if (isPending) {
+          showToast('⏳ Request pending. Wait for approval.');
+        } else {
+          showToast('❌ Send a request first to start chatting.');
+        }
+        return;
+      }
+      
       currentPartner = partner;
-      const partnerId = partner.replace('@','');
       currentChatId = [currentUserId, partnerId].sort().join('_');
       
       await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
@@ -1379,6 +1399,12 @@
         return;
       }
       
+      // Verify chat is allowed
+      if (!currentPartner || !canChatWithUser(currentPartner)) {
+        showToast('❌ You need to be connected to chat.');
+        return;
+      }
+      
       input.value = '';
       input.disabled = true;
       
@@ -1412,6 +1438,12 @@
       const file = e.target.files[0];
       if (!file || !currentChatId) {
         showToast('No image selected');
+        return;
+      }
+      
+      // Verify chat is allowed
+      if (!currentPartner || !canChatWithUser(currentPartner)) {
+        showToast('❌ You need to be connected to chat.');
         return;
       }
       
@@ -1478,6 +1510,11 @@
     window.startCall = async function(type) {
       if (!currentPartner) {
         showToast('Please select a chat first');
+        return;
+      }
+      
+      if (!canChatWithUser(currentPartner)) {
+        showToast('❌ You need to be connected to call.');
         return;
       }
       
@@ -1749,6 +1786,7 @@
     async function loadRequests() {
       pendingRequests = [];
       sentRequests = [];
+      acceptedUsers = [];
       
       // Get pending requests received by current user
       const q1 = query(collection(db, 'message_requests'), where('toId', '==', currentUserId), where('status', '==', 'pending'));
@@ -1777,6 +1815,20 @@
         });
       });
       
+      // Get accepted users (both users have accepted)
+      // Check chats where both users are present
+      const chatsQuery = query(collection(db, 'chats'), where(`users`, 'array-contains', currentUserId));
+      const chatsSnap = await getDocs(chatsQuery);
+      chatsSnap.forEach(doc => {
+        const data = doc.data();
+        if (data.users && data.users.length === 2) {
+          const otherUser = data.users.find(u => u !== currentUserId);
+          if (otherUser) {
+            acceptedUsers.push(otherUser);
+          }
+        }
+      });
+      
       const badge = document.getElementById('fabBadge');
       const panelBadge = document.getElementById('panelRequestBadge');
       if (pendingRequests.length > 0) {
@@ -1792,6 +1844,11 @@
     
     function hasSentRequest(username) {
       return sentRequests.some(r => r.to === username || r.toId === username.replace('@', ''));
+    }
+    
+    function isAcceptedUser(username) {
+      const partnerId = username.replace('@', '');
+      return acceptedUsers.some(u => u === partnerId || u === username);
     }
     
     // ========== RENDER PANEL LIST ==========
@@ -1816,9 +1873,14 @@
         let html = filtered.map(u => {
           const hasRequest = hasSentRequest(u.username);
           const isRequestPending = pendingRequests.some(r => r.from === u.username);
+          const isAccepted = isAcceptedUser(u.username);
           
           let actionHtml = '';
-          if (hasRequest) {
+          if (isAccepted) {
+            actionHtml = `<button class="new-chat-panel-action" onclick="event.stopPropagation();openChat('${u.username}')" style="background:rgba(74,222,128,0.15);border-color:rgba(74,222,128,0.3);color:#4ade80;">
+              <i class="fas fa-comment"></i> Chat
+            </button>`;
+          } else if (hasRequest) {
             actionHtml = `<span class="new-chat-panel-action request-sent"><i class="fas fa-clock"></i> Requested</span>`;
           } else if (isRequestPending) {
             actionHtml = `
@@ -1945,6 +2007,11 @@
             [`unread_${partnerId}`]: 1,
             [`unread_${currentUserId}`]: 0
           });
+        }
+        
+        // Add to accepted users
+        if (!acceptedUsers.includes(partnerId)) {
+          acceptedUsers.push(partnerId);
         }
         
         // Reload requests and update UI
