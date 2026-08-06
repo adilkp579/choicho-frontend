@@ -773,6 +773,16 @@
       color: #f59e0b;
       cursor: default;
     }
+    .new-chat-panel-action.request-btn {
+      background: rgba(255,252,0,0.15);
+      border-color: rgba(255,252,0,0.3);
+      color: #FFFC00;
+    }
+    .new-chat-panel-action.chat-btn {
+      background: rgba(74,222,128,0.15);
+      border-color: rgba(74,222,128,0.3);
+      color: #4ade80;
+    }
     .new-chat-panel-empty {
       text-align: center;
       padding: 2rem;
@@ -1877,7 +1887,7 @@
           
           let actionHtml = '';
           if (isAccepted) {
-            actionHtml = `<button class="new-chat-panel-action" onclick="event.stopPropagation();openChat('${u.username}')" style="background:rgba(74,222,128,0.15);border-color:rgba(74,222,128,0.3);color:#4ade80;">
+            actionHtml = `<button class="new-chat-panel-action chat-btn" onclick="event.stopPropagation();openChat('${u.username}')">
               <i class="fas fa-comment"></i> Chat
             </button>`;
           } else if (hasRequest) {
@@ -1892,7 +1902,7 @@
               </button>
             `;
           } else {
-            actionHtml = `<button class="new-chat-panel-action" onclick="event.stopPropagation();sendRequestFromPanel('${u.username}')">
+            actionHtml = `<button class="new-chat-panel-action request-btn" onclick="event.stopPropagation();sendRequestFromPanel('${u.username}')">
               <i class="fas fa-paper-plane"></i> Request
             </button>`;
           }
