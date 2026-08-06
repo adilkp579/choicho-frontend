@@ -767,6 +767,12 @@
       border-color: rgba(239,68,68,0.3);
       color: #ef4444;
     }
+    .new-chat-panel-action.request-sent {
+      background: rgba(245,158,11,0.15);
+      border-color: rgba(245,158,11,0.3);
+      color: #f59e0b;
+      cursor: default;
+    }
     .new-chat-panel-empty {
       text-align: center;
       padding: 2rem;
@@ -1177,6 +1183,7 @@
     let unsubMessages = null;
     let allUsers = [];
     let pendingRequests = [];
+    let sentRequests = [];
     let activePanelTab = 'users';
     let chatListData = [];
     let isMuted = false;
@@ -1741,9 +1748,12 @@
     // ========== LOAD REQUESTS ==========
     async function loadRequests() {
       pendingRequests = [];
-      const q = query(collection(db, 'message_requests'), where('toId', '==', currentUserId), where('status', '==', 'pending'));
-      const snapshot = await getDocs(q);
-      snapshot.forEach(doc => {
+      sentRequests = [];
+      
+      // Get pending requests received by current user
+      const q1 = query(collection(db, 'message_requests'), where('toId', '==', currentUserId), where('status', '==', 'pending'));
+      const snapshot1 = await getDocs(q1);
+      snapshot1.forEach(doc => {
         const data = doc.data();
         pendingRequests.push({
           id: doc.id,
@@ -1751,6 +1761,19 @@
           fromName: data.fromName,
           fromAvatar: data.fromAvatar,
           fromId: data.fromId
+        });
+      });
+      
+      // Get sent requests
+      const q2 = query(collection(db, 'message_requests'), where('fromId', '==', currentUserId), where('status', '==', 'pending'));
+      const snapshot2 = await getDocs(q2);
+      snapshot2.forEach(doc => {
+        const data = doc.data();
+        sentRequests.push({
+          id: doc.id,
+          to: data.to,
+          toName: data.toName,
+          toId: data.toId
         });
       });
       
@@ -1765,6 +1788,10 @@
         badge.style.display = 'none';
         panelBadge.style.display = 'none';
       }
+    }
+    
+    function hasSentRequest(username) {
+      return sentRequests.some(r => r.to === username || r.toId === username.replace('@', ''));
     }
     
     // ========== RENDER PANEL LIST ==========
@@ -1786,20 +1813,43 @@
           return;
         }
         
-        let html = filtered.map(u => `
-          <div class="new-chat-panel-item" onclick="startChatFromPanel('${u.username}')">
-            <div class="new-chat-panel-avatar">
-              ${u.avatar ? `<img src="${u.avatar}">` : '<i class="fas fa-user"></i>'}
+        let html = filtered.map(u => {
+          const hasRequest = hasSentRequest(u.username);
+          const isRequestPending = pendingRequests.some(r => r.from === u.username);
+          
+          let actionHtml = '';
+          if (hasRequest) {
+            actionHtml = `<span class="new-chat-panel-action request-sent"><i class="fas fa-clock"></i> Requested</span>`;
+          } else if (isRequestPending) {
+            actionHtml = `
+              <button class="new-chat-panel-action accept" onclick="event.stopPropagation();acceptRequestFromPanel('${pendingRequests.find(r => r.from === u.username).id}', '${u.username}')">
+                <i class="fas fa-check"></i> Accept
+              </button>
+              <button class="new-chat-panel-action decline" onclick="event.stopPropagation();declineRequestFromPanel('${pendingRequests.find(r => r.from === u.username).id}')">
+                <i class="fas fa-times"></i>
+              </button>
+            `;
+          } else {
+            actionHtml = `<button class="new-chat-panel-action" onclick="event.stopPropagation();sendRequestFromPanel('${u.username}')">
+              <i class="fas fa-paper-plane"></i> Request
+            </button>`;
+          }
+          
+          return `
+            <div class="new-chat-panel-item">
+              <div class="new-chat-panel-avatar" onclick="window.location.href='profile.html?user=${encodeURIComponent(u.username)}'">
+                ${u.avatar ? `<img src="${u.avatar}">` : '<i class="fas fa-user"></i>'}
+              </div>
+              <div class="new-chat-panel-info" onclick="window.location.href='profile.html?user=${encodeURIComponent(u.username)}'">
+                <div class="new-chat-panel-name">${u.name || cleanUsername(u.username)}</div>
+                <div class="new-chat-panel-sub">${u.username}</div>
+              </div>
+              <div style="display:flex;gap:0.3rem;">
+                ${actionHtml}
+              </div>
             </div>
-            <div class="new-chat-panel-info">
-              <div class="new-chat-panel-name">${u.name || cleanUsername(u.username)}</div>
-              <div class="new-chat-panel-sub">${u.username}</div>
-            </div>
-            <button class="new-chat-panel-action" onclick="event.stopPropagation();startChatFromPanel('${u.username}')">
-              <i class="fas fa-comment"></i> Chat
-            </button>
-          </div>
-        `).join('');
+          `;
+        }).join('');
         
         if (!allUsersLoaded && !isLoadingUsers) {
           html += `<div class="panel-loading" id="panelLoadMore"><i class="fas fa-spinner"></i> Loading more users...</div>`;
@@ -1839,36 +1889,46 @@
     }
     
     // ========== CHAT ACTIONS FROM PANEL ==========
-    window.startChatFromPanel = async function(username) {
-      closeNewChatPanel();
-      const partnerId = username.replace('@', '');
-      const chatId = [currentUserId, partnerId].sort().join('_');
-      
+    
+    // Send request to user
+    window.sendRequestFromPanel = async function(username) {
       try {
-        const chatRef = doc(db, 'chats', chatId);
-        const chatSnap = await getDoc(chatRef);
+        const profile = { name: currentUser.displayName || cleanUsername(currentUser.username), avatar: null };
         
-        if (!chatSnap.exists()) {
-          await setDoc(chatRef, {
-            users: [currentUserId, partnerId],
-            lastMessage: 'Chat started',
-            lastTime: serverTimestamp(),
-            [`unread_${partnerId}`]: 1,
-            [`unread_${currentUserId}`]: 0
-          });
-        }
+        await addDoc(collection(db, 'message_requests'), {
+          from: currentUser.username,
+          fromName: profile.name || cleanUsername(currentUser.username),
+          fromAvatar: profile.avatar || null,
+          fromId: currentUserId,
+          to: username,
+          toId: username.replace('@', ''),
+          status: 'pending',
+          createdAt: serverTimestamp()
+        });
         
-        await openChat(username);
+        // Add to sent requests list
+        sentRequests.push({
+          to: username,
+          toId: username.replace('@', '')
+        });
+        
+        showToast(`✅ Request sent to ${cleanUsername(username)}`);
+        renderPanelList();
+        
       } catch(e) {
-        console.error('Error starting chat:', e);
-        showToast('Failed to start chat');
+        console.error('Error sending request:', e);
+        showToast('Failed to send request');
       }
     };
     
+    // Accept request and create chat
     window.acceptRequestFromPanel = async function(requestId, fromUser) {
       try {
         // Delete the request
         await deleteDoc(doc(db, 'message_requests', requestId));
+        
+        // Remove from pending list
+        pendingRequests = pendingRequests.filter(r => r.id !== requestId);
         
         // Create a new chat with the user
         const partnerId = fromUser.replace('@', '');
@@ -1892,7 +1952,7 @@
         renderPanelList();
         
         // Show toast and open chat
-        showToast(`✅ Accepted request from ${cleanUsername(fromUser)}`);
+        showToast(`✅ Request accepted from ${cleanUsername(fromUser)}`);
         
         // Close panel and open chat
         closeNewChatPanel();
@@ -1907,6 +1967,7 @@
     window.declineRequestFromPanel = async function(requestId) {
       try {
         await deleteDoc(doc(db, 'message_requests', requestId));
+        pendingRequests = pendingRequests.filter(r => r.id !== requestId);
         await loadRequests();
         renderPanelList();
         showToast('Request declined');
