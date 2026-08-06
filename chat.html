@@ -482,99 +482,6 @@
       font-size: 0.9rem !important;
     }
     
-    /* Call Overlay */
-    .call-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.95);
-      z-index: 1000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      padding: 2rem;
-    }
-    .call-overlay.show {
-      display: flex;
-    }
-    .call-overlay .call-avatar {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: #1a1a1a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-      color: #fff;
-      margin-bottom: 1.5rem;
-      border: 2px solid rgba(255,255,255,0.1);
-    }
-    .call-overlay .call-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 50%;
-    }
-    .call-overlay .call-name {
-      color: #fff;
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 0.3rem;
-    }
-    .call-overlay .call-status {
-      color: rgba(255,255,255,0.5);
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
-    }
-    .call-overlay .call-timer {
-      color: #fff;
-      font-size: 1.2rem;
-      margin-bottom: 2rem;
-      font-variant-numeric: tabular-nums;
-    }
-    .call-overlay .call-actions {
-      display: flex;
-      gap: 2rem;
-    }
-    .call-overlay .call-action-btn {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .call-overlay .call-action-btn:active {
-      transform: scale(0.9);
-    }
-    .call-overlay .call-action-btn.end-call {
-      background: #ef4444;
-      color: #fff;
-    }
-    .call-overlay .call-action-btn.end-call:hover {
-      background: #dc2626;
-    }
-    .call-overlay .call-action-btn.mute-call {
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-    }
-    .call-overlay .call-action-btn.mute-call:hover {
-      background: rgba(255,255,255,0.2);
-    }
-    .call-overlay .call-action-btn.mute-call.muted {
-      background: #ef4444;
-      color: #fff;
-    }
-    
-    /* ========== ULTRA GLASSMORPHISM ========== */
     .new-chat-panel {
       position: fixed;
       bottom: 150px;
@@ -1692,6 +1599,7 @@
       lastVisible = null;
       allUsersLoaded = false;
       allUsers = [];
+      // Load users immediately
       loadPanelUsers();
     }
     
@@ -1707,11 +1615,14 @@
         t.classList.toggle('active', t.dataset.tab === tab);
       });
       if (tab === 'users') {
+        // Reset and reload users when switching to users tab
         lastVisible = null;
         allUsersLoaded = false;
         allUsers = [];
         loadPanelUsers();
       } else {
+        // Load requests when switching to requests tab
+        loadRequests();
         renderPanelList();
       }
     };
@@ -1723,10 +1634,11 @@
     // ========== LOAD USERS WITH INFINITE SCROLL ==========
     async function loadPanelUsers() {
       if (activePanelTab !== 'users') return;
-      if (isLoadingUsers || allUsersLoaded) return;
+      if (isLoadingUsers) return;
       
       isLoadingUsers = true;
       const container = document.getElementById('newChatPanelList');
+      container.innerHTML = '<div class="panel-loading"><i class="fas fa-spinner"></i> Loading users...</div>';
       
       try {
         let q;
@@ -1742,7 +1654,10 @@
           allUsersLoaded = true;
           if (allUsers.length === 0) {
             container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
+          } else {
+            renderPanelList();
           }
+          isLoadingUsers = false;
           return;
         }
         
@@ -1759,6 +1674,17 @@
           }
         });
         
+        if (newUsers.length === 0) {
+          allUsersLoaded = true;
+          if (allUsers.length === 0) {
+            container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
+          } else {
+            renderPanelList();
+          }
+          isLoadingUsers = false;
+          return;
+        }
+        
         lastVisible = snapshot.docs[snapshot.docs.length - 1];
         allUsers = [...allUsers, ...newUsers];
         
@@ -1766,11 +1692,13 @@
           allUsersLoaded = true;
         }
         
+        // Load requests and accepted users before rendering
+        await loadRequests();
         renderPanelList();
         
       } catch (error) {
         console.error('Error loading users:', error);
-        container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-exclamation-triangle"></i><p>Error loading users</p></div>';
+        container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-exclamation-triangle"></i><p>Error loading users. Please try again.</p></div>';
       } finally {
         isLoadingUsers = false;
       }
@@ -1798,57 +1726,61 @@
       sentRequests = [];
       acceptedUsers = [];
       
-      // Get pending requests received by current user (incoming)
-      const q1 = query(collection(db, 'message_requests'), where('toId', '==', currentUserId), where('status', '==', 'pending'));
-      const snapshot1 = await getDocs(q1);
-      snapshot1.forEach(doc => {
-        const data = doc.data();
-        pendingRequests.push({
-          id: doc.id,
-          from: data.from,
-          fromName: data.fromName,
-          fromAvatar: data.fromAvatar,
-          fromId: data.fromId,
-          toId: data.toId
+      try {
+        // Get pending requests received by current user (incoming)
+        const q1 = query(collection(db, 'message_requests'), where('toId', '==', currentUserId), where('status', '==', 'pending'));
+        const snapshot1 = await getDocs(q1);
+        snapshot1.forEach(doc => {
+          const data = doc.data();
+          pendingRequests.push({
+            id: doc.id,
+            from: data.from,
+            fromName: data.fromName,
+            fromAvatar: data.fromAvatar,
+            fromId: data.fromId,
+            toId: data.toId
+          });
         });
-      });
-      
-      // Get sent requests (outgoing)
-      const q2 = query(collection(db, 'message_requests'), where('fromId', '==', currentUserId), where('status', '==', 'pending'));
-      const snapshot2 = await getDocs(q2);
-      snapshot2.forEach(doc => {
-        const data = doc.data();
-        sentRequests.push({
-          id: doc.id,
-          to: data.to,
-          toName: data.toName,
-          toId: data.toId
+        
+        // Get sent requests (outgoing)
+        const q2 = query(collection(db, 'message_requests'), where('fromId', '==', currentUserId), where('status', '==', 'pending'));
+        const snapshot2 = await getDocs(q2);
+        snapshot2.forEach(doc => {
+          const data = doc.data();
+          sentRequests.push({
+            id: doc.id,
+            to: data.to,
+            toName: data.toName,
+            toId: data.toId
+          });
         });
-      });
-      
-      // Get accepted users - check chats where both users are present
-      const chatsQuery = query(collection(db, 'chats'), where('users', 'array-contains', currentUserId));
-      const chatsSnap = await getDocs(chatsQuery);
-      chatsSnap.forEach(doc => {
-        const data = doc.data();
-        if (data.users && data.users.length === 2) {
-          const otherUser = data.users.find(u => u !== currentUserId);
-          if (otherUser) {
-            acceptedUsers.push(otherUser);
+        
+        // Get accepted users - check chats where both users are present
+        const chatsQuery = query(collection(db, 'chats'), where('users', 'array-contains', currentUserId));
+        const chatsSnap = await getDocs(chatsQuery);
+        chatsSnap.forEach(doc => {
+          const data = doc.data();
+          if (data.users && data.users.length === 2) {
+            const otherUser = data.users.find(u => u !== currentUserId);
+            if (otherUser) {
+              acceptedUsers.push(otherUser);
+            }
           }
+        });
+        
+        const badge = document.getElementById('fabBadge');
+        const panelBadge = document.getElementById('panelRequestBadge');
+        if (pendingRequests.length > 0) {
+          badge.style.display = 'flex';
+          badge.textContent = pendingRequests.length;
+          panelBadge.style.display = 'inline';
+          panelBadge.textContent = pendingRequests.length;
+        } else {
+          badge.style.display = 'none';
+          panelBadge.style.display = 'none';
         }
-      });
-      
-      const badge = document.getElementById('fabBadge');
-      const panelBadge = document.getElementById('panelRequestBadge');
-      if (pendingRequests.length > 0) {
-        badge.style.display = 'flex';
-        badge.textContent = pendingRequests.length;
-        panelBadge.style.display = 'inline';
-        panelBadge.textContent = pendingRequests.length;
-      } else {
-        badge.style.display = 'none';
-        panelBadge.style.display = 'none';
+      } catch (error) {
+        console.error('Error loading requests:', error);
       }
     }
     
@@ -1879,8 +1811,12 @@
           );
         }
         
-        if (filtered.length === 0 && !isLoadingUsers) {
-          container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
+        if (filtered.length === 0) {
+          if (allUsers.length === 0 && !isLoadingUsers) {
+            container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-user-slash"></i><p>No users found</p></div>';
+          } else {
+            container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-search"></i><p>No users match your search</p></div>';
+          }
           return;
         }
         
@@ -1934,8 +1870,8 @@
         
         if (!allUsersLoaded && !isLoadingUsers) {
           html += `<div class="panel-loading" id="panelLoadMore"><i class="fas fa-spinner"></i> Loading more users...</div>`;
-        } else if (isLoadingUsers) {
-          html += `<div class="panel-loading"><i class="fas fa-spinner"></i> Loading...</div>`;
+        } else if (isLoadingUsers && allUsers.length === 0) {
+          html = '<div class="panel-loading"><i class="fas fa-spinner"></i> Loading users...</div>';
         }
         
         container.innerHTML = html;
@@ -2157,6 +2093,9 @@
     loadChats();
     loadRequests();
     setupPanelScroll();
+    
+    console.log('✅ Chat app initialized');
+    console.log('Current user:', currentUser.username);
   </script>
 </body>
 </html>
