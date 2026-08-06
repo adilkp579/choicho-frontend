@@ -1798,7 +1798,7 @@
       sentRequests = [];
       acceptedUsers = [];
       
-      // Get pending requests received by current user
+      // Get pending requests received by current user (incoming)
       const q1 = query(collection(db, 'message_requests'), where('toId', '==', currentUserId), where('status', '==', 'pending'));
       const snapshot1 = await getDocs(q1);
       snapshot1.forEach(doc => {
@@ -1808,11 +1808,12 @@
           from: data.from,
           fromName: data.fromName,
           fromAvatar: data.fromAvatar,
-          fromId: data.fromId
+          fromId: data.fromId,
+          toId: data.toId
         });
       });
       
-      // Get sent requests
+      // Get sent requests (outgoing)
       const q2 = query(collection(db, 'message_requests'), where('fromId', '==', currentUserId), where('status', '==', 'pending'));
       const snapshot2 = await getDocs(q2);
       snapshot2.forEach(doc => {
