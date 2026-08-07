@@ -482,6 +482,98 @@
       font-size: 0.9rem !important;
     }
     
+    /* Call Overlay */
+    .call-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 2rem;
+    }
+    .call-overlay.show {
+      display: flex;
+    }
+    .call-overlay .call-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: #fff;
+      margin-bottom: 1.5rem;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+    .call-overlay .call-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    .call-overlay .call-name {
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .call-overlay .call-status {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+    .call-overlay .call-timer {
+      color: #fff;
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .call-overlay .call-actions {
+      display: flex;
+      gap: 2rem;
+    }
+    .call-overlay .call-action-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .call-overlay .call-action-btn:active {
+      transform: scale(0.9);
+    }
+    .call-overlay .call-action-btn.end-call {
+      background: #ef4444;
+      color: #fff;
+    }
+    .call-overlay .call-action-btn.end-call:hover {
+      background: #dc2626;
+    }
+    .call-overlay .call-action-btn.mute-call {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    .call-overlay .call-action-btn.mute-call:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .call-overlay .call-action-btn.mute-call.muted {
+      background: #ef4444;
+      color: #fff;
+    }
+    
     .new-chat-panel {
       position: fixed;
       bottom: 150px;
@@ -829,6 +921,127 @@
       opacity: 1;
     }
     
+    /* Voice Recording Bar */
+    .recording-bar {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      background: #0a0a0a;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+      width: 100%;
+    }
+    .recording-bar.show { display: flex; }
+    .recording-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: recPulse 0.8s infinite;
+    }
+    @keyframes recPulse {
+      0%,100%{opacity:1;transform:scale(1)}
+      50%{opacity:0.4;transform:scale(0.7)}
+    }
+    .recording-time-text {
+      color: #ef4444;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .recording-cancel {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .recording-send {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #FFFC00;
+      border: none;
+      color: #000;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .typing-bubble {
+      display: none;
+      align-self: flex-start;
+      padding: 0.45rem 0.8rem;
+      background: #111;
+      border-radius: 1rem;
+      gap: 0.2rem;
+    }
+    .typing-bubble.show { display: flex; align-items: center; }
+    .typing-bubble .tb-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #888;
+      animation: typingBounce 0.5s infinite alternate;
+    }
+    .typing-bubble .tb-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-bubble .tb-dot:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes typingBounce {
+      0%{transform:translateY(0);opacity:0.4}
+      100%{transform:translateY(-4px);opacity:1}
+    }
+    
+    /* Voice message styles */
+    .voice-msg {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.8rem;
+      cursor: pointer;
+      min-width: 180px;
+    }
+    .voice-play-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.2);
+      border: none;
+      color: #fff;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .sent .voice-play-btn {
+      color: #000;
+      background: rgba(0,0,0,0.15);
+    }
+    .voice-wave-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 1px;
+      height: 28px;
+    }
+    .voice-wave-bar {
+      width: 2px;
+      border-radius: 1px;
+      opacity: 0.6;
+    }
+    .sent .voice-wave-bar { background: #000; }
+    .received .voice-wave-bar { background: #fff; }
+    .voice-duration {
+      font-size: 0.55rem;
+      opacity: 0.7;
+      min-width: 60px;
+      text-align: right;
+    }
+    
     @media (min-width: 1024px) {
       .scrollable-content { 
         padding-left: 5.5rem; 
@@ -898,9 +1111,14 @@
           <i class="fas fa-heart"></i>
         </a>
         <span class="top-brand">Chats</span>
-        <a href="settings.html" class="corner-btn" title="Settings">
-          <i class="fas fa-cog"></i>
-        </a>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="corner-btn" onclick="toggleNewChatPanel()" title="New Chat">
+            <i class="fas fa-plus"></i>
+          </button>
+          <a href="settings.html" class="corner-btn" title="Settings">
+            <i class="fas fa-cog"></i>
+          </a>
+        </div>
       </div>
       
       <!-- Chat Header -->
@@ -914,7 +1132,7 @@
           </div>
           <div class="chat-partner-details">
             <div class="chat-partner-name" id="partnerName"></div>
-            <div class="chat-partner-status">
+            <div class="chat-partner-status" id="partnerStatus">
               <span class="dot"></span> online
             </div>
           </div>
@@ -951,7 +1169,18 @@
       <!-- Chat View -->
       <div class="chat-view" id="chatView">
         <div class="messages-container" id="messagesContainer">
-          <div class="empty-chat">Select a chat to start messaging</div>
+          <div class="empty-chat" id="emptyChat">Select a chat to start messaging</div>
+          <div class="typing-bubble" id="typingBubble">
+            <div class="tb-dot"></div>
+            <div class="tb-dot"></div>
+            <div class="tb-dot"></div>
+          </div>
+        </div>
+        <div class="recording-bar" id="recordingBar">
+          <div class="recording-dot"></div>
+          <span class="recording-time-text" id="recTime">00:00</span>
+          <button class="recording-cancel" onclick="cancelVoice()">✕</button>
+          <button class="recording-send" onclick="sendVoice()"><i class="fas fa-paper-plane"></i></button>
         </div>
       </div>
     </div>
@@ -1086,26 +1315,89 @@
   </div>
 
   <script type="module">
-    import { db } from './js/firebase-config.js';
-    import { showToast, timeAgo, cleanUsername, getAvatarHTML, requireAuth } from './js/common.js';
-    import { getCurrentUser } from './js/auth.js';
-    import { collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, increment, serverTimestamp, where, getDocs, deleteDoc, limit, startAfter } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    // ===== FIREBASE IMPORTS =====
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { 
+      getFirestore, collection, addDoc, query, orderBy, onSnapshot, 
+      serverTimestamp, doc, setDoc, getDoc, getDocs, updateDoc, 
+      increment, deleteDoc, arrayUnion, where, limit, startAfter 
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
     
-    if (!requireAuth()) window.location.replace('login.html');
+    // ===== FIREBASE CONFIG =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyC2JA1K-fvsPUkWUfvSFhkC-ET8dpPOr0M",
+      authDomain: "mychat-a97bf.firebaseapp.com",
+      projectId: "mychat-a97bf"
+    };
     
-    const currentUser = getCurrentUser();
-    const currentUserId = currentUser.uid;
-    let currentPartner = null;
-    let currentChatId = null;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    
+    // ===== AUTH =====
+    let currentUser = null;
+    let currentUserId = null;
+    
+    function initializeWithLocalUser() {
+      const fallbackUid = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+      currentUserId = fallbackUid;
+      currentUser = {
+        uid: fallbackUid,
+        displayName: `@user_${fallbackUid.substring(0, 6)}`,
+        isAnonymous: true
+      };
+      localStorage.setItem('uid', currentUserId);
+      localStorage.setItem('currentUser', currentUser.displayName);
+      console.log('✅ Local user initialized');
+      initApp();
+    }
+    
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUserId = user.uid;
+        currentUser = user;
+        localStorage.setItem('uid', currentUserId);
+        try {
+          const userRef = doc(db, 'users', currentUserId);
+          const userDoc = await getDoc(userRef);
+          if (!userDoc.exists()) {
+            await setDoc(userRef, {
+              username: currentUser.displayName || `@user_${currentUserId.substring(0, 6)}`,
+              createdAt: serverTimestamp()
+            });
+          }
+        } catch(e) {}
+        console.log('✅ Firebase user authenticated');
+        initApp();
+      } else {
+        try {
+          const cred = await signInAnonymously(auth);
+        } catch(error) {
+          console.warn('Anonymous auth failed:', error.message);
+          initializeWithLocalUser();
+        }
+      }
+    });
+    
+    setTimeout(() => {
+      if (!currentUserId) {
+        initializeWithLocalUser();
+      }
+    }, 100);
+    
+    // ===== STATE VARIABLES =====
+    let chatPartner = null;
+    let chatId = null;
     let unsubMessages = null;
+    let unsubChatList = null;
     let allUsers = [];
     let pendingRequests = [];
     let sentRequests = [];
     let acceptedUsers = [];
-    let activePanelTab = 'users';
     let chatListData = [];
-    let isMuted = false;
     let isPanelOpen = false;
+    let isMuted = false;
     let isCallActive = false;
     let callType = null;
     let callTimerInterval = null;
@@ -1114,48 +1406,85 @@
     let localStream = null;
     let peerConnection = null;
     let iceServers = [];
-    
+    let activePanelTab = 'users';
     let lastVisible = null;
     let isLoadingUsers = false;
     let allUsersLoaded = false;
     const PAGE_SIZE = 50;
     
-    // ========== FETCH TURN CREDENTIALS ==========
-    async function fetchTurnCredentials() {
-      try {
-        iceServers = [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun2.l.google.com:19302' }
-        ];
-        return iceServers;
-      } catch (error) {
-        console.warn('Failed to fetch TURN credentials, using fallback STUN servers:', error);
-        iceServers = [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ];
-        return iceServers;
-      }
+    // Voice recording
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let voiceTimer = null;
+    let voiceSeconds = 0;
+    let isRecording = false;
+    
+    // ===== UTILITY FUNCTIONS =====
+    function cleanUsername(username) {
+      return (username || '').replace(/^@/, '');
     }
     
-    // ========== CREATE PEER CONNECTION ==========
-    function createPeerConnection() {
-      const configuration = {
-        iceServers: iceServers.length > 0 ? iceServers : [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ],
-        iceCandidatePoolSize: 10
-      };
-      
-      return new RTCPeerConnection(configuration);
+    function formatDuration(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }
     
-    // ========== LOAD CHATS ==========
-    async function loadChats() {
+    function timeAgo(date) {
+      if (!date) return '';
+      const now = new Date();
+      const diff = now - date;
+      if (diff < 60000) return 'Now';
+      if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
+      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h';
+      if (diff < 604800000) return Math.floor(diff / 86400000) + 'd';
+      return date.toLocaleDateString();
+    }
+    
+    function getAvatarHTML(username) {
+      const clean = cleanUsername(username);
+      return `<span style="font-weight:700;font-size:1.2rem;">${clean.charAt(0).toUpperCase()}</span>`;
+    }
+    
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+    
+    function scrollToBottom() {
+      const container = document.getElementById('messagesContainer');
+      setTimeout(() => {
+        if (container) container.scrollTop = container.scrollHeight;
+      }, 100);
+    }
+    
+    // ===== ICE SERVERS FOR CALLS =====
+    const PROPER_ICE_SERVERS = [
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" },
+      { urls: "stun:stun2.l.google.com:19302" },
+      { urls: "stun:stun3.l.google.com:19302" },
+      { urls: "stun:stun4.l.google.com:19302" },
+      { urls: "stun:stun.stunprotocol.org:3478" }
+    ];
+    
+    // ===== INIT APP =====
+    function initApp() {
+      loadChats();
+      loadRequests();
+      loadUsers();
+    }
+    
+    // ===== LOAD CHATS =====
+    function loadChats() {
+      if (unsubChatList) unsubChatList();
       const q = query(collection(db, 'chats'), orderBy('lastTime', 'desc'));
-      onSnapshot(q, (snapshot) => {
+      unsubChatList = onSnapshot(q, (snapshot) => {
         const chats = [];
         snapshot.forEach(doc => {
           const data = doc.data();
@@ -1186,7 +1515,7 @@
         return;
       }
       container.innerHTML = chats.map(c => `
-        <div class="user-list-item ${currentPartner === c.partnerId ? 'active' : ''}" data-partner="${c.partnerId}" onclick="openChat('${c.partnerId}')">
+        <div class="user-list-item ${chatPartner === c.partnerId ? 'active' : ''}" data-partner="${c.partnerId}" onclick="openChat('${c.partnerId}')">
           <div class="user-avatar" onclick="event.stopPropagation();window.location.href='profile.html?user=${encodeURIComponent(c.partnerId)}'">
             ${getAvatarHTML(c.partnerId)}
           </div>
@@ -1204,7 +1533,7 @@
       `).join('');
     }
     
-    // ========== SEARCH FILTER ==========
+    // ===== SEARCH FILTER =====
     window.filterChats = function() {
       applySearchFilter();
     };
@@ -1228,19 +1557,18 @@
       });
     }
     
-    // ========== CHECK IF USER CAN CHAT ==========
+    // ===== CHECK IF USER CAN CHAT =====
     function canChatWithUser(username) {
       const partnerId = username.replace('@', '');
       return acceptedUsers.some(u => u === partnerId || u === username);
     }
     
-    // ========== OPEN CHAT ==========
+    // ===== OPEN CHAT =====
     window.openChat = async function(partner) {
       const partnerId = partner.replace('@', '');
       
       // Check if chat is allowed
       if (!canChatWithUser(partnerId) && !acceptedUsers.includes(partnerId)) {
-        // Check if request is pending
         const isPending = pendingRequests.some(r => r.from === partner) || sentRequests.some(r => r.to === partner);
         if (isPending) {
           showToast('⏳ Request pending. Wait for approval.');
@@ -1250,10 +1578,10 @@
         return;
       }
       
-      currentPartner = partner;
-      currentChatId = [currentUserId, partnerId].sort().join('_');
+      chatPartner = partner;
+      chatId = [currentUserId, partnerId].sort().join('_');
       
-      await updateDoc(doc(db, 'chats', currentChatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
+      await updateDoc(doc(db, 'chats', chatId), { [`unread_${currentUserId}`]: 0 }).catch(() => {});
       
       document.getElementById('topIcons').style.display = 'none';
       document.getElementById('chatHeader').classList.add('show');
@@ -1272,33 +1600,86 @@
       
       if (unsubMessages) unsubMessages();
       
-      const q = query(collection(db, 'chats', currentChatId, 'messages'), orderBy('createdAt', 'asc'));
+      const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
       unsubMessages = onSnapshot(q, (snapshot) => {
         const container = document.getElementById('messagesContainer');
+        const emptyChat = document.getElementById('emptyChat');
+        
         if (snapshot.empty) {
-          container.innerHTML = '<div class="empty-chat">Send a message to start chatting!</div>';
+          container.innerHTML = '<div class="empty-chat" id="emptyChat">Send a message to start chatting!</div>';
           return;
         }
-        container.innerHTML = '';
-        snapshot.forEach(doc => {
-          const msg = doc.data();
-          const isSent = msg.sender === currentUserId;
-          const div = document.createElement('div');
-          div.className = `message-wrapper ${isSent ? 'sent' : 'received'}`;
-          let time = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
-          if (msg.imageUrl) {
-            div.innerHTML = `<div class="message-bubble"><img src="${msg.imageUrl}" class="message-image" onclick="window.open('${msg.imageUrl}')"><div class="message-time">${time}</div></div>`;
-          } else {
-            div.innerHTML = `<div class="message-bubble">${escapeHTML(msg.text || '')}<div class="message-time">${time}</div></div>`;
+        
+        // Remove empty chat message if exists
+        const ec = document.getElementById('emptyChat');
+        if (ec) ec.remove();
+        
+        snapshot.docChanges().forEach(change => {
+          if (change.type === 'added') {
+            const msg = change.doc.data();
+            const msgId = change.doc.id;
+            if (document.getElementById('msg-' + msgId)) return;
+            renderMessage(msgId, msg);
           }
-          container.appendChild(div);
         });
-        container.scrollTop = container.scrollHeight;
-      }, (error) => {
-        console.error('Error loading messages:', error);
-        showToast('Error loading messages');
+        scrollToBottom();
       });
+      
+      // Listen for typing
+      listenToTyping();
     };
+    
+    function renderMessage(id, msg) {
+      const container = document.getElementById('messagesContainer');
+      const isSent = msg.sender === currentUserId;
+      const tb = document.getElementById('typingBubble');
+      
+      const wrapper = document.createElement('div');
+      wrapper.className = `message-wrapper ${isSent ? 'sent' : 'received'}`;
+      wrapper.id = 'msg-' + id;
+      
+      let time = '';
+      if (msg.createdAt) {
+        try {
+          time = new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        } catch(e) {}
+      }
+      
+      let bubbleContent = '';
+      if (msg.imageUrl) {
+        bubbleContent = `
+          <div class="message-bubble">
+            <img src="${msg.imageUrl}" class="message-image" onclick="window.open('${msg.imageUrl}')" loading="lazy">
+            <div class="message-time">${time}</div>
+          </div>
+        `;
+      } else if (msg.audioUrl) {
+        const dur = msg.audioDuration || 0;
+        bubbleContent = `
+          <div class="message-bubble voice-msg" data-audio="${msg.audioUrl}" data-duration="${dur}" onclick="playVoiceMessage(this)">
+            <button class="voice-play-btn"><i class="fas fa-play"></i></button>
+            <div class="voice-wave-container">${generateWaveBars(18)}</div>
+            <span class="voice-duration">0:00 / ${formatDuration(dur)}</span>
+            <div class="message-time">${time}</div>
+          </div>
+        `;
+      } else {
+        bubbleContent = `
+          <div class="message-bubble">
+            ${escapeHTML(msg.text || '')}
+            <div class="message-time">${time}</div>
+          </div>
+        `;
+      }
+      
+      wrapper.innerHTML = bubbleContent;
+      container.insertBefore(wrapper, tb);
+      
+      // Mark as seen
+      if (!isSent && !msg.seen) {
+        setDoc(doc(db, 'chats', chatId, 'messages', id), { seen: true }, { merge: true }).catch(() => {});
+      }
+    }
     
     function escapeHTML(str) {
       if (!str) return '';
@@ -1307,40 +1688,132 @@
       return div.innerHTML;
     }
     
-    // ========== SEND MESSAGE ==========
+    function generateWaveBars(count) {
+      let html = '';
+      for (let i = 0; i < count; i++) {
+        const height = Math.floor(Math.random() * 22) + 4;
+        html += `<div class="voice-wave-bar" style="height:${height}px;"></div>`;
+      }
+      return html;
+    }
+    
+    // ===== PLAY VOICE MESSAGE =====
+    window.playVoiceMessage = function(el) {
+      const audioUrl = el.getAttribute('data-audio');
+      const btn = el.querySelector('.voice-play-btn i');
+      const durationEl = el.querySelector('.voice-duration');
+      const totalDur = parseFloat(el.getAttribute('data-duration') || 0);
+      
+      // Stop other playing messages
+      document.querySelectorAll('.voice-msg').forEach(m => {
+        if (m !== el && m._audio) {
+          m._audio.pause();
+          const ob = m.querySelector('.voice-play-btn i');
+          if (ob) ob.className = 'fas fa-play';
+          const od = m.querySelector('.voice-duration');
+          if (od && m._totalDur) od.textContent = '0:00 / ' + formatDuration(m._totalDur);
+        }
+      });
+      
+      if (!el._audio) {
+        el._audio = new Audio(audioUrl);
+        el._totalDur = totalDur;
+        if (durationEl) durationEl.textContent = '0:00 / ' + formatDuration(totalDur);
+        
+        el._audio.ontimeupdate = () => {
+          if (durationEl && el._audio && el._totalDur) {
+            durationEl.textContent = formatDuration(el._audio.currentTime) + ' / ' + formatDuration(el._totalDur);
+          }
+        };
+        el._audio.onended = () => {
+          btn.className = 'fas fa-play';
+          if (durationEl && el._totalDur) durationEl.textContent = '0:00 / ' + formatDuration(el._totalDur);
+        };
+      }
+      
+      const audio = el._audio;
+      if (audio.paused) {
+        audio.play().catch(() => {});
+        btn.className = 'fas fa-pause';
+      } else {
+        audio.pause();
+        btn.className = 'fas fa-play';
+        if (durationEl && el._totalDur) {
+          durationEl.textContent = formatDuration(audio.currentTime) + ' / ' + formatDuration(el._totalDur);
+        }
+      }
+    };
+    
+    // ===== LISTEN TO TYPING =====
+    function listenToTyping() {
+      const partnerId = chatPartner.replace('@', '');
+      onSnapshot(doc(db, 'chats', chatId, 'typing', partnerId), (snap) => {
+        const data = snap.data();
+        const statusEl = document.getElementById('partnerStatus');
+        const tb = document.getElementById('typingBubble');
+        if (data && data.typing) {
+          statusEl.innerHTML = '<span class="dot"></span> typing...';
+          tb.classList.add('show');
+          scrollToBottom();
+        } else {
+          statusEl.innerHTML = '<span class="dot"></span> online';
+          tb.classList.remove('show');
+        }
+      });
+    }
+    
+    // ===== TYPING INDICATOR =====
+    let typingTimeout;
+    document.getElementById('chatInput').addEventListener('input', function() {
+      if (!chatId) return;
+      setDoc(doc(db, 'chats', chatId, 'typing', currentUserId), { typing: true, updatedAt: serverTimestamp() });
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        setDoc(doc(db, 'chats', chatId, 'typing', currentUserId), { typing: false, updatedAt: serverTimestamp() });
+      }, 2000);
+    });
+    
+    document.getElementById('chatInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    
+    // ===== SEND MESSAGE =====
+    async function ensureChatDoc() {
+      const chatRef = doc(db, 'chats', chatId);
+      const chatSnap = await getDoc(chatRef);
+      if (!chatSnap.exists()) {
+        await setDoc(chatRef, {
+          users: [currentUserId, chatPartner.replace('@', '')],
+          lastMessage: '',
+          lastTime: serverTimestamp()
+        });
+      }
+    }
+    
     window.sendMessage = async function() {
       const input = document.getElementById('chatInput');
       const text = input.value.trim();
-      if (!text || !currentChatId) {
-        showToast('Please enter a message');
-        return;
-      }
-      
-      // Verify chat is allowed
-      if (!currentPartner || !canChatWithUser(currentPartner)) {
-        showToast('❌ You need to be connected to chat.');
-        return;
-      }
+      if (!text || !chatId) return;
       
       input.value = '';
       input.disabled = true;
       
       try {
-        const partnerId = currentPartner.replace('@','');
-        const chatRef = doc(db, 'chats', currentChatId);
-        
-        await setDoc(chatRef, {
-          lastMessage: text,
-          lastTime: serverTimestamp(),
-          [`unread_${partnerId}`]: increment(1)
-        }, { merge: true });
-        
-        await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
+        await ensureChatDoc();
+        await addDoc(collection(db, 'chats', chatId, 'messages'), {
           text: text,
           sender: currentUserId,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          seen: false
         });
-        
+        await updateDoc(doc(db, 'chats', chatId), {
+          lastMessage: text,
+          lastTime: serverTimestamp(),
+          [`unread_${chatPartner.replace('@', '')}`]: increment(1)
+        });
       } catch(e) {
         console.error('Send error:', e);
         showToast('Failed to send message');
@@ -1353,35 +1826,23 @@
     
     window.sendImage = async function(e) {
       const file = e.target.files[0];
-      if (!file || !currentChatId) {
-        showToast('No image selected');
-        return;
-      }
-      
-      // Verify chat is allowed
-      if (!currentPartner || !canChatWithUser(currentPartner)) {
-        showToast('❌ You need to be connected to chat.');
-        return;
-      }
+      if (!file || !chatId) return;
       
       const reader = new FileReader();
       reader.onload = async function(ev) {
         try {
-          const partnerId = currentPartner.replace('@','');
-          const chatRef = doc(db, 'chats', currentChatId);
-          
-          await setDoc(chatRef, {
-            lastMessage: '📷 Photo',
-            lastTime: serverTimestamp(),
-            [`unread_${partnerId}`]: increment(1)
-          }, { merge: true });
-          
-          await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
+          await ensureChatDoc();
+          await addDoc(collection(db, 'chats', chatId, 'messages'), {
             imageUrl: ev.target.result,
             sender: currentUserId,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            seen: false
           });
-          
+          await updateDoc(doc(db, 'chats', chatId), {
+            lastMessage: '📷 Photo',
+            lastTime: serverTimestamp(),
+            [`unread_${chatPartner.replace('@', '')}`]: increment(1)
+          });
           showToast('Image sent');
         } catch(e) {
           console.error('Image send error:', e);
@@ -1392,11 +1853,117 @@
       e.target.value = '';
     };
     
+    // ===== VOICE RECORDING =====
     window.toggleVoice = function() {
-      showToast('Voice message coming soon! 🎤');
+      if (isRecording) {
+        sendVoice();
+      } else {
+        startVoice();
+      }
     };
     
-    // ========== GO BACK ==========
+    async function startVoice() {
+      if (!chatId) {
+        showToast('Open a chat first');
+        return;
+      }
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        const options = { audioBitsPerSecond: 128000 };
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          options.mimeType = 'audio/webm;codecs=opus';
+        } else {
+          options.mimeType = 'audio/webm';
+        }
+        
+        mediaRecorder = new MediaRecorder(stream, options);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => {
+          if (e.data.size > 0) audioChunks.push(e.data);
+        };
+        mediaRecorder.onstop = () => {
+          stream.getTracks().forEach(t => t.stop());
+        };
+        mediaRecorder.start(100);
+        isRecording = true;
+        voiceSeconds = 0;
+        document.getElementById('recordingBar').classList.add('show');
+        document.getElementById('micBtn').style.display = 'none';
+        document.getElementById('sendBtn').style.display = 'none';
+        document.getElementById('chatInput').style.display = 'none';
+        document.getElementById('recTime').textContent = '00:00';
+        
+        voiceTimer = setInterval(() => {
+          voiceSeconds++;
+          document.getElementById('recTime').textContent = formatDuration(voiceSeconds);
+        }, 1000);
+        
+      } catch(e) {
+        console.error('Voice recording error:', e);
+        showToast('Microphone access required');
+      }
+    }
+    
+    window.cancelVoice = function() {
+      if (mediaRecorder && isRecording) {
+        if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+        audioChunks = [];
+        isRecording = false;
+        clearInterval(voiceTimer);
+        document.getElementById('recordingBar').classList.remove('show');
+        document.getElementById('micBtn').style.display = 'flex';
+        document.getElementById('sendBtn').style.display = 'flex';
+        document.getElementById('chatInput').style.display = 'block';
+      }
+    };
+    
+    window.sendVoice = function() {
+      if (!mediaRecorder || !isRecording) return;
+      if (voiceSeconds < 1) {
+        cancelVoice();
+        return;
+      }
+      
+      mediaRecorder.onstop = async () => {
+        const mimeType = mediaRecorder.mimeType || 'audio/webm';
+        const blob = new Blob(audioChunks, { type: mimeType });
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          try {
+            await ensureChatDoc();
+            await addDoc(collection(db, 'chats', chatId, 'messages'), {
+              audioUrl: e.target.result,
+              audioDuration: voiceSeconds,
+              audioMime: mimeType,
+              sender: currentUserId,
+              createdAt: serverTimestamp(),
+              seen: false
+            });
+            await updateDoc(doc(db, 'chats', chatId), {
+              lastMessage: '🎤 Voice message',
+              lastTime: serverTimestamp(),
+              [`unread_${chatPartner.replace('@', '')}`]: increment(1)
+            });
+            showToast('Voice message sent');
+          } catch(err) {
+            console.error('Voice send error:', err);
+            showToast('Failed to send voice message');
+          }
+        };
+        reader.readAsDataURL(blob);
+      };
+      
+      mediaRecorder.stop();
+      isRecording = false;
+      clearInterval(voiceTimer);
+      document.getElementById('recordingBar').classList.remove('show');
+      document.getElementById('micBtn').style.display = 'flex';
+      document.getElementById('sendBtn').style.display = 'flex';
+      document.getElementById('chatInput').style.display = 'block';
+    };
+    
+    // ===== GO BACK =====
     window.goBack = function() {
       if (unsubMessages) {
         unsubMessages();
@@ -1405,8 +1972,8 @@
       if (isCallActive) {
         endCall();
       }
-      currentPartner = null;
-      currentChatId = null;
+      chatPartner = null;
+      chatId = null;
       document.getElementById('topIcons').style.display = 'flex';
       document.getElementById('chatHeader').classList.remove('show');
       document.getElementById('chatListFull').classList.remove('hidden');
@@ -1415,22 +1982,22 @@
       document.getElementById('chatInputArea').classList.remove('show');
       document.getElementById('floatingNav').style.display = 'flex';
       document.getElementById('fabContainer').style.display = 'flex';
-      document.getElementById('messagesContainer').innerHTML = '<div class="empty-chat">Select a chat to start messaging</div>';
+      document.getElementById('messagesContainer').innerHTML = '<div class="empty-chat" id="emptyChat">Select a chat to start messaging</div>';
       applySearchFilter();
     };
     
     window.goToPartnerProfile = function() {
-      if (currentPartner) window.location.href = `profile.html?user=${encodeURIComponent(currentPartner)}`;
+      if (chatPartner) window.location.href = `profile.html?user=${encodeURIComponent(chatPartner)}`;
     };
     
-    // ========== CALL FUNCTIONS ==========
+    // ===== CALL FUNCTIONS =====
     window.startCall = async function(type) {
-      if (!currentPartner) {
+      if (!chatPartner) {
         showToast('Please select a chat first');
         return;
       }
       
-      if (!canChatWithUser(currentPartner)) {
+      if (!canChatWithUser(chatPartner)) {
         showToast('❌ You need to be connected to call.');
         return;
       }
@@ -1438,11 +2005,6 @@
       if (isCallActive) {
         showToast('Call already in progress');
         return;
-      }
-      
-      if (iceServers.length === 0) {
-        showToast('Loading call configuration...');
-        await fetchTurnCredentials();
       }
       
       callType = type;
@@ -1456,42 +2018,24 @@
         
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
-        peerConnection = createPeerConnection();
+        const overlay = document.getElementById('callOverlay');
+        const avatar = document.getElementById('callAvatar');
+        const name = document.getElementById('callName');
+        const status = document.getElementById('callStatus');
         
-        localStream.getTracks().forEach(track => {
-          peerConnection.addTrack(track, localStream);
-        });
+        avatar.innerHTML = getAvatarHTML(chatPartner);
+        name.textContent = cleanUsername(chatPartner);
+        status.textContent = type === 'audio' ? 'Audio calling...' : 'Video calling...';
         
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        
-        showCallOverlay(type);
+        overlay.classList.add('show');
+        document.getElementById('floatingNav').style.display = 'none';
         
         setTimeout(() => {
           if (isCallActive) {
-            document.getElementById('callStatus').textContent = 'Connected';
+            status.textContent = 'Connected';
             startCallTimer();
           }
         }, 2000);
-        
-        peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            console.log('ICE candidate:', event.candidate);
-          }
-        };
-        
-        peerConnection.ontrack = (event) => {
-          console.log('Remote track received');
-        };
-        
-        peerConnection.onconnectionstatechange = () => {
-          console.log('Connection state:', peerConnection.connectionState);
-          if (peerConnection.connectionState === 'failed' || 
-              peerConnection.connectionState === 'disconnected' ||
-              peerConnection.connectionState === 'closed') {
-            endCall();
-          }
-        };
         
         document.getElementById('audioCallBtn').classList.add('in-call');
         document.getElementById('videoCallBtn').classList.add('in-call');
@@ -1505,20 +2049,6 @@
         endCall();
       }
     };
-    
-    function showCallOverlay(type) {
-      const overlay = document.getElementById('callOverlay');
-      const avatar = document.getElementById('callAvatar');
-      const name = document.getElementById('callName');
-      const status = document.getElementById('callStatus');
-      
-      avatar.innerHTML = currentPartner ? getAvatarHTML(currentPartner) : '<i class="fas fa-user"></i>';
-      name.textContent = currentPartner ? cleanUsername(currentPartner) : 'Unknown';
-      status.textContent = type === 'audio' ? 'Audio calling...' : 'Video calling...';
-      
-      overlay.classList.add('show');
-      document.getElementById('floatingNav').style.display = 'none';
-    }
     
     function startCallTimer() {
       callSeconds = 0;
@@ -1538,11 +2068,6 @@
       document.getElementById('callTimer').textContent = '00:00';
       document.getElementById('callOverlay').classList.remove('show');
       document.getElementById('floatingNav').style.display = 'flex';
-      
-      if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
-      }
       
       if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
@@ -1582,8 +2107,7 @@
       }
     };
     
-    // ========== FLOATING ACTION BUTTON FUNCTIONS ==========
-    
+    // ===== FLOATING ACTION BUTTON =====
     window.toggleNewChatPanel = function() {
       if (isPanelOpen) {
         closeNewChatPanel();
@@ -1599,8 +2123,7 @@
       lastVisible = null;
       allUsersLoaded = false;
       allUsers = [];
-      // Load users immediately
-      loadPanelUsers();
+      loadUsers();
     }
     
     window.closeNewChatPanel = function() {
@@ -1615,14 +2138,11 @@
         t.classList.toggle('active', t.dataset.tab === tab);
       });
       if (tab === 'users') {
-        // Reset and reload users when switching to users tab
         lastVisible = null;
         allUsersLoaded = false;
         allUsers = [];
-        loadPanelUsers();
+        loadUsers();
       } else {
-        // Load requests when switching to requests tab
-        loadRequests();
         renderPanelList();
       }
     };
@@ -1631,10 +2151,10 @@
       renderPanelList();
     };
     
-    // ========== LOAD USERS WITH INFINITE SCROLL ==========
-    async function loadPanelUsers() {
+    // ===== LOAD USERS =====
+    async function loadUsers() {
       if (activePanelTab !== 'users') return;
-      if (isLoadingUsers) return;
+      if (isLoadingUsers || allUsersLoaded) return;
       
       isLoadingUsers = true;
       const container = document.getElementById('newChatPanelList');
@@ -1664,7 +2184,7 @@
         const newUsers = [];
         snapshot.forEach(doc => {
           const data = doc.data();
-          if (data.username && data.username !== currentUser.username) {
+          if (data.username && data.username !== currentUser.displayName) {
             newUsers.push({
               id: doc.id,
               username: data.username,
@@ -1692,35 +2212,18 @@
           allUsersLoaded = true;
         }
         
-        // Load requests and accepted users before rendering
         await loadRequests();
         renderPanelList();
         
       } catch (error) {
         console.error('Error loading users:', error);
-        container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-exclamation-triangle"></i><p>Error loading users. Please try again.</p></div>';
+        container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-exclamation-triangle"></i><p>Error loading users</p></div>';
       } finally {
         isLoadingUsers = false;
       }
     }
     
-    function setupPanelScroll() {
-      const list = document.getElementById('newChatPanelList');
-      list.addEventListener('scroll', function() {
-        if (activePanelTab !== 'users') return;
-        if (isLoadingUsers || allUsersLoaded) return;
-        
-        const scrollTop = this.scrollTop;
-        const scrollHeight = this.scrollHeight;
-        const clientHeight = this.clientHeight;
-        
-        if (scrollTop + clientHeight >= scrollHeight - 100) {
-          loadPanelUsers();
-        }
-      });
-    }
-    
-    // ========== LOAD REQUESTS ==========
+    // ===== LOAD REQUESTS =====
     async function loadRequests() {
       pendingRequests = [];
       sentRequests = [];
@@ -1755,7 +2258,7 @@
           });
         });
         
-        // Get accepted users - check chats where both users are present
+        // Get accepted users from chats
         const chatsQuery = query(collection(db, 'chats'), where('users', 'array-contains', currentUserId));
         const chatsSnap = await getDocs(chatsQuery);
         chatsSnap.forEach(doc => {
@@ -1779,6 +2282,7 @@
           badge.style.display = 'none';
           panelBadge.style.display = 'none';
         }
+        
       } catch (error) {
         console.error('Error loading requests:', error);
       }
@@ -1797,7 +2301,7 @@
       return pendingRequests.some(r => r.from === username);
     }
     
-    // ========== RENDER PANEL LIST ==========
+    // ===== RENDER PANEL LIST =====
     function renderPanelList() {
       const container = document.getElementById('newChatPanelList');
       const searchTerm = document.getElementById('panelSearchInput').value.toLowerCase();
@@ -1827,27 +2331,23 @@
           
           let actionHtml = '';
           if (isAccepted) {
-            // User is connected - show Chat button
             actionHtml = `<button class="new-chat-panel-action chat-btn" onclick="event.stopPropagation();openChat('${u.username}')">
               <i class="fas fa-comment"></i> Chat
             </button>`;
           } else if (hasRequest) {
-            // User has sent a request - show Requested
             actionHtml = `<span class="new-chat-panel-action request-sent"><i class="fas fa-clock"></i> Requested</span>`;
           } else if (isRequestPending) {
-            // User has received a request - show Accept/Decline
             const req = pendingRequests.find(r => r.from === u.username);
             actionHtml = `
-              <button class="new-chat-panel-action accept" onclick="event.stopPropagation();acceptRequestFromPanel('${req.id}', '${u.username}')">
+              <button class="new-chat-panel-action accept" onclick="event.stopPropagation();acceptRequest('${req.id}', '${u.username}')">
                 <i class="fas fa-check"></i> Accept
               </button>
-              <button class="new-chat-panel-action decline" onclick="event.stopPropagation();declineRequestFromPanel('${req.id}')">
+              <button class="new-chat-panel-action decline" onclick="event.stopPropagation();declineRequest('${req.id}')">
                 <i class="fas fa-times"></i> Decline
               </button>
             `;
           } else {
-            // No request - show Request button
-            actionHtml = `<button class="new-chat-panel-action request-btn" onclick="event.stopPropagation();sendRequestFromPanel('${u.username}')">
+            actionHtml = `<button class="new-chat-panel-action request-btn" onclick="event.stopPropagation();sendRequest('${u.username}')">
               <i class="fas fa-paper-plane"></i> Request
             </button>`;
           }
@@ -1877,7 +2377,7 @@
         container.innerHTML = html;
         
       } else {
-        // Requests tab - show all pending requests
+        // Requests tab
         if (pendingRequests.length === 0) {
           container.innerHTML = '<div class="new-chat-panel-empty"><i class="fas fa-envelope-open"></i><p>No pending requests</p></div>';
           return;
@@ -1893,10 +2393,10 @@
               <div class="new-chat-panel-sub">${r.from}</div>
             </div>
             <div style="display:flex;gap:0.3rem;">
-              <button class="new-chat-panel-action accept" onclick="event.stopPropagation();acceptRequestFromPanel('${r.id}', '${r.from}')">
+              <button class="new-chat-panel-action accept" onclick="event.stopPropagation();acceptRequest('${r.id}', '${r.from}')">
                 <i class="fas fa-check"></i> Accept
               </button>
-              <button class="new-chat-panel-action decline" onclick="event.stopPropagation();declineRequestFromPanel('${r.id}')">
+              <button class="new-chat-panel-action decline" onclick="event.stopPropagation();declineRequest('${r.id}')">
                 <i class="fas fa-times"></i> Decline
               </button>
             </div>
@@ -1905,15 +2405,13 @@
       }
     }
     
-    // ========== CHAT ACTIONS FROM PANEL ==========
-    
-    // Send request to user
-    window.sendRequestFromPanel = async function(username) {
+    // ===== REQUEST ACTIONS =====
+    window.sendRequest = async function(username) {
       try {
         const profile = { name: currentUser.displayName || cleanUsername(currentUser.username), avatar: null };
         
         const requestData = {
-          from: currentUser.username,
+          from: currentUser.displayName || currentUser.username,
           fromName: profile.name || cleanUsername(currentUser.username),
           fromAvatar: profile.avatar || null,
           fromId: currentUserId,
@@ -1925,17 +2423,14 @@
         
         const docRef = await addDoc(collection(db, 'message_requests'), requestData);
         
-        // Add to sent requests list
         sentRequests.push({
           id: docRef.id,
           to: username,
           toId: username.replace('@', '')
         });
         
-        // Reload requests to update badges
         await loadRequests();
         renderPanelList();
-        
         showToast(`✅ Request sent to ${cleanUsername(username)}`);
         
       } catch(e) {
@@ -1944,16 +2439,12 @@
       }
     };
     
-    // Accept request and create chat
-    window.acceptRequestFromPanel = async function(requestId, fromUser) {
+    window.acceptRequest = async function(requestId, fromUser) {
       try {
-        // Delete the request
         await deleteDoc(doc(db, 'message_requests', requestId));
         
-        // Remove from pending list
         pendingRequests = pendingRequests.filter(r => r.id !== requestId);
         
-        // Create a new chat with the user
         const partnerId = fromUser.replace('@', '');
         const chatId = [currentUserId, partnerId].sort().join('_');
         
@@ -1970,19 +2461,15 @@
           });
         }
         
-        // Add to accepted users
         if (!acceptedUsers.includes(partnerId)) {
           acceptedUsers.push(partnerId);
         }
         
-        // Reload requests and update UI
         await loadRequests();
         renderPanelList();
         
-        // Show toast and open chat
         showToast(`✅ Request accepted from ${cleanUsername(fromUser)}`);
         
-        // Close panel and open chat
         closeNewChatPanel();
         await openChat(fromUser);
         
@@ -1992,7 +2479,7 @@
       }
     };
     
-    window.declineRequestFromPanel = async function(requestId) {
+    window.declineRequest = async function(requestId) {
       try {
         await deleteDoc(doc(db, 'message_requests', requestId));
         pendingRequests = pendingRequests.filter(r => r.id !== requestId);
@@ -2004,9 +2491,9 @@
       }
     };
     
-    // ========== CHAT SETTINGS ==========
+    // ===== CHAT SETTINGS =====
     window.openChatSettings = function() {
-      if (!currentPartner) {
+      if (!chatPartner) {
         showToast('No chat selected');
         return;
       }
@@ -2019,8 +2506,8 @@
     
     window.viewContact = function() {
       closeChatSettings();
-      if (currentPartner) {
-        window.location.href = `profile.html?user=${encodeURIComponent(currentPartner)}`;
+      if (chatPartner) {
+        window.location.href = `profile.html?user=${encodeURIComponent(chatPartner)}`;
       }
     };
     
@@ -2059,24 +2546,9 @@
       }
     };
     
-    // ========== TOAST FUNCTION ==========
-    window.showToast = function(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.classList.add('show');
-      clearTimeout(toast._timeout);
-      toast._timeout = setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2500);
-    };
-    
-    // ========== EVENT LISTENERS ==========
+    // ===== EVENT LISTENERS =====
     document.getElementById('chatSettingsOverlay').addEventListener('click', (e) => {
       if (e.target === document.getElementById('chatSettingsOverlay')) closeChatSettings();
-    });
-    
-    document.getElementById('chatInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
     });
     
     document.addEventListener('click', function(e) {
@@ -2087,15 +2559,8 @@
       }
     });
     
-    // ========== INITIALIZE ==========
-    await fetchTurnCredentials();
-    
-    loadChats();
-    loadRequests();
-    setupPanelScroll();
-    
-    console.log('✅ Chat app initialized');
-    console.log('Current user:', currentUser.username);
+    // ===== INIT =====
+    console.log('✅ Chat app initialized with full messaging system');
   </script>
 </body>
 </html>
